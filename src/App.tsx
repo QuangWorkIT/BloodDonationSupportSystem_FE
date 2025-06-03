@@ -1,8 +1,9 @@
+import RegisterForm from "./components/layout/RegisterForm.tsx";
 function App() {
 
   return (
     <>
-      <h1 className="text-red-500 text-[50px]">Hello Donation</h1>
+      <RegisterForm />
     </>
   )
 }
