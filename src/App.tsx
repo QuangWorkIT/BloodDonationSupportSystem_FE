@@ -1,9 +1,10 @@
-import RegisterForm from "./components/layout/RegisterForm.tsx";
+
+import ResetPasswordForm from "./components/layout/ResetPasswordForm.tsx";
 function App() {
 
   return (
     <>
-      <RegisterForm />
+      <ResetPasswordForm />
     </>
   )
 }

@@ -53,16 +53,16 @@ export default function RegisterForm() {
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
-    if (!formData.lastName) newErrors.lastName = "Họ is required.";
-    if (!formData.firstName) newErrors.firstName = "Tên is required.";
-    if (!formData.phone) newErrors.phone = "Số điện thoại is required.";
-    if (!formData.password) newErrors.password = "Mật khẩu is required.";
+    if (!formData.lastName) newErrors.lastName = "Đây là trường thông tin bắt buộc.";
+    if (!formData.firstName) newErrors.firstName = "Đây là trường thông tin bắt buộc.";
+    if (!formData.phone) newErrors.phone = "Đây là trường thông tin bắt buộc.";
+    if (!formData.password) newErrors.password = "Đây là trường thông tin bắt buộc.";
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Mật khẩu không khớp.";
-    if (!formData.bloodType) newErrors.bloodType = "Nhóm máu is required.";
-    if (!formData.birthdate) newErrors.birthdate = "Ngày tháng năm sinh is required.";
-    if (!formData.gender) newErrors.gender = "Giới tính is required.";
-    if (!formData.province) newErrors.province = "Tỉnh, thành phố is required.";
-    if (!formData.address) newErrors.address = "Địa chỉ is required.";
+    if (!formData.bloodType) newErrors.bloodType = "Đây là trường thông tin bắt buộc.";
+    if (!formData.birthdate) newErrors.birthdate = "Đây là trường thông tin bắt buộc.";
+    if (!formData.gender) newErrors.gender = "Đây là trường thông tin bắt buộc.";
+    if (!formData.province) newErrors.province = "Đây là trường thông tin bắt buộc.";
+    if (!formData.address) newErrors.address = "Đây là trường thông tin bắt buộc.";
 
     return newErrors;
   };
