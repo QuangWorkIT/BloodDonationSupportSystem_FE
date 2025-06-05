@@ -1,10 +1,14 @@
-function App() {
+import LoginForm from "./components/layout/LoginForm";
 
+// import OTPForm from "./components/layout/OTPForm";
+
+function App() {
   return (
     <>
-      <h1 className="text-red-500 text-[50px]">Hello Donation</h1>
+      <LoginForm />
+      {/* <OTPForm /> */}
     </>
-  )
+  );
 }
 
-export default App
+export default App;
