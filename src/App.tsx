@@ -1,3 +1,4 @@
+import ResetPasswordForm from "./components/layout/ResetPasswordForm.tsx";
 import LoginForm from "./components/layout/LoginForm";
 
 // import OTPForm from "./components/layout/OTPForm";
@@ -5,6 +6,8 @@ import LoginForm from "./components/layout/LoginForm";
 function App() {
   return (
     <>
+      <ResetPasswordForm />
+
       <LoginForm />
       {/* <OTPForm /> */}
     </>
