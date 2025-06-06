@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaSearch, FaTimes } from "react-icons/fa";
+import { FaSearch, FaTimes, FaUser } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
 type NavItem = {
@@ -29,33 +29,32 @@ const BloodDonationNavbar = () => {
         </div>
 
         {/* Centered navigation group with animations */}
-        <div className="absolute right-1 transform -translate-x-85">
+        <div className="absolute right-1 transform -translate-x-15">
           <div className="flex items-center space-x-10">
             {!showSearch && (
               <>
                 {navItems.map((item) => (
                   <a
-                    key={item.id}
-                    href={item.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setActiveItem(activeItem === item.id ? null : item.id);
-                    }}
-                    className={`
-                      text-base transition-all duration-200
-                      ${
-                        activeItem === item.id
-                          ? "bg-[#C14B53] text-white px-4 py-2 rounded-md font-medium shadow-sm"
-                          : "text-[#C14B53] border-b-2 border-[#C14B53] pb-1 font-medium hover:opacity-80"
-                      }
-                    `}
-                  >
-                    {item.label}
-                  </a>
+                  key={item.id}
+                  href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveItem(activeItem === item.id ? null : item.id);
+                  }}
+                  className={`text-base transition-all duration-500 ${
+                    item.id === "su-kien"
+                      ? "bg-[#C14B53] text-white px-4 py-2 rounded-md font-medium shadow-sm scale-100 hover:scale-105"
+                      : activeItem === item.id
+                      ? "text-[#C14B53] border-b-2 border-[#C14B53] pb-1 font-medium scale-100 hover:scale-105"
+                      : "text-[#C14B53] pb-1 font-medium hover:border-b-2 hover:border-[#C14B53] hover:opacity-80 scale-100 hover:scale-105"
+                  }`}
+                >
+                  {item.label}
+                </a>
                 ))}
               </>
             )}
-            
+
             <div className="relative ml-6 ">
               <AnimatePresence mode="wait">
                 {!showSearch ? (
@@ -73,9 +72,9 @@ const BloodDonationNavbar = () => {
                   <motion.div
                     key="search-bar"
                     initial={{ x: 100, opacity: 0, width: 0 }}
-                    animate={{ x: -130, opacity: 1, width: 400 }}
+                    animate={{ x: 0, opacity: 1, width: 400 }}
                     exit={{ x: 100, opacity: 0, width: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.25 }}
                     className="flex items-center bg-white px-6 py-2 rounded-md shadow-sm border border-gray-200 origin-right"
                   >
                     <input
@@ -94,6 +93,15 @@ const BloodDonationNavbar = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+            {/* Login button */}
+            <div className="flex flex-col items-center justify-center ml-6">
+              <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center mb-1 hover:bg-[#8B0B1A] transition duration-200 cursor-pointer">
+                <FaUser size={18} color="#fff" />
+              </div>
+              <div className="text-[#C14B53] text-sm font-medium hover: transition duration-200 cursor-pointer">
+                Đăng nhập
+              </div>
             </div>
           </div>
         </div>
