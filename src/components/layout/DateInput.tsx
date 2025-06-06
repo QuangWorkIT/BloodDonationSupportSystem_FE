@@ -1,11 +1,13 @@
 interface DateInputProps {
-    value: Date | string;
+    value: Date | string | undefined;
     readOnly?: boolean
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
 // this function create a custom date picker
-function DateInput({ value, onChange, readOnly }: DateInputProps) {
+function DateInput({ value, onChange, readOnly}: DateInputProps) {
+
+    // format date input
     const formatDate = (date: string | Date | undefined): string => {
         if (!date) return ''
 

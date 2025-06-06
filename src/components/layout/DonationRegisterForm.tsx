@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import DateInput from "./DateInput"
+import BloodTypeSelect, { BloodTypeSelectRh } from "./BloodTypeSelect"
+
 
 // define form schema
 const formSchema = z.object({
@@ -26,44 +28,55 @@ const formSchema = z.object({
         required_error: "Chiều cao không được để trống",
         invalid_type_error: "Chiều cao phải là số hợp lệ",
     })
-    .nonnegative({ message: "Chiều cao không hợp lệ" })
-    .min(1, {message: "Chiều cao không hợp lệ"})
-    .max(3, {message: "Chiều cao không hợp lệ"}),
+        .nonnegative({ message: "Chiều cao không hợp lệ" })
+        .min(1, { message: "Chiều cao không hợp lệ" })
+        .max(3, { message: "Chiều cao không hợp lệ" }),
 
     weight: z.coerce.number({
         required_error: "Cân nặng không được để trống",
         invalid_type_error: "Cân nặng phải là số hợp lệ",
     })
-    .nonnegative({ message: "Cân nặng không hợp lệ" })
-    .min(42, {message: "Cân nặng phải từ 42 kg"})
-    .max(150, {message: "Cân nặng không hợp lệ"}),
+        .nonnegative({ message: "Cân nặng không hợp lệ" })
+        .min(42, { message: "Cân nặng phải từ 42 kg" })
+        .max(150, { message: "Cân nặng không hợp lệ" }),
 
     address: z.string()
-        .min(1, { message: "Địa chỉ không được để trống" })
+        .min(1, { message: "Cần điền địa chỉ" })
         .max(200, { message: "Địa chỉ không hợp lệ" }),
 
-    lastDonation: z.coerce.date({
-        required_error: "Thời gian không được để trống",
-    })
-    .min(new Date("1960-01-01"), { message: "Thời gian không hợp lệ" })
-    .max(new Date(), { message: "Thời gian không hợp lệ" }),
+    lastDonation: z
+        .coerce
+        .date({ 
+            required_error: "Cần điền thơi gian",
+            invalid_type_error: "Thời gian không hợp lệ" 
+        })
+        .min(new Date("1960-01-01"), { message: "Thời gian không hợp lệ min" })
+        .max(new Date(), { message: "Thời gian không hợp lệ max" }),
+        
+
 
     donationDate: z.date(),
 
-    bloodType: z.string({ message: "Hãy chọn loại máu" }),
+    bloodType: z.string({ required_error: "Hãy chọn loại máu" }),
 
-    bloodTypeRh: z.string({ message: "Hãy chọn loại máu" }),
+    bloodTypeRh: z.string({ required_error: "Hãy chọn loại máu" }),
 
     phone: z.string()
+        .nonempty("Cần điền số điện thoại")
         .regex(/^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$/, {
             message: "Số điện thoại không hợp lệ",
         }),
 
-    email: z.string().email({ message: "Email không hợp lệ" })
+
+    email: z.string()
+        .nonempty("Cần điền email")
+        .email({ message: "Email không hợp lệ" })
 })
 
 type formType = z.infer<typeof formSchema>
 function DonationRegisterForm() {
+
+    // create form resolver for validation
     const form = useForm<formType>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -73,8 +86,8 @@ function DonationRegisterForm() {
             address: "",
             lastDonation: undefined,
             donationDate: new Date("2025-07-01"),
-            bloodType: "",
-            bloodTypeRh: "",
+            bloodType: undefined,
+            bloodTypeRh: undefined,
             phone: "",
             email: ""
         }
@@ -82,13 +95,17 @@ function DonationRegisterForm() {
 
 
     const onSubmit = (values: formType) => {
+        // handlde submit by post api
         console.log(values)
     }
+
+
     return (
-        <>
+        <div className="w-[700px] border-3 rounded-[10px]">
+            {/* form header */}
             <div className="mb-[25px]">
-                <div className="flex justify-between items-center mb-[25px] px-[20px]">
-                    <h1 className="text-[28px]">Đơn đăng ký hiến máu</h1>
+                <div className="flex justify-between items-center my-[25px] px-[20px]">
+                    <h1 className="text-[28px] font-semibold">Đơn đăng ký hiến máu</h1>
 
                     <svg className="hover:cursor-pointer" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <mask id="path-1-inside-1_665_8286" fill="white">
@@ -101,15 +118,17 @@ function DonationRegisterForm() {
 
                 <hr className="w-full bg-[#E6E9EC]" />
             </div>
+
+            {/* form content */}
             <Form {...form}>
                 <form className="px-[20px]" onSubmit={form.handleSubmit(onSubmit)}>
                     <FormField
                         control={form.control}
                         name="donorName"
                         render={({ field }) => (
-                            <FormItem className="grid grid-cols-3 mb-5">
-                                <FormLabel className="text-[18px] whitespace-nowrap">Tên người hiến</FormLabel>
-                                <div className="col-span-2">
+                            <FormItem className="flex mb-5">
+                                <FormLabel className="w-[200px] text-[18px] whitespace-nowrap">Tên người hiến</FormLabel>
+                                <div className="flex-1">
                                     <FormControl>
                                         <Input placeholder="Họ và tên" {...field} />
                                     </FormControl>
@@ -124,11 +143,11 @@ function DonationRegisterForm() {
                             control={form.control}
                             name="height"
                             render={({ field }) => (
-                                <FormItem className="flex gap-5">
+                                <FormItem className="flex gap-5 flex-1">
                                     <FormLabel className="text-[18px] whitespace-nowrap">Chiều cao (m)</FormLabel>
                                     <div className="w-full">
                                         <FormControl>
-                                            <Input type = "number" placeholder="Nhập chiều cao" {...field} />
+                                            <Input type="number" placeholder="Nhập chiều cao" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </div>
@@ -140,11 +159,11 @@ function DonationRegisterForm() {
                             control={form.control}
                             name="weight"
                             render={({ field }) => (
-                                <FormItem className="flex gap-5">
+                                <FormItem className="flex gap-5 flex-1">
                                     <FormLabel className="text-[18px] whitespace-nowrap">Cân nặng (kg)</FormLabel>
                                     <div className="w-full">
                                         <FormControl>
-                                            <Input type = "number" placeholder="Nhập cân nặng" {...field} />
+                                            <Input type="number" placeholder="Nhập cân nặng" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </div>
@@ -157,9 +176,9 @@ function DonationRegisterForm() {
                         control={form.control}
                         name="address"
                         render={({ field }) => (
-                            <FormItem className="grid grid-cols-3 mb-5 gap-5">
-                                <FormLabel className="text-[18px] whitespace-nowrap">Địa chỉ</FormLabel>
-                                <div className="col-span-2">
+                            <FormItem className="flex mb-5">
+                                <FormLabel className="w-[200px] text-[18px] whitespace-nowrap">Địa chỉ</FormLabel>
+                                <div className="flex-1">
                                     <FormControl>
                                         <Input placeholder="Nhập địa chỉ" {...field} />
                                     </FormControl>
@@ -173,11 +192,10 @@ function DonationRegisterForm() {
                         control={form.control}
                         name="lastDonation"
                         render={({ field }) => (
-                            <FormItem className="grid grid-cols-3 mb-5 gap-5">
-                                <FormLabel className="text-[18px] whitespace-nowrap">Lần cuối hiến máu</FormLabel>
-                                <div className="col-span-2">
+                            <FormItem className="flex mb-5">
+                                <FormLabel className="w-[200px] text-[18px] whitespace-nowrap">Lần cuối hiến máu</FormLabel>
+                                <div className="flex-1">
                                     <FormControl>
-                                        {/* <Input placeholder="Nhập địa chỉ" {...field} /> */}
                                         <DateInput onChange={field.onChange} value={field.value} ></DateInput>
                                     </FormControl>
                                     <FormMessage />
@@ -190,12 +208,11 @@ function DonationRegisterForm() {
                         control={form.control}
                         name="donationDate"
                         render={({ field }) => (
-                            <FormItem className="grid grid-cols-3 mb-5 gap-5">
-                                <FormLabel className="text-[18px] whitespace-nowrap">Ngày hiến</FormLabel>
-                                <div className="col-span-2">
+                            <FormItem className="flex mb-5 ">
+                                <FormLabel className="w-[200px] text-[18px] whitespace-nowrap">Ngày hiến</FormLabel>
+                                <div className="flex-1">
                                     <FormControl>
-                                        {/* <Input placeholder="Nhập địa chỉ" {...field} /> */}
-                                        <DateInput readOnly {...field} onChange={() => {}} value="2025-07-01"></DateInput>
+                                        <DateInput readOnly {...field} value="2025-07-01"></DateInput>
                                     </FormControl>
                                     <FormMessage />
                                 </div>
@@ -203,13 +220,46 @@ function DonationRegisterForm() {
                         )}
                     />
 
+                    <div className="flex mb-5">
+                        <FormLabel className="w-[210px] text-[18px] whitespace-nowrap">Nhóm máu</FormLabel>
+                        <div className="flex flex-1 gap-5">
+                            <FormField
+                                control={form.control}
+                                name="bloodType"
+                                render={({ field }) => (
+                                    <FormItem className="flex-1">
+                                        <FormControl>
+                                            <BloodTypeSelect onValueChange={field.onChange} defaultVal={field.value}></BloodTypeSelect>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+
+                            <FormField
+                                control={form.control}
+                                name="bloodTypeRh"
+                                render={({ field }) => (
+                                    <FormItem className="flex-1">
+                                        <FormControl>
+                                            <BloodTypeSelectRh onValueChange={field.onChange} defaultVal={field.value}></BloodTypeSelectRh>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+
+                                )}
+                            />
+                        </div>
+                    </div>
+
                     <FormField
                         control={form.control}
                         name="phone"
                         render={({ field }) => (
-                            <FormItem className="grid grid-cols-3 mb-5 gap-5">
-                                <FormLabel className="text-[18px] whitespace-nowrap">Số điện thoại</FormLabel>
-                                <div className="col-span-2">
+                            <FormItem className="flex mb-5">
+                                <FormLabel className="w-[200px] text-[18px] whitespace-nowrap">Số điện thoại</FormLabel>
+                                <div className="flex-1">
                                     <FormControl>
                                         <Input placeholder="Nhập số điện thoại" {...field} />
                                     </FormControl>
@@ -223,9 +273,9 @@ function DonationRegisterForm() {
                         control={form.control}
                         name="email"
                         render={({ field }) => (
-                            <FormItem className="grid grid-cols-3 mb-5 gap-5">
-                                <FormLabel className="text-[18px] whitespace-nowrap">Email</FormLabel>
-                                <div className="col-span-2">
+                            <FormItem className="flex mb-5">
+                                <FormLabel className="w-[200px] text-[18px] whitespace-nowrap">Email</FormLabel>
+                                <div className="flex-1">
                                     <FormControl>
                                         <Input placeholder="Địa chỉ email" {...field} />
                                     </FormControl>
@@ -236,13 +286,13 @@ function DonationRegisterForm() {
                     />
                     <Button
                         type="submit"
-                        className="text-[15px] font-bold bg-[#BA1B1D] rounded-[10px] w-[120px] hover:cursor-pointer hover:bg-[#9F1214]"
+                        className="text-[15px] font-bold bg-[#BA1B1D] rounded-[10px] w-[120px] mb-[20px] hover:cursor-pointer hover:bg-[#9F1214]"
                     >
                         Gửi
                     </Button>
                 </form>
             </Form>
-        </>
+        </div>
     )
 }
 

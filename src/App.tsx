@@ -5,7 +5,7 @@ function App() {
   return (
     <>
 
-      <div className="mt-5 ml-5">
+      <div className="flex justify-center items-center mt-10">
         <DonationRegisterForm></DonationRegisterForm>
       </div>
     </>
