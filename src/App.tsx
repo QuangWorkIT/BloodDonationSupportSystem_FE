@@ -1,19 +1,13 @@
-import ResetPasswordForm from "./components/layout/ResetPasswordForm.tsx";
-import LoginForm from "./components/layout/LoginForm";
-
-// import OTPForm from "./components/layout/OTPForm";
-
-
-// import ResetPasswordForm from "./components/layout/ResetPasswordForm.tsx";
-import RegisterForm from "./components/layout/RegisterForm"
+import DateInput from "./components/layout/DateInput";
+import { Input } from "./components/ui/input";
+import DonationRegisterForm from "./components/layout/DonationRegisterForm";
 function App() {
   return (
     <>
-      <ResetPasswordForm />
 
-      <LoginForm />
-      {/* <OTPForm /> */}
-      <RegisterForm />
+      <div className="mt-5 ml-5">
+        <DonationRegisterForm></DonationRegisterForm>
+      </div>
     </>
   );
 }
