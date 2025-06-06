@@ -5,15 +5,16 @@ import LoginForm from "./components/layout/LoginForm";
 
 
 // import ResetPasswordForm from "./components/layout/ResetPasswordForm.tsx";
-import RegisterForm from "./components/layout/RegisterForm"
+
+import Navbar from "./components/layout/Navbar.tsx";
+import Footer from "./components/layout/Footer.tsx";
 function App() {
   return (
     <>
+      <Navbar/>
       <ResetPasswordForm />
 
-      <LoginForm />
-      {/* <OTPForm /> */}
-      <RegisterForm />
+      <Footer/>
     </>
   );
 }
