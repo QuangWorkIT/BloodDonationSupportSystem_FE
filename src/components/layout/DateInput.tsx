@@ -5,16 +5,15 @@ interface DateInputProps {
 }
 
 // this function create a custom date picker
-function DateInput({ value, onChange, readOnly}: DateInputProps) {
+function DateInput({ value, onChange, readOnly }: DateInputProps) {
 
     // format date input
-    const formatDate = (date: string | Date | undefined): string => {
+    const formatDate = (date: string | Date | undefined): string | undefined=> {
         if (!date) return ''
 
         const dateObj = date instanceof Date ? date : new Date(date)
 
         if (isNaN(dateObj.getTime())) return ''
-
         return dateObj.toISOString().split('T')[0]
     }
 

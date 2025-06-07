@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input"
 import DateInput from "./DateInput"
 import BloodTypeSelect, { BloodTypeSelectRh } from "./BloodTypeSelect"
 
-
 // define form schema
 const formSchema = z.object({
     donorName: z.string()
@@ -44,16 +43,15 @@ const formSchema = z.object({
         .min(1, { message: "Cần điền địa chỉ" })
         .max(200, { message: "Địa chỉ không hợp lệ" }),
 
+    
     lastDonation: z
         .coerce
         .date({ 
             required_error: "Cần điền thơi gian",
             invalid_type_error: "Thời gian không hợp lệ" 
         })
-        .min(new Date("1960-01-01"), { message: "Thời gian không hợp lệ min" })
-        .max(new Date(), { message: "Thời gian không hợp lệ max" }),
-        
-
+        .min(new Date("1960-01-01"), { message: "Thời gian không hợp lệ" })
+        .max(new Date(), { message: "Thời gian không hợp lệ" }),
 
     donationDate: z.date(),
 
