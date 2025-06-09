@@ -117,9 +117,12 @@ export default function HomePage() {
               <div className="flex flex-col gap-3 text-left">
                 <h2 className="text-blue-600 font-semibold text-2xl">Buổi hiến máu đầu tiên</h2>
                 <p>Những gì bạn cần biết cho lần đầu tiên hiến máu</p>
-                <a href="" className="text-xl text-red-700 font-semibold underline decoration-2">
-                  Tìm hiểu thêm
-                </a>
+                <span className="relative inline-block group">
+                  <a href="" className="text-xl text-red-700 font-semibold">
+                    Tìm hiểu thêm
+                  </a>
+                  <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[35%] group-hover:w-[60%] transition-all duration-300 ease-in-out"></span>
+                </span>
               </div>
             </div>
 
@@ -128,9 +131,12 @@ export default function HomePage() {
               <div className="flex flex-col gap-3 text-left">
                 <h2 className="text-blue-600 font-semibold text-2xl">Quy trình hiến máu</h2>
                 <p>Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả</p>
-                <a href="" className="text-xl text-red-700 font-semibold underline decoration-2">
-                  Tìm hiểu thêm
-                </a>
+                <span className="relative inline-block group">
+                  <a href="" className="text-xl text-red-700 font-semibold">
+                    Tìm hiểu thêm
+                  </a>
+                  <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[35%] group-hover:w-[60%] transition-all duration-300 ease-in-out"></span>
+                </span>
               </div>
             </div>
           </div>
