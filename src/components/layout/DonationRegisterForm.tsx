@@ -2,9 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { format } from "date-fns"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { CalendarIcon } from "lucide-react"
 import {
     Form,
     FormControl,
@@ -13,10 +16,13 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
-import DateInput from "./DateInput"
 import BloodTypeSelect, { BloodTypeSelectRh } from "./BloodTypeSelect"
-
 
 // define form schema
 const formSchema = z.object({
@@ -28,7 +34,6 @@ const formSchema = z.object({
         required_error: "Chiều cao không được để trống",
         invalid_type_error: "Chiều cao phải là số hợp lệ",
     })
-        .nonnegative({ message: "Chiều cao không hợp lệ" })
         .min(1, { message: "Chiều cao không hợp lệ" })
         .max(3, { message: "Chiều cao không hợp lệ" }),
 
@@ -36,7 +41,6 @@ const formSchema = z.object({
         required_error: "Cân nặng không được để trống",
         invalid_type_error: "Cân nặng phải là số hợp lệ",
     })
-        .nonnegative({ message: "Cân nặng không hợp lệ" })
         .min(42, { message: "Cân nặng phải từ 42 kg" })
         .max(150, { message: "Cân nặng không hợp lệ" }),
 
@@ -44,16 +48,12 @@ const formSchema = z.object({
         .min(1, { message: "Cần điền địa chỉ" })
         .max(200, { message: "Địa chỉ không hợp lệ" }),
 
-    lastDonation: z
-        .coerce
-        .date({ 
-            required_error: "Cần điền thơi gian",
-            invalid_type_error: "Thời gian không hợp lệ" 
-        })
-        .min(new Date("1960-01-01"), { message: "Thời gian không hợp lệ min" })
-        .max(new Date(), { message: "Thời gian không hợp lệ max" }),
-        
 
+    lastDonation: z
+        .date({
+            required_error: "Cần điền thơi gian",
+            invalid_type_error: "Thời gian không hợp lệ"
+        }),
 
     donationDate: z.date(),
 
@@ -195,9 +195,33 @@ function DonationRegisterForm() {
                             <FormItem className="flex mb-5">
                                 <FormLabel className="w-[200px] text-[18px] whitespace-nowrap">Lần cuối hiến máu</FormLabel>
                                 <div className="flex-1">
-                                    <FormControl>
-                                        <DateInput onChange={field.onChange} value={field.value} ></DateInput>
-                                    </FormControl>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className="w-full shadow-sm font-bold"
+                                                >
+                                                    {field.value ? (
+                                                        format(field.value, "PPP")
+                                                    ) : (
+                                                        <span>mm/dd/yyyy</span>
+                                                    )}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-75" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                disabled={(date) => {
+                                                    return date >= new Date() || date < new Date("2000-01-01")
+                                                }}
+                                            ></Calendar>
+                                        </PopoverContent>
+                                    </Popover>
                                     <FormMessage />
                                 </div>
                             </FormItem>
@@ -209,11 +233,32 @@ function DonationRegisterForm() {
                         name="donationDate"
                         render={({ field }) => (
                             <FormItem className="flex mb-5 ">
-                                <FormLabel className="w-[200px] text-[18px] whitespace-nowrap">Ngày hiến</FormLabel>
+                                <FormLabel className="w-[200px] text-[18px] whitespace-nowrap">Lần cuối hiến máu</FormLabel>
                                 <div className="flex-1">
-                                    <FormControl>
-                                        <DateInput readOnly {...field} value="2025-07-01"></DateInput>
-                                    </FormControl>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    disabled
+                                                    className="w-full shadow-sm font-bold"
+                                                >
+                                                    {format(field.value, "PPP")}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-75" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                disabled={(date) => {
+                                                    return date >= new Date() || date < new Date("2000-01-01")
+                                                }}
+                                            ></Calendar>
+                                        </PopoverContent>
+                                    </Popover>
                                     <FormMessage />
                                 </div>
                             </FormItem>
