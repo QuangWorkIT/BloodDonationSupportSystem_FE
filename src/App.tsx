@@ -1,19 +1,9 @@
-import ResetPasswordForm from "./components/layout/ResetPasswordForm.tsx";
-import LoginForm from "./components/layout/LoginForm";
-
-// import OTPForm from "./components/layout/OTPForm";
-
-
-// import ResetPasswordForm from "./components/layout/ResetPasswordForm.tsx";
-import RegisterForm from "./components/layout/RegisterForm"
+import Events from "./components/layout/Events.tsx";
 function App() {
   return (
     <>
-      <ResetPasswordForm />
+      <Events />
 
-      <LoginForm />
-      {/* <OTPForm /> */}
-      <RegisterForm />
     </>
   );
 }
