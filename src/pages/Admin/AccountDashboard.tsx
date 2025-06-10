@@ -29,6 +29,82 @@ interface Account {
   role: string;
 }
 
+interface AdminSidebarProps {
+  activeSidebarItem: string;
+  setActiveSidebarItem: (item: string) => void;
+}
+
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeSidebarItem, setActiveSidebarItem }) => {
+  return (
+    <aside className="bg-white w-64 flex flex-col border-r border-gray-200 shadow-sm">
+      <div className="flex-1">
+        <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">🔥</span>
+          </div>
+          <span className="text-lg font-semibold text-gray-800">Blood gang</span>
+        </div>
+        <nav className="py-6 px-3 space-y-4">
+          <button
+            onClick={() => setActiveSidebarItem("home")}
+            className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
+              activeSidebarItem === "home" ? "bg-blue-600 text-white" : ""
+            }`}
+          >
+            <Home className="w-6 h-6" />
+            <span className="text-md font-medium">Trang chủ</span>
+          </button>
+          <button
+            onClick={() => setActiveSidebarItem("accounts")}
+            className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
+              activeSidebarItem === "accounts" ? "bg-blue-600 text-white" : ""
+            }`}
+          >
+            <Users className="w-6 h-6" />
+            <span className="text-md font-medium">Tài khoản</span>
+          </button>
+          <button
+            onClick={() => setActiveSidebarItem("stats")}
+            className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
+              activeSidebarItem === "stats" ? "bg-blue-600 text-white" : ""
+            }`}
+          >
+            <BarChart3 className="w-6 h-6" />
+            <span className="text-md font-medium">Thống kê</span>
+          </button>
+          <button
+            onClick={() => setActiveSidebarItem("settings")}
+            className={`flex items-center justify-between w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
+              activeSidebarItem === "settings" ? "bg-blue-600 text-white" : ""
+            }`}
+          >
+            <div className="flex items-center gap-6">
+              <Settings className="w-6 h-6" />
+              <span className="text-md font-medium">Cài đặt</span>
+            </div>
+            <ChevronDown className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setActiveSidebarItem("help")}
+            className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
+              activeSidebarItem === "help" ? "bg-blue-600 text-white" : ""
+            }`}
+          >
+            <HelpCircle className="w-6 h-6" />
+            <span className="text-md font-medium">Hỗ trợ</span>
+          </button>
+        </nav>
+      </div>
+      <div className="border-t border-gray-100 p-6">
+        <button className="flex items-center gap-4 w-full px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors rounded-lg cursor-pointer">
+          <LogOut className="w-5 h-5" />
+          <span className="text-sm font-medium">Đăng xuất</span>
+        </button>
+      </div>
+    </aside>
+  );
+};
+
 const AccountDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -132,106 +208,41 @@ const AccountDashboard = () => {
   return (
     <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
       {/* Sidebar */}
-      <aside className="bg-white w-64 flex flex-col border-r border-gray-200 shadow-sm">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">🔥</span>
-            </div>
-            <span className="text-lg font-semibold text-gray-800">Blood gang</span>
-          </div>
-          <nav className="py-6 px-3 space-y-4">
-            <button
-              onClick={() => setActiveSidebarItem("home")}
-              className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-                activeSidebarItem === "home" ? "bg-blue-600 text-white" : ""
-              }`}
-            >
-              <Home className="w-6 h-6" />
-              <span className="text-md font-medium">Trang chủ</span>
-            </button>
-            <button
-              onClick={() => setActiveSidebarItem("accounts")}
-              className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-                activeSidebarItem === "accounts" ? "bg-blue-600 text-white" : ""
-              }`}
-            >
-              <Users className="w-6 h-6" />
-              <span className="text-md font-medium">Tài khoản</span>
-            </button>
-            <button
-              onClick={() => setActiveSidebarItem("stats")}
-              className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-                activeSidebarItem === "stats" ? "bg-blue-600 text-white" : ""
-              }`}
-            >
-              <BarChart3 className="w-6 h-6" />
-              <span className="text-md font-medium">Thống kê</span>
-            </button>
-            <button
-              onClick={() => setActiveSidebarItem("settings")}
-              className={`flex items-center justify-between w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-                activeSidebarItem === "settings" ? "bg-blue-600 text-white" : ""
-              }`}
-            >
-              <div className="flex items-center gap-6">
-                <Settings className="w-6 h-6" />
-                <span className="text-md font-medium">Cài đặt</span>
-              </div>
-              <ChevronDown className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setActiveSidebarItem("help")}
-              className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-                activeSidebarItem === "help" ? "bg-blue-600 text-white" : ""
-              }`}
-            >
-              <HelpCircle className="w-6 h-6" />
-              <span className="text-md font-medium">Hỗ trợ</span>
-            </button>
-          </nav>
-        </div>
-        <div className="border-t border-gray-100 p-6">
-          <button className="flex items-center gap-4 w-full px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors rounded-lg cursor-pointer">
-            <LogOut className="w-5 h-5" />
-            <span className="text-sm font-medium">Đăng xuất</span>
-          </button>
-        </div>
-      </aside>
+      <AdminSidebar activeSidebarItem={activeSidebarItem} setActiveSidebarItem={setActiveSidebarItem} />
 
       {/* Main content */}
       <main className="flex-1 bg-[#EFEFEF]">
         {/* Top bar */}
         <header className="bg-[#EFEFEF] border-b border-gray-200 px-8 py-4">
-  <div className="flex items-center justify-between">
-    <div className="flex-1 max-w-lg relative">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-      <input
-        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        placeholder="Tìm kiếm"
-        type="search"
-      />
-    </div>
-    <div className="flex items-center gap-6">
-      <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
-        <Mail className="w-5 h-5" />
-      </button>
-      <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
-        <Bell className="w-5 h-5" />
-      </button>
-      <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
-        <User className="w-5 h-5" />
-      </button>
-      <div className="flex items-center gap-3">
-        <div className="text-right">
-          <div className="text-sm font-medium text-gray-700">Nguyen Van A</div>
-          <div className="text-xs text-gray-500">jane234@example.com</div>
-        </div>
-        <ChevronDown className="text-gray-400 w-4 h-4 hover:text-blue-600 transition-colors duration-200 cursor-pointer" />
-      </div>
-    </div>
-  </div>
-</header>
+          <div className="flex items-center justify-between">
+            <div className="flex-1 max-w-lg relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Tìm kiếm"
+                type="search"
+              />
+            </div>
+            <div className="flex items-center gap-6">
+              <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
+                <Mail className="w-5 h-5" />
+              </button>
+              <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
+                <Bell className="w-5 h-5" />
+              </button>
+              <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
+                <User className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-700">Nguyen Van A</div>
+                  <div className="text-xs text-gray-500">jane234@example.com</div>
+                </div>
+                <ChevronDown className="text-gray-400 w-4 h-4 hover:text-blue-600 transition-colors duration-200 cursor-pointer" />
+              </div>
+            </div>
+          </div>
+        </header>
 
         {/* Content */}
         <div className="p-8">
@@ -276,71 +287,71 @@ const AccountDashboard = () => {
 
           {/* Table */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-  <table className="w-full">
-    <thead className="bg-gray-50 border-b border-gray-200">
-      <tr>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          <div className="flex items-center justify-between">
-            Họ và tên
-            <ArrowUpDown className="w-3 h-3 text-gray-400" />
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center justify-between">
+                      Họ và tên
+                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                    </div>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center justify-between">
+                      Status
+                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                    </div>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center justify-between">
+                      E-Mail
+                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                    </div>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center justify-between">
+                      Ngày sinh
+                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                    </div>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center justify-between">
+                      Vai trò
+                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                    </div>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {currentAccounts.map((account, index) => (
+                  <tr key={account.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-100'}`}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{account.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            account.status === "active" ? "bg-green-500" : "bg-red-500"
+                          }`}
+                        ></div>
+                        <span className="text-sm text-gray-700 capitalize">{account.status}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.birthDate}</td>
+                    <td className="px-6 py-4 whitespace- nowrap text-sm text-gray-500">{account.role}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button className="bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-gray-300">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          <div className="flex items-center justify-between">
-            Status
-            <ArrowUpDown className="w-3 h-3 text-gray-400" />
-          </div>
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          <div className="flex items-center justify-between">
-            E-Mail
-            <ArrowUpDown className="w-3 h-3 text-gray-400" />
-          </div>
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          <div className="flex items-center justify-between">
-            Ngày sinh
-            <ArrowUpDown className="w-3 h-3 text-gray-400" />
-          </div>
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          <div className="flex items-center justify-between">
-            Vai trò
-            <ArrowUpDown className="w-3 h-3 text-gray-400" />
-          </div>
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-      </tr>
-    </thead>
-    <tbody className="bg-white divide-y divide-gray-200">
-      {currentAccounts.map((account, index) => (
-        <tr key={account.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-100'}`}>
-          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.id}</td>
-          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{account.name}</td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  account.status === "active" ? "bg-green-500" : "bg-red-500"
-                }`}
-              ></div>
-              <span className="text-sm text-gray-700 capitalize">{account.status}</span>
-            </div>
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.email}</td>
-          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.birthDate}</td>
-          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.role}</td>
-          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <button className="bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-gray-300">
-              <Edit className="w-4 h-4" />
-            </button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
 
           {/* Pagination */}
           <div className="mt-6 flex items-center justify-between">
