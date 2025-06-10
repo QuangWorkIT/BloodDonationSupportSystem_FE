@@ -1,11 +1,17 @@
-import React from 'react'
+import Events from "@/pages/DonationEvent/Events";
+import Footer from "@/components/layout/Footer";
+import BloodDonationNavbar from "@/components/layout/Navbar";
 
 function EventPage() {
   return (
-    <div>
-      <h1>Event page</h1>
-    </div>
-  )
+    <>
+      <BloodDonationNavbar />
+      <div className="my-[30px]">
+        <Events />
+      </div>
+      <Footer />
+    </>
+  );
 }
 
-export default EventPage
+export default EventPage;
