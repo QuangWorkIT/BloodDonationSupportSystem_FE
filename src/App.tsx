@@ -1,5 +1,10 @@
+import EventPage from "./pages/Events/EventPage.tsx";
 function App() {
-  return <></>;
+  return (
+    <>
+      <EventPage />
+    </>
+  );
 }
 
 export default App;
