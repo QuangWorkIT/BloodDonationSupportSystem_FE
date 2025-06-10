@@ -1,4 +1,3 @@
-
 import EventPage from "./pages/Events/EventPage.tsx";
 function App() {
   return (
