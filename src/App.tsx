@@ -1,7 +1,7 @@
 // import DateInput from "./components/layout/DateInput";
 // import { Input } from "./components/ui/input";
 
-import BloodCompatibilityPage from "./pages/BloodCompatibilityPage";
+import BloodCompatibilityPage from "./pages/BloodCompatibility/BloodCompatibilityPage";
 
 // import HomePage from "./pages/Home/HomePage";
 

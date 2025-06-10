@@ -1,6 +1,6 @@
-import BloodCompatibilityForm from "@/components/layout/BloodCompatibility";
 import Footer from "@/components/layout/Footer";
 import BloodDonationNavbar from "@/components/layout/Navbar";
+import BloodCompatibilityForm from "./BloodCompatibility";
 
 export default function BloodCompatibilityPage() {
   return (
