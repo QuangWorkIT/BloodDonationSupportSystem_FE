@@ -3,7 +3,7 @@ import { FaCalendarAlt, FaHeart, FaChevronLeft, FaChevronRight } from "react-ico
 import VolunteerForm from "./VolunteerForm";
 import { motion, AnimatePresence } from "framer-motion";
 
-const EventsComponent = () => {
+const Events = () => {
   const [activeTab, setActiveTab] = useState("donation-events");
   const [currentPage, setCurrentPage] = useState(1);
   const eventsPerPage = 3;
@@ -67,8 +67,8 @@ const EventsComponent = () => {
 
         {pages.map((page, index) =>
           page === "..." ? (
-            <motion.span 
-              key={index} 
+            <motion.span
+              key={index}
               className="px-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -117,8 +117,8 @@ const EventsComponent = () => {
     <div className="container mx-auto px-4 py-8">
       {/* Navigation Toggle with animation */}
       <div className="flex justify-center mb-8">
-        <motion.div 
-          className="flex bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden"
+        <motion.div
+          className="flex bg-white rounded-full shadow-sm border border-gray-200 overflow-hidden"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -132,16 +132,16 @@ const EventsComponent = () => {
             }`}
           >
             {activeTab === "donation-events" && (
-              <motion.div 
+              <motion.div
                 layoutId="activeTab"
-                className="absolute inset-0 bg-[#C14B53] z-0"
+                className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
                 initial={false}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
             )}
             <span className="relative z-10">Sự kiện hiến máu</span>
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -151,9 +151,9 @@ const EventsComponent = () => {
             }`}
           >
             {activeTab === "register-volunteer" && (
-              <motion.div 
+              <motion.div
                 layoutId="activeTab"
-                className="absolute inset-0 bg-[#C14B53] z-0"
+                className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
                 initial={false}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
@@ -174,27 +174,21 @@ const EventsComponent = () => {
             transition={{ duration: 0.3 }}
           >
             {/* Date Picker */}
-            <motion.div 
+            <motion.div
               className="bg-white rounded-md shadow-sm p-4 mb-8 border border-gray-200"
               whileHover={{ scale: 1.005 }}
             >
               <h2 className="text-lg font-medium mb-4">Bạn muốn đặt lịch vào thời gian nào?</h2>
               <div className="flex flex-col md:flex-row gap-4">
-                <motion.div 
-                  className="flex items-center border rounded-md p-2 flex-1"
-                  whileHover={{ scale: 1.01 }}
-                >
+                <motion.div className="flex items-center border rounded-md p-2 flex-1" whileHover={{ scale: 1.01 }}>
                   <FaCalendarAlt className="text-gray-400 mr-2" />
                   <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
                 </motion.div>
-                <motion.div 
-                  className="flex items-center border rounded-md p-2 flex-1"
-                  whileHover={{ scale: 1.01 }}
-                >
+                <motion.div className="flex items-center border rounded-md p-2 flex-1" whileHover={{ scale: 1.01 }}>
                   <FaCalendarAlt className="text-gray-400 mr-2" />
                   <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
                 </motion.div>
-                <motion.button 
+                <motion.button
                   className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -203,11 +197,11 @@ const EventsComponent = () => {
                 </motion.button>
               </div>
             </motion.div>
-            
+
             {/* Events List with shadow boxing */}
             <div className="space-y-6 mb-8">
               {currentEvents.map((event, index) => (
-                <motion.div 
+                <motion.div
                   key={event.id}
                   className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
                   initial={{ opacity: 0, y: 20 }}
@@ -217,7 +211,7 @@ const EventsComponent = () => {
                 >
                   <div className="flex flex-col md:flex-row p-6">
                     {/* Logo */}
-                    <motion.div 
+                    <motion.div
                       className="w-16 h-16 bg-[#C14B53] rounded-full flex items-center justify-center mr-6 mb-4 md:mb-0 shadow-sm"
                       whileHover={{ rotate: 10 }}
                     >
@@ -239,7 +233,7 @@ const EventsComponent = () => {
                       <div className="text-sm text-gray-600 mb-2">
                         Số người đã đăng ký: {event.registered} / {event.capacity}
                       </div>
-                      <motion.button 
+                      <motion.button
                         className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -253,7 +247,7 @@ const EventsComponent = () => {
             </div>
 
             {/* Pagination */}
-            <motion.div 
+            <motion.div
               className="flex justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -279,4 +273,4 @@ const EventsComponent = () => {
   );
 };
 
-export default EventsComponent;
+export default Events;

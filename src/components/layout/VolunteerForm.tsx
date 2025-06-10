@@ -2,6 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { X } from "lucide-react";
 
 interface FormData {
   fullName: string;
@@ -50,7 +51,6 @@ export default function VolunteerForm() {
     if (!formData.bloodType) newErrors.bloodType = "Đây là trường thông tin bắt buộc.";
     if (!formData.phone) newErrors.phone = "Đây là trường thông tin bắt buộc.";
 
-    // Validate date range (availableFrom must be before availableTo)
     if (formData.availableFrom && formData.availableTo) {
       const fromDate = new Date(formData.availableFrom);
       const toDate = new Date(formData.availableTo);
@@ -58,7 +58,6 @@ export default function VolunteerForm() {
         newErrors.availableTo = "Ngày kết thúc phải sau ngày bắt đầu";
       }
       
-      // Validate maximum 1 year difference
       const oneYearLater = new Date(fromDate);
       oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
       if (toDate > oneYearLater) {
@@ -76,193 +75,213 @@ export default function VolunteerForm() {
       setErrors(validationErrors);
     } else {
       setErrors({});
-      // Submit the form or perform further actions
       console.log("Form submitted successfully:", formData);
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto mt-6 border rounded-lg shadow-lg p-8 space-y-6 bg-white">
-      <h1 className="text-3xl font-bold text-center text-red-600 mb-6">ĐƠN ĐĂNG KÝ HIẾN MÁU TÌNH NGUYỆN</h1>
-      <form onSubmit={handleSubmit}>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-normal text-black">Đơn đăng ký hiến máu tình nguyện</h1>
+        <button className="text-gray-500 hover:text-gray-700 cursor-pointer">
+          <X size={20} />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Full Name */}
-        <div className="space-y-3">
-          <Label htmlFor="fullName" className="text-base">
-            Họ và tên
+        <div className="flex items-center gap-4">
+          <Label htmlFor="fullName" className="text-base w-1/4">
+            Tên người hiến
           </Label>
-          <Input
-            id="fullName"
-            placeholder="Nhập họ và tên"
-            className="py-2 text-base"
-            value={formData.fullName}
-            onChange={handleChange}
-          />
-          {errors.fullName && <p className="text-red-500">{errors.fullName}</p>}
+          <div className="flex-1">
+            <Input
+              id="fullName"
+              placeholder="Nhập họ và tên"
+              className="py-2 text-base bg-[#F4F5F8]"
+              value={formData.fullName}
+              onChange={handleChange}
+            />
+            {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
+          </div>
         </div>
 
         {/* Height and Weight */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <Label htmlFor="height" className="text-base">
-              Chiều cao (m)
-            </Label>
+        <div className="flex items-center gap-4">
+          <Label htmlFor="height" className="text-base w-1/4">
+            Chiều cao (m)
+          </Label>
+          <div className="flex-1">
             <Input
               id="height"
               type="number"
               step="0.01"
               placeholder="Nhập chiều cao"
-              className="py-2 text-base"
+              className="py-2 text-base bg-[#F4F5F8]"
               value={formData.height}
               onChange={handleChange}
             />
           </div>
-
-          <div className="space-y-3">
-            <Label htmlFor="weight" className="text-base">
-              Cân nặng (kg)<span className="text-red-500"> *</span>
-            </Label>
+          <Label htmlFor="weight" className="text-base w-1/4">
+            Cân nặng (kg)<span className="text-red-500"> *</span>
+          </Label>
+          <div className="flex-1">
             <Input
               id="weight"
               type="number"
               placeholder="Nhập cân nặng"
-              className="py-2 text-base"
+              className="py-2 text-base bg-[#F4F5F8]"
               value={formData.weight}
               onChange={handleChange}
             />
-            {errors.weight && <p className="text-red-500">{errors.weight}</p>}
+            {errors.weight && <p className="text-red-500 text-sm mt-1">{errors.weight}</p>}
           </div>
         </div>
 
         {/* Address */}
-        <div className="space-y-3">
-          <Label htmlFor="address" className="text-base">
+        <div className="flex items-center gap-4">
+          <Label htmlFor="address" className="text-base w-1/4">
             Địa chỉ
           </Label>
-          <Input
-            id="address"
-            placeholder="Nhập địa chỉ"
-            className="py-2 text-base"
-            value={formData.address}
-            onChange={handleChange}
-          />
+          <div className="flex-1">
+            <Input
+              id="address"
+              placeholder="Nhập địa chỉ"
+              className="py-2 text-base bg-[#F4F5F8]"
+              value={formData.address}
+              onChange={handleChange}
+            />
+          </div>
         </div>
 
         {/* Last Donation Date */}
-        <div className="space-y-3">
-          <Label htmlFor="lastDonation" className="text-base">
+        <div className="flex items-center gap-4">
+          <Label htmlFor="lastDonation" className="text-base w-1/4 flex-col items-start justify-start">
             Lần cuối hiến máu
+            <p className="text-red-500 text-sm">*Tối đa 1 năm</p>
           </Label>
-          <Input
-            id="lastDonation"
-            type="date"
-            className="py-2 text-base"
-            value={formData.lastDonation}
-            onChange={handleChange}
-          />
+          <div className="flex-1">
+            <Input
+              id="lastDonation"
+              type="date"
+              className="py-2 text-base"
+              value={formData.lastDonation}
+              onChange={handleChange}
+            />
+          </div>
         </div>
 
         {/* Available Dates */}
         <div className="space-y-3">
-          <Label className="text-base">
-            Ngày có thể hiến
-          </Label>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="availableFrom" className="text-sm">
-                Từ
-              </Label>
-              <Input
-                id="availableFrom"
-                type="date"
-                className="py-2 text-base"
-                value={formData.availableFrom}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="availableTo" className="text-sm">
-                Đến
-              </Label>
-              <Input
-                id="availableTo"
-                type="date"
-                className="py-2 text-base"
-                value={formData.availableTo}
-                onChange={handleChange}
-              />
+          <div className="flex items-center gap-4">
+            <Label className="text-base w-1/4">
+              Ngày có thể hiến
+            </Label>
+            <div className="flex-1 space-y-2">
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="availableFrom" className="text-sm">
+                    Từ
+                  </Label>
+                  <Input
+                    id="availableFrom"
+                    type="date"
+                    className="py-2 text-base"
+                    value={formData.availableFrom}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="availableTo" className="text-sm">
+                    Đến
+                  </Label>
+                  <Input
+                    id="availableTo"
+                    type="date"
+                    className="py-2 text-base"
+                    value={formData.availableTo}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
               {errors.availableTo && <p className="text-red-500 text-sm">{errors.availableTo}</p>}
+              
             </div>
           </div>
-          <p className="text-sm text-gray-500">*Tối đa 1 năm</p>
         </div>
 
         {/* Blood Type */}
-        <div className="space-y-3">
-          <Label htmlFor="bloodType" className="text-base">
+        <div className="flex items-center gap-4">
+          <Label htmlFor="bloodType" className="text-base w-1/4">
             Nhóm máu<span className="text-red-500"> *</span>
           </Label>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Input
-                id="bloodType"
-                placeholder="Chọn ABO"
-                list="bloodTypes"
-                className="py-2 text-base w-full"
-                value={formData.bloodType}
-                onChange={handleChange}
-              />
-              <datalist id="bloodTypes">
-                <option value="A" />
-                <option value="B" />
-                <option value="AB" />
-                <option value="O" />
-              </datalist>
-              {errors.bloodType && <p className="text-red-500">{errors.bloodType}</p>}
-            </div>
+          <div className="flex-1">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Input
+                  id="bloodType"
+                  placeholder="Chọn ABO"
+                  list="bloodTypes"
+                  className="py-2 text-base w-full bg-[#F4F5F8]"
+                  value={formData.bloodType}
+                  onChange={handleChange}
+                />
+                <datalist id="bloodTypes">
+                  <option value="A" />
+                  <option value="B" />
+                  <option value="AB" />
+                  <option value="O" />
+                </datalist>
+                {errors.bloodType && <p className="text-red-500 text-sm mt-1">{errors.bloodType}</p>}
+              </div>
 
-            <div>
-              <Input
-                id="rhFactor"
-                placeholder="Chọn Rh"
-                list="rhTypes"
-                className="py-2 text-base w-full"
-                value={formData.rhFactor}
-                onChange={handleChange}
-              />
-              <datalist id="rhTypes">
-                <option value="+" />
-                <option value="-" />
-              </datalist>
+              <div>
+                <Input
+                  id="rhFactor"
+                  placeholder="Chọn Rh"
+                  list="rhTypes"
+                  className="py-2 text-base w-full bg-[#F4F5F8]"
+                  value={formData.rhFactor}
+                  onChange={handleChange}
+                />
+                <datalist id="rhTypes">
+                  <option value="+" />
+                  <option value="-" />
+                </datalist>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Contact Info */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <Label htmlFor="phone" className="text-base">
-              Số điện thoại<span className="text-red-500"> *</span>
-            </Label>
+        <div className="flex items-center gap-4">
+          <Label htmlFor="phone" className="text-base w-1/4">
+            Số điện thoại<span className="text-red-500"> *</span>
+          </Label>
+          <div className="flex-1">
             <Input
               id="phone"
               type="tel"
               placeholder="Ví dụ: 02xxxxxxxxxx"
-              className="py-2 text-base"
+              className="py-2 text-base bg-[#F4F5F8]"
               value={formData.phone}
               onChange={handleChange}
             />
-            {errors.phone && <p className="text-red-500">{errors.phone}</p>}
+            {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
           </div>
+        </div>
 
-          <div className="space-y-3">
-            <Label htmlFor="email" className="text-base">
-              Email
-            </Label>
+        <div className="flex items-center gap-4">
+          <Label htmlFor="email" className="text-base w-1/4">
+            Email
+          </Label>
+          <div className="flex-1">
             <Input
               id="email"
               type="email"
               placeholder="Địa chỉ email"
-              className="py-2 text-base"
+              className="py-2 text-base bg-[#F4F5F8]"
               value={formData.email}
               onChange={handleChange}
             />
@@ -270,12 +289,19 @@ export default function VolunteerForm() {
         </div>
 
         {/* Buttons */}
-        <div className="flex justify-end gap-4 pt-6">
-          <Button type="button" variant="outline" className="px-6 py-2 text-base">
-            Hủy
-          </Button>
-          <Button type="submit" className="px-6 py-2 text-base bg-red-600 hover:bg-red-700">
+        <div className="flex gap-4 pt-6">
+          <Button 
+            type="submit" 
+            className="px-8 py-2 text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer"
+          >
             Gửi
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="px-8 py-2 text-base rounded-full bg-[#FBA3A5] hover:bg-[#E99294] text-white border-[#FBA3A5] cursor-pointer"
+          >
+            Hủy
           </Button>
         </div>
       </form>
