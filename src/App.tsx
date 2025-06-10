@@ -1,5 +1,5 @@
 
-import EventPage from "./pages/EventPage.tsx";
+import EventPage from "./pages/Events/EventPage.tsx";
 function App() {
   return (
     <>

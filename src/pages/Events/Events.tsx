@@ -3,6 +3,16 @@ import { FaCalendarAlt, FaHeart, FaChevronLeft, FaChevronRight } from "react-ico
 import VolunteerForm from "./VolunteerForm";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface Event {
+  id: number;
+  name: string;
+  address: string;
+  date: string;
+  time: string;
+  bloodTypes: string;
+  registered: number;
+  capacity: number;
+}
 const Events = () => {
   const [activeTab, setActiveTab] = useState("donation-events");
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,9 +91,9 @@ const Events = () => {
               key={index}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setCurrentPage(page)}
+              onClick={() => setCurrentPage(parseInt(page.toString()))}
               className={`w-10 h-10 rounded-md ${
-                currentPage === page
+                currentPage === parseInt(page.toString())
                   ? "bg-[#C14B53] text-white cursor-pointer"
                   : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
               }`}
@@ -95,7 +105,6 @@ const Events = () => {
             </motion.button>
           )
         )}
-
         <motion.button
           whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
           whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
@@ -176,18 +185,17 @@ const Events = () => {
             {/* Date Picker */}
             <motion.div
               className="bg-white rounded-md shadow-sm p-4 mb-8 border border-gray-200"
-              whileHover={{ scale: 1.005 }}
             >
               <h2 className="text-lg font-medium mb-4">Bạn muốn đặt lịch vào thời gian nào?</h2>
               <div className="flex flex-col md:flex-row gap-4">
-                <motion.div className="flex items-center border rounded-md p-2 flex-1" whileHover={{ scale: 1.01 }}>
+                <div className="flex items-center border rounded-md p-2 flex-1">
                   <FaCalendarAlt className="text-gray-400 mr-2" />
                   <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
-                </motion.div>
-                <motion.div className="flex items-center border rounded-md p-2 flex-1" whileHover={{ scale: 1.01 }}>
+                </div>
+                <div className="flex items-center border rounded-md p-2 flex-1">
                   <FaCalendarAlt className="text-gray-400 mr-2" />
                   <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
-                </motion.div>
+                </div>
                 <motion.button
                   className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
                   whileHover={{ scale: 1.05 }}
@@ -200,7 +208,7 @@ const Events = () => {
 
             {/* Events List with shadow boxing */}
             <div className="space-y-6 mb-8">
-              {currentEvents.map((event, index) => (
+              {currentEvents.map((event: Event, index) => (
                 <motion.div
                   key={event.id}
                   className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
