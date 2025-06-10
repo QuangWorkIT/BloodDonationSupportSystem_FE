@@ -15,7 +15,7 @@ const BloodCompatibilityForm: React.FC = ({ mode, setMode, abo, setAbo, rh, setR
           variant="ghost"
           onClick={() => setMode("full")}
           className={`px-4 py-4 rounded-lg min-w-[48%] hover:bg-red-700 hover:text-white cursor-pointer transition ease-in-out ${
-            mode === "full" ? "bg-red-700 text-white text-lg" : "bg-gray-200"
+            mode === "full" ? "bg-red-700 text-white text-[16px]" : "bg-gray-200"
           }`}
         >
           Toàn phần
@@ -24,7 +24,7 @@ const BloodCompatibilityForm: React.FC = ({ mode, setMode, abo, setAbo, rh, setR
           variant="ghost"
           onClick={() => setMode("component")}
           className={`px-4 py-2 rounded-lg min-w-[48%] hover:bg-red-700 hover:text-white cursor-pointer transition ease-in-out ${
-            mode === "component" ? "bg-red-700 text-white text-lg" : "bg-gray-200"
+            mode === "component" ? "bg-red-700 text-white text-[16px]" : "bg-gray-200"
           }`}
         >
           Thành phần
