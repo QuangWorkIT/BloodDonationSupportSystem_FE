@@ -1,16 +1,35 @@
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 
+const formSchema = z.object({
+  fullName: z.string().min(1, "Không được để trống"),
+  address: z.string().min(1, "Không được để trống"),
+  bloodVolume: z.string().min(1, "Vui lòng chọn lượng máu"),
+  donationDate: z.date({
+    required_error: "Vui lòng chọn ngày hiến máu",
+  }),
+  startTime: z.string().min(1, "Vui lòng chọn thời gian bắt đầu"),
+  endTime: z.string().min(1, "Vui lòng chọn thời gian kết thúc"),
+  staffName: z.string().min(1, "Không được để trống"),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
 const StandardReceiptForm = () => {
-  const form = useForm({
+  const [date, setDate] = useState<Date>();
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
       address: "",
@@ -22,9 +41,7 @@ const StandardReceiptForm = () => {
     },
   });
 
-  const [date, setDate] = useState<Date>();
-
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: FormData) => {
     console.log(data);
   };
 
@@ -47,20 +64,22 @@ const StandardReceiptForm = () => {
       <div className="h-[1px] bg-gray-200 mb-6"></div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Medical institude */}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-[40px]">
+          {/* Full Name */}
           <FormField
             control={form.control}
             name="fullName"
             render={({ field }) => (
-              <FormItem className="flex justify-between text-nowrap">
-                <FormLabel className="text-gray-500 font-normal gap-0.5">
+              <FormItem className="flex justify-between">
+                <FormLabel className="text-gray-500 font-normal text-nowrap">
                   Thông tin cơ sở <span className="text-red-600">*</span>
                 </FormLabel>
-                <FormControl>
-                  <Input className="w-[600px] h-[50px]" placeholder="Nhập tên cơ sở y tế" {...field} />
-                </FormControl>
-                <FormMessage />
+                <div className="flex flex-col items-start gap-2">
+                  <FormControl>
+                    <Input className="w-[600px] h-[50px]" placeholder="Nhập tên cơ sở y tế" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
@@ -70,87 +89,95 @@ const StandardReceiptForm = () => {
             control={form.control}
             name="address"
             render={({ field }) => (
-              <FormItem className="flex justify-between text-nowrap">
-                <FormLabel className="text-gray-500 font-normal gap-0.5">
+              <FormItem className="flex justify-between">
+                <FormLabel className="text-gray-500 font-normal text-nowrap">
                   Địa chỉ <span className="text-red-600">*</span>
                 </FormLabel>
-                <FormControl>
-                  <Input className="w-[600px] h-[50px]" placeholder="Nhập địa chỉ" {...field} />
-                </FormControl>
-                <FormMessage />
+                <div className="flex flex-col items-start gap-2">
+                  <FormControl>
+                    <Input className="w-[600px] h-[50px]" placeholder="Nhập địa chỉ" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
 
-          {/* Blood volume */}
+          {/* Blood Volume */}
           <FormField
             control={form.control}
             name="bloodVolume"
             render={({ field }) => (
-              <FormItem className="flex justify-between text-nowrap">
+              <FormItem className="flex justify-between">
                 <FormLabel className="text-gray-500 font-normal">Lượng máu cần</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl className="w-[600px] h-[50px]">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn lượng máu" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="250ml">250ml</SelectItem>
-                    <SelectItem value="350ml">350ml</SelectItem>
-                    <SelectItem value="450ml">450ml</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
+                <div className="flex flex-col items-start gap-2">
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl className="w-[600px] h-[50px]">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn lượng máu" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="250ml">250ml</SelectItem>
+                      <SelectItem value="350ml">350ml</SelectItem>
+                      <SelectItem value="450ml">450ml</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
 
-          {/* Donation date*/}
+          {/* Donation Date */}
           <FormField
             control={form.control}
             name="donationDate"
             render={({ field }) => (
-              <FormItem className="flex justify-between text-nowrap">
+              <FormItem className="flex justify-between">
                 <FormLabel className="text-gray-500 font-normal">Ngày hiến</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button variant={"outline"} className={cn("w-[600px] h-[50px] pl-3 text-left font-normal", !date && "text-muted-foreground")}>
-                        {date ? date.toLocaleDateString() : <span>dd/MM/yyyy</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={(d) => {
-                        setDate(d ? new Date(d) : undefined);
-                        field.onChange(d);
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
+                <div className="flex flex-col items-start gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button variant="outline" className={cn("w-[600px] h-[50px] pl-3 text-left font-normal", !date && "text-muted-foreground")}>
+                          {date ? date.toLocaleDateString() : <span>dd/MM/yyyy</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={(d) => {
+                          setDate(d ?? undefined);
+                          field.onChange(d);
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
 
-          {/* Donation time */}
-          <div className="flex gap-[71px] w-full">
+          {/* Time */}
+          <div className="flex gap-[71px]">
             <FormField
               control={form.control}
               name="startTime"
               render={({ field }) => (
                 <FormItem className="flex gap-[142px]">
                   <FormLabel className="text-gray-500 font-normal text-nowrap">Thời gian</FormLabel>
-                  <FormControl>
-                    <Input className="h-[50px]" type="time" {...field} />
-                  </FormControl>
-                  <FormMessage />
+                  <div className="flex flex-col items-start gap-2">
+                    <FormControl>
+                      <Input className="h-[50px]" type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </div>
                 </FormItem>
               )}
             />
@@ -161,26 +188,30 @@ const StandardReceiptForm = () => {
               render={({ field }) => (
                 <FormItem className="flex gap-[71px]">
                   <FormLabel className="text-gray-500 font-normal">đến</FormLabel>
-                  <FormControl>
-                    <Input className="h-[50px]" type="time" {...field} />
-                  </FormControl>
-                  <FormMessage />
+                  <div className="flex flex-col items-start gap-2">
+                    <FormControl>
+                      <Input className="h-[50px]" type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </div>
                 </FormItem>
               )}
             />
           </div>
 
-          {/* Staff name */}
+          {/* Staff */}
           <FormField
             control={form.control}
             name="staffName"
             render={({ field }) => (
               <FormItem className="flex justify-between">
                 <FormLabel className="text-gray-500 font-normal">Tên / ID nhân viên y tế</FormLabel>
-                <FormControl>
-                  <Input className="w-[600px] h-[50px]" placeholder="Tên hoặc ID của nhân viên y tế thực hiện yêu cầu" {...field} />
-                </FormControl>
-                <FormMessage />
+                <div className="flex flex-col items-start gap-2">
+                  <FormControl>
+                    <Input className="w-[600px] h-[50px]" placeholder="Tên hoặc ID của nhân viên y tế thực hiện yêu cầu" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </div>
               </FormItem>
             )}
           />
