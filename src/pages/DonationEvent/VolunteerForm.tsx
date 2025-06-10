@@ -57,7 +57,7 @@ export default function VolunteerForm() {
       if (fromDate > toDate) {
         newErrors.availableTo = "Ngày kết thúc phải sau ngày bắt đầu";
       }
-      
+
       const oneYearLater = new Date(fromDate);
       oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
       if (toDate > oneYearLater) {
@@ -91,7 +91,7 @@ export default function VolunteerForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Full Name */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 mb-[40px]">
           <Label htmlFor="fullName" className="text-base w-1/4">
             Tên người hiến
           </Label>
@@ -99,7 +99,7 @@ export default function VolunteerForm() {
             <Input
               id="fullName"
               placeholder="Nhập họ và tên"
-              className="py-2 text-base bg-[#F4F5F8]"
+              className="py-2 text-base bg-[#F4F5F8] h-[40px]"
               value={formData.fullName}
               onChange={handleChange}
             />
@@ -108,7 +108,7 @@ export default function VolunteerForm() {
         </div>
 
         {/* Height and Weight */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 mb-[40px]">
           <Label htmlFor="height" className="text-base w-1/4">
             Chiều cao (m)
           </Label>
@@ -140,7 +140,7 @@ export default function VolunteerForm() {
         </div>
 
         {/* Address */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 mb-[40px]">
           <Label htmlFor="address" className="text-base w-1/4">
             Địa chỉ
           </Label>
@@ -148,7 +148,7 @@ export default function VolunteerForm() {
             <Input
               id="address"
               placeholder="Nhập địa chỉ"
-              className="py-2 text-base bg-[#F4F5F8]"
+              className="py-2 text-base bg-[#F4F5F8] h-[40px]"
               value={formData.address}
               onChange={handleChange}
             />
@@ -156,16 +156,15 @@ export default function VolunteerForm() {
         </div>
 
         {/* Last Donation Date */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 mb-[40px]">
           <Label htmlFor="lastDonation" className="text-base w-1/4 flex-col items-start justify-start">
             Lần cuối hiến máu
-            <p className="text-red-500 text-sm">*Tối đa 1 năm</p>
           </Label>
           <div className="flex-1">
             <Input
               id="lastDonation"
               type="date"
-              className="py-2 text-base"
+              className="py-2 text-base h-[40px]"
               value={formData.lastDonation}
               onChange={handleChange}
             />
@@ -173,10 +172,11 @@ export default function VolunteerForm() {
         </div>
 
         {/* Available Dates */}
-        <div className="space-y-3">
+        <div className="space-y-3 mb-[40px]">
           <div className="flex items-center gap-4">
-            <Label className="text-base w-1/4">
+            <Label className="text-base w-1/4  flex-col items-start justify-start">
               Ngày có thể hiến
+              <p className="text-red-500 text-sm">*Tối đa 1 năm</p>
             </Label>
             <div className="flex-1 space-y-2">
               <div className="flex gap-4">
@@ -187,7 +187,7 @@ export default function VolunteerForm() {
                   <Input
                     id="availableFrom"
                     type="date"
-                    className="py-2 text-base"
+                    className="py-2 text-base h-[40px]"
                     value={formData.availableFrom}
                     onChange={handleChange}
                   />
@@ -199,20 +199,20 @@ export default function VolunteerForm() {
                   <Input
                     id="availableTo"
                     type="date"
-                    className="py-2 text-base"
+                    className="py-2 text-base h-[40px]"
                     value={formData.availableTo}
                     onChange={handleChange}
                   />
                 </div>
               </div>
               {errors.availableTo && <p className="text-red-500 text-sm">{errors.availableTo}</p>}
-              
+
             </div>
           </div>
         </div>
 
         {/* Blood Type */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 mb-[40px]">
           <Label htmlFor="bloodType" className="text-base w-1/4">
             Nhóm máu<span className="text-red-500"> *</span>
           </Label>
@@ -255,7 +255,7 @@ export default function VolunteerForm() {
         </div>
 
         {/* Contact Info */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 mb-[40px]">
           <Label htmlFor="phone" className="text-base w-1/4">
             Số điện thoại<span className="text-red-500"> *</span>
           </Label>
@@ -264,7 +264,7 @@ export default function VolunteerForm() {
               id="phone"
               type="tel"
               placeholder="Ví dụ: 02xxxxxxxxxx"
-              className="py-2 text-base bg-[#F4F5F8]"
+              className="py-2 text-base bg-[#F4F5F8] h-[40px]"
               value={formData.phone}
               onChange={handleChange}
             />
@@ -281,7 +281,7 @@ export default function VolunteerForm() {
               id="email"
               type="email"
               placeholder="Địa chỉ email"
-              className="py-2 text-base bg-[#F4F5F8]"
+              className="py-2 text-base bg-[#F4F5F8] h-[40px]"
               value={formData.email}
               onChange={handleChange}
             />
@@ -290,15 +290,15 @@ export default function VolunteerForm() {
 
         {/* Buttons */}
         <div className="flex gap-4 pt-6">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="px-8 py-2 text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer"
           >
             Gửi
           </Button>
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             className="px-8 py-2 text-base rounded-full bg-[#FBA3A5] hover:bg-[#E99294] text-white border-[#FBA3A5] cursor-pointer"
           >
             Hủy
