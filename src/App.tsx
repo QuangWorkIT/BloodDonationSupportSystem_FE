@@ -1,8 +1,9 @@
-import Events from "./components/layout/Events.tsx";
+
+import EventPage from "./pages/EventPage.tsx";
 function App() {
   return (
     <>
-      <Events />
+      <EventPage />
     </>
   );
 }
