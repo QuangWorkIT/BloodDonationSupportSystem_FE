@@ -17,6 +17,7 @@ import Forbidden from '@/pages/Error/Forbidden';
 import ProtectedRoute from './ProtectedRoute';
 import Compatibility from '@/pages/BloodCompatibility/BloodCompatibilityPage'
 
+
 // define routes
 const routes: RouteObject[] = [
     { path: '/', element: <HomePage /> },
