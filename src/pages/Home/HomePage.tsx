@@ -110,18 +110,18 @@ export default function HomePage() {
         </section>
 
         {/* Introduction Section */}
-        <section className="text-center px-6 max-w-4xl mx-auto">
+        <section className="text-center px-6 max-w-4xl mx-auto ">
           <div className="flex gap-7.5 justify-between">
             <div className="flex gap-4 items-center max-w-[45%]">
               <img src="src/assets/images/Vector1.png" alt="" className="w-[64px] h-[80px]" />
               <div className="flex flex-col gap-3 text-left">
                 <h2 className="text-blue-600 font-semibold text-2xl">Buổi hiến máu đầu tiên</h2>
                 <p>Những gì bạn cần biết cho lần đầu tiên hiến máu</p>
-                <span className="relative inline-block group">
-                  <a href="" className="text-xl text-red-700 font-semibold">
+                <span className="relative inline-block group w-max">
+                  <a href="" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </a>
-                  <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[35%] group-hover:w-[60%] transition-all duration-300 ease-in-out"></span>
+                  <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
                 </span>
               </div>
             </div>
@@ -131,11 +131,11 @@ export default function HomePage() {
               <div className="flex flex-col gap-3 text-left">
                 <h2 className="text-blue-600 font-semibold text-2xl">Quy trình hiến máu</h2>
                 <p>Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả</p>
-                <span className="relative inline-block group">
-                  <a href="" className="text-xl text-red-700 font-semibold">
+                <span className="relative inline-block group w-max">
+                  <a href="" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </a>
-                  <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[35%] group-hover:w-[60%] transition-all duration-300 ease-in-out"></span>
+                  <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
                 </span>
               </div>
             </div>
@@ -144,7 +144,7 @@ export default function HomePage() {
             Một giọt <span className="text-red-700">máu</span> ngàn yêu thương
           </h2>
           <p className="text-gray-600 text-lg">
-            Cơ sở Hiến máu Nhân đạo – nơi kết nối những tấm lòng nhân ái vì cộng đồng. Chúng tôi là đơn vị y tế chuyên tiếp nhận, quản lý và điều phối nguồn máu
+            Cơ sở Hiến máu Nhân đạo - nơi kết nối những tấm lòng nhân ái vì cộng đồng. Chúng tôi là đơn vị y tế chuyên tiếp nhận, quản lý và điều phối nguồn máu
             từ người hiến tới những bệnh nhân cần truyền máu kịp thời. Với đội ngũ y bác sĩ tận tâm, hệ thống lưu trữ máu hiện đại cùng nền tảng công nghệ hỗ
             trợ hiệu quả, chúng tôi cam kết mang lại quy trình hiến máu an toàn, nhanh chóng và minh bạch.
           </p>
