@@ -17,6 +17,7 @@ import AdminHome from '@/pages/Admin/AdminHome';
 import Forbidden from '@/pages/Error/Forbidden';
 import ProtectedRoute from './ProtectedRoute';
 
+
 // define routes
 const routes: RouteObject[] = [
     {
