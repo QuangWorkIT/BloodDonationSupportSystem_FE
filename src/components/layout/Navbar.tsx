@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FaSearch, FaTimes, FaUser } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 
 type NavItem = {
   id: string;
@@ -16,8 +17,9 @@ const BloodDonationNavbar = () => {
     { id: "su-kien", label: "Sự kiện hiến máu", href: "/events" },
     { id: "trang-chu", label: "Trang chủ", href: "/" },
     { id: "ve-chung-toi", label: "Về chúng tôi", href: "/about" },
-    { id: "chia-se", label: "Chia sẻ", href: "/share" },
+    { id: "chia-se", label: "Chia sẻ", href: "/blogs" },
   ];
+  
 
   return (
     <nav className="bg-white shadow-sm">
@@ -34,23 +36,20 @@ const BloodDonationNavbar = () => {
             {!showSearch && (
               <>
                 {navItems.map((item) => (
-                  <a
-                  key={item.id}
-                  href={item.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActiveItem(activeItem === item.id ? null : item.id);
-                  }}
-                  className={`text-base transition-all duration-500 ${
-                    item.id === "su-kien"
-                      ? "bg-[#C14B53] text-white px-4 py-2 rounded-md font-medium shadow-sm scale-100 hover:scale-105"
-                      : activeItem === item.id
-                      ? "text-[#C14B53] border-b-2 border-[#C14B53] pb-1 font-medium scale-100 hover:scale-105"
-                      : "text-[#C14B53] pb-1 font-medium hover:border-b-2 hover:border-[#C14B53] hover:opacity-80 scale-100 hover:scale-105"
-                  }`}
-                >
-                  {item.label}
-                </a>
+                  <Link
+                    key={item.id}
+                    to={item.href}
+                    onClick={() => setActiveItem(item.id)}
+                    className={`text-base transition-all duration-500 ${
+                      item.id === "su-kien"
+                        ? "bg-[#C14B53] text-white px-4 py-2 rounded-md font-medium shadow-sm scale-100 hover:scale-105"
+                        : activeItem === item.id
+                        ? "text-[#C14B53] border-b-2 border-[#C14B53] pb-1 font-medium scale-100 hover:scale-105"
+                        : "text-[#C14B53] pb-1 font-medium hover:border-b-2 hover:border-[#C14B53] hover:opacity-80 scale-100 hover:scale-105"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
                 ))}
               </>
             )}
