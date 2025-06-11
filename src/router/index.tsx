@@ -16,6 +16,7 @@ import AdminHome from '@/pages/Admin/AdminHome';
 import Forbidden from '@/pages/Error/Forbidden';
 import ProtectedRoute from './ProtectedRoute';
 import Compatibility from '@/pages/BloodCompatibility/BloodCompatibilityPage'
+import AccountDashboard from '@/pages/Admin/AccountDashboard';
 
 
 // define routes
@@ -39,6 +40,12 @@ const routes: RouteObject[] = [
     {
         path: '/admin', element: (
             <ProtectedRoute element={<AdminHome />} allowRole={["admin"]} />
+        )
+    },
+
+    {
+        path: '/admin/accounts', element: (
+            <ProtectedRoute element={<AccountDashboard />} allowRole={["admin"]} />
         )
     },
 

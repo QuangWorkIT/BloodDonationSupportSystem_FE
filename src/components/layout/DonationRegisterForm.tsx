@@ -216,7 +216,7 @@ function DonationRegisterForm() {
                                                 mode="single"
                                                 selected={field.value}
                                                 onSelect={field.onChange}
-                                                disabled={(date) => {
+                                                disabled={(date: Date) => {
                                                     return date >= new Date() || date < new Date("2000-01-01")
                                                 }}
                                             ></Calendar>
@@ -253,7 +253,7 @@ function DonationRegisterForm() {
                                                 mode="single"
                                                 selected={field.value}
                                                 onSelect={field.onChange}
-                                                disabled={(date) => {
+                                                disabled={(date: Date) => {
                                                     return date >= new Date() || date < new Date("2000-01-01")
                                                 }}
                                             ></Calendar>
