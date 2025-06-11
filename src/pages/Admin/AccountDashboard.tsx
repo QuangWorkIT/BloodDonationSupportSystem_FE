@@ -207,9 +207,6 @@ const AccountDashboard = () => {
 
   return (
     <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
-      {/* Sidebar */}
-      <AdminSidebar activeSidebarItem={activeSidebarItem} setActiveSidebarItem={setActiveSidebarItem} />
-
       {/* Main content */}
       <main className="flex-1 bg-[#EFEFEF]">
         {/* Top bar */}
