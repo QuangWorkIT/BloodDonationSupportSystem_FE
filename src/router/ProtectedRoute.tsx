@@ -1,18 +1,19 @@
-import { useAuth } from "@/authen/AuthContext"
+import { useAuth } from "@/hooks/authen/AuthContext"
 import type { JSX } from "react"
 import { Navigate } from "react-router-dom"
 
 interface ProtectedRouteProps {
     element: JSX.Element
-    allowRole: string[]
+    allowRole?: string[]
 }
 
 function ProtectedRoute({element, allowRole}: ProtectedRouteProps) {
-    const {role} = useAuth()
+    // const {user} = useAuth()
+    const user = {id:"1", role: "admin"}
 
-    if(role === null) return <Navigate to={'/login'} replace />
+    if(user === null) return <Navigate to={'/login'} replace />
 
-    if(!allowRole.includes(role)) return <Navigate to={'/unauthorized'} replace />
+    if(!allowRole?.includes(user.role)) return <Navigate to={'/unauthorized'} replace />
     return element
 }
 

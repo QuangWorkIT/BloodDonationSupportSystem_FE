@@ -9,21 +9,19 @@ import HomePage from '@/pages/Home/HomePage';
 import BloodInfoPage from '@/pages/BloodInfo/BloodInfoPage';
 import BlogPage from '@/pages/Blog/BlogPage';
 import EventPage from '@/pages/DonationEvent/EventPage';
-import VolunteerPage from '@/pages/DonationEvent/VolunteerPage';
 import NotFoundPage from '@/pages/Error/NotFoundPage';
 import LoginPage from '@/pages/Authentication/LoginPage';
 import RegisterPage from '@/pages/Authentication/RegisterPage';
 import AdminHome from '@/pages/Admin/AdminHome';
 import Forbidden from '@/pages/Error/Forbidden';
 import ProtectedRoute from './ProtectedRoute';
+import Compatibility from '@/pages/BloodCompatibility/BloodCompatibilityPage'
+import AccountDashboard from '@/pages/Admin/AccountDashboard';
 
 
 // define routes
 const routes: RouteObject[] = [
-    {
-        path: '/',
-        element: <HomePage />
-    },
+    { path: '/', element: <HomePage /> },
 
     { path: '/home', element: <Navigate to={'/'} replace /> },
 
@@ -37,11 +35,19 @@ const routes: RouteObject[] = [
 
     { path: '/events', element: <EventPage /> },
 
-    { path: '/volunteer', element: <VolunteerPage /> },
+    { path: '/compatibility', element: <Compatibility /> },
+    
+    {
+        path: '/admin', element: (
+            <ProtectedRoute element={<AdminHome />} allowRole={["admin"]} />
+        )
+    },
 
-    { path: '/admin', element: (
-        <ProtectedRoute element={<AdminHome />} allowRole={["admin"]} />
-    )},
+    {
+        path: '/admin/accounts', element: (
+            <ProtectedRoute element={<AccountDashboard />} allowRole={["admin"]} />
+        )
+    },
 
     { path: '/unauthorized', element: <Forbidden /> },
 
