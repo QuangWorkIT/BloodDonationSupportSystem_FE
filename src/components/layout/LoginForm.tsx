@@ -3,12 +3,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import * as z from "zod";
+import { Link, useNavigate } from "react-router-dom";
+import {authApi} from '@/lib/instance'
+import { useAuth } from "@/hooks/authen/AuthContext";
 
 const formSchema = z.object({
-  phone: z.string().min(10, "Invalid phone number"),
-  password: z.string().min(8, "Password must have at least 8 characters"),
+  phone: z.string().min(10, "Số điện thoại không hợp lệ"),
+  password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
 });
 
 type CredentialResponse = {
@@ -26,6 +29,9 @@ declare global {
 const clientID = "359043283189-gvumkk8gmenj0j2skbcr9jl6h28gk2hb.apps.googleusercontent.com";
 
 export default function LoginForm() {
+  const {setToken} = useAuth()
+  const [error,setError] = useState<string | null>(null)
+  const navigate = useNavigate()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,9 +40,28 @@ export default function LoginForm() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log("Form values:", values);
-  };
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  try {
+    const res = await authApi.post('/api/Auth/login', {
+      phone: values.phone,
+      password: values.password,
+    });
+
+    const data = res.data;
+
+    if (!data?.isSuccess || !data?.token) {
+      setError("Login failed!");
+      console.warn("Login unsuccessful:", data);
+      return;
+    }
+
+    setToken(data.token);
+    navigate('/', { replace: true });
+  } catch (error) {
+    console.log("Login error:", error);
+    setError("Login failed! Please try again.");
+  }
+};
 
   useEffect(() => {
     const handleCredentialResponse = (response: CredentialResponse) => {
@@ -89,12 +114,13 @@ export default function LoginForm() {
           <div id="googleSignInDiv" className="flex justify-center" />
           <div className="text-center text-sm">
             Chưa có tài khoản?{" "}
-            <a href="#" className="text-blue-600">
+            <Link to = "/register" className="text-blue-600">
               Đăng kí
-            </a>
+            </Link>
           </div>
         </form>
       </Form>
+      {error && <span className="text-red-500 text-[20px]">{error}</span>}
     </div>
   );
 }

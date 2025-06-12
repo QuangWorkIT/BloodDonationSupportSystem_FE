@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { FaSearch, FaTimes, FaUser } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/authen/AuthContext";
 
 type NavItem = {
   id: string;
@@ -12,16 +13,22 @@ type NavItem = {
 const BloodDonationNavbar = () => {
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
-
+  const { accessToken, setToken } = useAuth()
+  const navigate = useNavigate()
   const navItems: NavItem[] = [
     { id: "su-kien", label: "Sự kiện hiến máu", href: "/events" },
     { id: "trang-chu", label: "Trang chủ", href: "/" },
 
-    { id: "ve-chung-toi", label: "Về chúng tôi", href: "/about" },
+    { id: "thong-tin-mau", label: "Thông tin máu", href: "/bloodinfo" },
     { id: "chia-se", label: "Chia sẻ", href: "/blogs" },
 
   ];
-  
+
+  const handleLogout = () => {
+    setToken(null)
+    console.log("Logout success")
+    navigate('/', {replace: true})
+  }
 
   return (
     <nav className="bg-white shadow-sm">
@@ -42,13 +49,12 @@ const BloodDonationNavbar = () => {
                     key={item.id}
                     to={item.href}
                     onClick={() => setActiveItem(item.id)}
-                    className={`text-base transition-all duration-500 ${
-                      item.id === "su-kien"
-                        ? "bg-[#C14B53] text-white px-4 py-2 rounded-md font-medium shadow-sm scale-100 hover:scale-105"
-                        : activeItem === item.id
+                    className={`text-base transition-all duration-500 ${item.id === "su-kien"
+                      ? "bg-[#C14B53] text-white px-4 py-2 rounded-md font-medium shadow-sm scale-100 hover:scale-105"
+                      : activeItem === item.id
                         ? "text-[#C14B53] border-b-2 border-[#C14B53] pb-1 font-medium scale-100 hover:scale-105"
                         : "text-[#C14B53] pb-1 font-medium hover:border-b-2 hover:border-[#C14B53] hover:opacity-80 scale-100 hover:scale-105"
-                    }`}
+                      }`}
                   >
                     {item.label}
                   </Link>
@@ -96,13 +102,28 @@ const BloodDonationNavbar = () => {
               </AnimatePresence>
             </div>
             {/* Login button */}
-            <div className="flex flex-col items-center justify-center ml-6">
-              <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center mb-1 hover:bg-[#8B0B1A] transition duration-200 cursor-pointer">
-                <FaUser size={18} color="#fff" />
-              </div>
-              <div className="text-[#C14B53] text-sm font-medium hover: transition duration-200 cursor-pointer">
-                Đăng nhập
-              </div>
+            <div className="">
+              {
+                accessToken ? (
+                  <button className="flex flex-col items-center justify-center ml-6" onClick={handleLogout}>
+                    <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center mb-1 hover:bg-[#8B0B1A] transition duration-200 cursor-pointer">
+                      <FaUser size={18} color="#fff" />
+                    </div>
+                    <div className="text-[#C14B53] text-sm font-medium hover: transition duration-200 cursor-pointer">
+                      Đăng xuất
+                    </div>
+                  </button>
+                ) : (
+                  <Link to={'/login'} className="flex flex-col items-center justify-center ml-6">
+                    <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center mb-1 hover:bg-[#8B0B1A] transition duration-200 cursor-pointer">
+                      <FaUser size={18} color="#fff" />
+                    </div>
+                    <div className="text-[#C14B53] text-sm font-medium hover: transition duration-200 cursor-pointer">
+                      Đăng nhập
+                    </div>
+                  </Link>
+                )
+              }
             </div>
           </div>
         </div>
