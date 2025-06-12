@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   ArrowUpDown,
   Edit,
@@ -14,6 +14,8 @@ import {
   Check,
   X,
   Plus,
+  ArrowDown,
+  ArrowUp,
 } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import DatePicker from "@/components/ui/datepicker";
@@ -114,6 +116,14 @@ const AccountDashboard = () => {
     },
   ]);
 
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "",
+    role: "",
+  });
+
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Account>>({});
   const [showChangeModal, setShowChangeModal] = useState(false);
@@ -128,10 +138,61 @@ const AccountDashboard = () => {
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const totalPages = Math.ceil(accounts.length / rowsPerPage);
+  // Filter and search logic
+  const [sortConfig, setSortConfig] = useState<{
+    key: "name" | "birthDate" | "";
+    direction: "ascending" | "descending";
+  }>({ key: "", direction: "ascending" });
+
+  const filteredAccounts = useMemo(() => {
+    let result = [...accounts];
+
+    // Apply search filter
+    if (searchTerm) {
+      result = result.filter(
+        (account) =>
+          account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          account.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (filters.status) {
+      result = result.filter((account) => account.status === filters.status);
+    }
+
+    // Apply role filter
+    if (filters.role) {
+      result = result.filter((account) => account.role === filters.role);
+    }
+
+    // Apply sorting
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "ascending" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "ascending" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return result;
+  }, [accounts, searchTerm, filters, sortConfig]);
+
+  const requestSort = (key: "name" | "birthDate") => {
+    let direction: "ascending" | "descending" = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    }
+    setSortConfig({ key, direction });
+  };
+  const totalPages = Math.ceil(filteredAccounts.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const currentAccounts = accounts.slice(startIndex, endIndex);
+  const currentAccounts = filteredAccounts.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -159,7 +220,6 @@ const AccountDashboard = () => {
   };
 
   const handleSaveEdit = (account: Account) => {
-    // Show confirmation for any changes
     setAccountToSave({
       ...account,
       ...editFormData,
@@ -223,7 +283,6 @@ const AccountDashboard = () => {
       [name]: value,
     }));
 
-    // Clear validation error when user types
     if (validationErrors[name]) {
       setValidationErrors((prev) => {
         const newErrors = { ...prev };
@@ -266,6 +325,25 @@ const AccountDashboard = () => {
     setValidationErrors({});
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when search changes
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      status: "",
+      role: "",
+    });
+    setCurrentPage(1);
+  };
+
   return (
     <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
       <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
@@ -279,8 +357,10 @@ const AccountDashboard = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Tìm kiếm"
+                placeholder="Tìm kiếm theo tên hoặc email"
                 type="search"
+                value={searchTerm}
+                onChange={handleSearchChange}
               />
             </div>
             <div className="flex items-center gap-6">
@@ -329,9 +409,13 @@ const AccountDashboard = () => {
                 <option value={20}>20</option>
                 <option value={30}>30</option>
               </select>
+              <span>trong tổng số {filteredAccounts.length} tài khoản</span>
             </div>
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+              >
                 <Filter className="w-3 h-3" />
                 Lọc
               </button>
@@ -349,6 +433,49 @@ const AccountDashboard = () => {
             </div>
           </div>
 
+          {/* Filter dropdown */}
+          {showFilters && (
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                  <select
+                    name="status"
+                    value={filters.status}
+                    onChange={handleFilterChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
+                    <option value="">Tất cả</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
+                  <select
+                    name="role"
+                    value={filters.role}
+                    onChange={handleFilterChange}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
+                    <option value="">Tất cả</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Staff">Staff</option>
+                    <option value="User">User</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={resetFilters}
+                    className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50"
+                  >
+                    Xóa bộ lọc
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Table */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <table className="w-full">
@@ -357,10 +484,22 @@ const AccountDashboard = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                     #
                   </th>
+                  {/* Name header */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    <div className="flex items-center justify-between">
+                    <div
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => requestSort("name")}
+                    >
                       Họ và tên
-                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                      {sortConfig.key === "name" ? (
+                        sortConfig.direction === "ascending" ? (
+                          <ArrowUp className="w-3 h-3 text-gray-400" />
+                        ) : (
+                          <ArrowDown className="w-3 h-3 text-gray-400" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                      )}
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
@@ -375,10 +514,22 @@ const AccountDashboard = () => {
                       <ArrowUpDown className="w-3 h-3 text-gray-400" />
                     </div>
                   </th>
+                  {/* Birth Date header */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    <div className="flex items-center justify-between">
+                    <div
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => requestSort("birthDate")}
+                    >
                       Ngày sinh
-                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                      {sortConfig.key === "birthDate" ? (
+                        sortConfig.direction === "ascending" ? (
+                          <ArrowUp className="w-3 h-3 text-gray-400" />
+                        ) : (
+                          <ArrowDown className="w-3 h-3 text-gray-400" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                      )}
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
@@ -393,126 +544,134 @@ const AccountDashboard = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {currentAccounts.map((account, index) => (
-                  <tr key={account.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{account.id}</td>
+                {currentAccounts.length > 0 ? (
+                  currentAccounts.map((account, index) => (
+                    <tr key={account.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{account.id}</td>
 
-                    {/* Name */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r">
-                      {editingId === account.id ? (
-                        <input
-                          type="text"
-                          name="name"
-                          value={editFormData.name || ""}
-                          onChange={handleEditFormChange}
-                          className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                        />
-                      ) : (
-                        account.name
-                      )}
-                    </td>
+                      {/* Name */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r">
+                        {editingId === account.id ? (
+                          <input
+                            type="text"
+                            name="name"
+                            value={editFormData.name || ""}
+                            onChange={handleEditFormChange}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                          />
+                        ) : (
+                          account.name
+                        )}
+                      </td>
 
-                    {/* Status */}
-                    <td className="px-6 py-4 whitespace-nowrap border-r">
-                      {editingId === account.id ? (
-                        <select
-                          name="status"
-                          value={editFormData.status || ""}
-                          onChange={handleEditFormChange}
-                          className="border border-gray-300 rounded px-2 py-1 text-sm"
-                        >
-                          <option value="active">Active</option>
-                          <option value="inactive">Inactive</option>
-                        </select>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-2 h-2 rounded-full ${
-                              account.status === "active" ? "bg-green-500" : "bg-red-500"
-                            }`}
-                          ></div>
-                          <span className="text-sm text-gray-700 capitalize">{account.status}</span>
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Email */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                      {editingId === account.id ? (
-                        <input
-                          type="email"
-                          name="email"
-                          value={editFormData.email || ""}
-                          onChange={handleEditFormChange}
-                          className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                        />
-                      ) : (
-                        account.email
-                      )}
-                    </td>
-
-                    {/* Birth Date */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                      {editingId === account.id ? (
-                        <DatePicker
-                          value={editFormData.birthDate || ""}
-                          onChange={(date) => handleEditFormChange({ target: { name: "birthDate", value: date } })}
-                          className={undefined}
-                          hasError={undefined}
-                        />
-                      ) : (
-                        account.birthDate
-                      )}
-                    </td>
-
-                    {/* Role */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                      {editingId === account.id ? (
-                        <select
-                          name="role"
-                          value={editFormData.role || ""}
-                          onChange={handleEditFormChange}
-                          className="border border-gray-300 rounded px-2 py-1 text-sm"
-                        >
-                          <option value="Admin">Admin</option>
-                          <option value="Staff">Staff</option>
-                          <option value="User">User</option>
-                        </select>
-                      ) : (
-                        account.role
-                      )}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
-                      {editingId === account.id ? (
-                        <div className="flex gap-2 justify-center">
-                          <button
-                            onClick={() => handleSaveEdit(account)}
-                            className="bg-green-100 hover:bg-green-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-green-300 text-green-700"
+                      {/* Status */}
+                      <td className="px-6 py-4 whitespace-nowrap border-r">
+                        {editingId === account.id ? (
+                          <select
+                            name="status"
+                            value={editFormData.status || ""}
+                            onChange={handleEditFormChange}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm"
                           >
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={handleCancelEdit}
-                            className="bg-red-100 hover:bg-red-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-red-300 text-red-700"
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                          </select>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-2 h-2 rounded-full ${
+                                account.status === "active" ? "bg-green-500" : "bg-red-500"
+                              }`}
+                            ></div>
+                            <span className="text-sm text-gray-700 capitalize">{account.status}</span>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Email */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                        {editingId === account.id ? (
+                          <input
+                            type="email"
+                            name="email"
+                            value={editFormData.email || ""}
+                            onChange={handleEditFormChange}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                          />
+                        ) : (
+                          account.email
+                        )}
+                      </td>
+
+                      {/* Birth Date */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                        {editingId === account.id ? (
+                          <DatePicker
+                            value={editFormData.birthDate || ""}
+                            onChange={(date) => handleEditFormChange({ target: { name: "birthDate", value: date } })}
+                            className={undefined}
+                            hasError={undefined}
+                          />
+                        ) : (
+                          account.birthDate
+                        )}
+                      </td>
+
+                      {/* Role */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                        {editingId === account.id ? (
+                          <select
+                            name="role"
+                            value={editFormData.role || ""}
+                            onChange={handleEditFormChange}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm"
                           >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex justify-center">
-                          <button
-                            onClick={() => handleEditClick(account)}
-                            className="bg-blue-100 hover:bg-blue-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-blue-300 text-blue-700"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                            <option value="Admin">Admin</option>
+                            <option value="Staff">Staff</option>
+                            <option value="User">User</option>
+                          </select>
+                        ) : (
+                          account.role
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
+                        {editingId === account.id ? (
+                          <div className="flex gap-2 justify-center">
+                            <button
+                              onClick={() => handleSaveEdit(account)}
+                              className="bg-green-100 hover:bg-green-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-green-300 text-green-700"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="bg-red-100 hover:bg-red-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-red-300 text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => handleEditClick(account)}
+                              className="bg-blue-100 hover:bg-blue-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-blue-300 text-blue-700"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                      Không tìm thấy tài khoản nào phù hợp
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
