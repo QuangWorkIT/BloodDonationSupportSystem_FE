@@ -6,15 +6,17 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
-  MapPin,
   Mail,
   Bell,
   User,
   Search,
   ChevronDown,
+  Check,
+  X,
+  Plus,
 } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
-
+import DatePicker from "@/components/ui/datepicker";
 
 interface Account {
   id: number;
@@ -29,7 +31,7 @@ const AccountDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [activeSidebarItem, setActiveSidebarItem] = useState("accounts");
-  const [accounts] = useState<Account[]>([
+  const [accounts, setAccounts] = useState<Account[]>([
     {
       id: 1,
       name: "Alyvia Kelley",
@@ -112,6 +114,20 @@ const AccountDashboard = () => {
     },
   ]);
 
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<Account>>({});
+  const [showChangeModal, setShowChangeModal] = useState(false);
+  const [accountToSave, setAccountToSave] = useState<Account | null>(null);
+  const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  const [newAccount, setNewAccount] = useState<Omit<Account, "id"> & { id?: number }>({
+    name: "",
+    status: "active",
+    email: "",
+    birthDate: "",
+    role: "User",
+  });
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   const totalPages = Math.ceil(accounts.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
@@ -120,17 +136,140 @@ const AccountDashboard = () => {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
+
   const handleRowsPerPageChange = (value: number) => {
     setRowsPerPage(value);
     setCurrentPage(1);
   };
 
+  const handleEditClick = (account: Account) => {
+    setEditingId(account.id);
+    setEditFormData({
+      name: account.name,
+      email: account.email,
+      birthDate: account.birthDate,
+      role: account.role,
+      status: account.status,
+    });
+  };
+
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveEdit = (account: Account) => {
+    // Show confirmation for any changes
+    setAccountToSave({
+      ...account,
+      ...editFormData,
+    } as Account);
+    setShowChangeModal(true);
+  };
+
+  const confirmChanges = () => {
+    if (accountToSave) {
+      setAccounts(accounts.map((a) => (a.id === accountToSave.id ? accountToSave : a)));
+      setEditingId(null);
+      setEditFormData({});
+      setShowChangeModal(false);
+      setAccountToSave(null);
+    }
+  };
+
+  const cancelChanges = () => {
+    setShowChangeModal(false);
+    setAccountToSave(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditFormData({});
+  };
+
+  const handleAddAccountClick = () => {
+    setShowAddAccountModal(true);
+    setNewAccount({
+      name: "",
+      status: "active",
+      email: "",
+      birthDate: "",
+      role: "User",
+    });
+    setValidationErrors({});
+  };
+
+  const validateNewAccount = () => {
+    const errors: Record<string, string> = {};
+
+    if (!newAccount.name.trim()) {
+      errors.name = "Name is required";
+    }
+
+    if (!newAccount.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newAccount.email)) {
+      errors.email = "Invalid email format";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleNewAccountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewAccount((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear validation error when user types
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSaveNewAccount = () => {
+    if (!validateNewAccount()) return;
+
+    const newId = Math.max(...accounts.map((a) => a.id), 0) + 1;
+    setAccounts([
+      ...accounts,
+      {
+        ...newAccount,
+        id: newId,
+      } as Account,
+    ]);
+    setShowAddAccountModal(false);
+    setNewAccount({
+      name: "",
+      status: "active",
+      email: "",
+      birthDate: "",
+      role: "User",
+    });
+  };
+
+  const handleCancelAddAccount = () => {
+    setShowAddAccountModal(false);
+    setNewAccount({
+      name: "",
+      status: "active",
+      email: "",
+      birthDate: "",
+      role: "User",
+    });
+    setValidationErrors({});
+  };
+
   return (
     <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
-      <AdminSidebar 
-        activeItem={activeSidebarItem} 
-        setActiveItem={setActiveSidebarItem} 
-      />
+      <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
+
       {/* Main content */}
       <main className="flex-1 bg-[#EFEFEF]">
         {/* Top bar */}
@@ -200,8 +339,12 @@ const AccountDashboard = () => {
                 <Download className="w-3 h-3" />
                 Xuất
               </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer">
-                + THÊM TÀI KHOẢN
+              <button
+                onClick={handleAddAccountClick}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                THÊM TÀI KHOẢN
               </button>
             </div>
           </div>
@@ -211,62 +354,162 @@ const AccountDashboard = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                    #
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                     <div className="flex items-center justify-between">
                       Họ và tên
                       <ArrowUpDown className="w-3 h-3 text-gray-400" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                     <div className="flex items-center justify-between">
                       Status
                       <ArrowUpDown className="w-3 h-3 text-gray-400" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                     <div className="flex items-center justify-between">
                       E-Mail
                       <ArrowUpDown className="w-3 h-3 text-gray-400" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                     <div className="flex items-center justify-between">
                       Ngày sinh
                       <ArrowUpDown className="w-3 h-3 text-gray-400" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                     <div className="flex items-center justify-between">
                       Vai trò
                       <ArrowUpDown className="w-3 h-3 text-gray-400" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentAccounts.map((account, index) => (
-                  <tr key={account.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-100'}`}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{account.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full ${
-                            account.status === "active" ? "bg-green-500" : "bg-red-500"
-                          }`}
-                        ></div>
-                        <span className="text-sm text-gray-700 capitalize">{account.status}</span>
-                      </div>
+                  <tr key={account.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{account.id}</td>
+
+                    {/* Name */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r">
+                      {editingId === account.id ? (
+                        <input
+                          type="text"
+                          name="name"
+                          value={editFormData.name || ""}
+                          onChange={handleEditFormChange}
+                          className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                        />
+                      ) : (
+                        account.name
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.birthDate}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.role}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-gray-300">
-                        <Edit className="w-4 h-4" />
-                      </button>
+
+                    {/* Status */}
+                    <td className="px-6 py-4 whitespace-nowrap border-r">
+                      {editingId === account.id ? (
+                        <select
+                          name="status"
+                          value={editFormData.status || ""}
+                          onChange={handleEditFormChange}
+                          className="border border-gray-300 rounded px-2 py-1 text-sm"
+                        >
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              account.status === "active" ? "bg-green-500" : "bg-red-500"
+                            }`}
+                          ></div>
+                          <span className="text-sm text-gray-700 capitalize">{account.status}</span>
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Email */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                      {editingId === account.id ? (
+                        <input
+                          type="email"
+                          name="email"
+                          value={editFormData.email || ""}
+                          onChange={handleEditFormChange}
+                          className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                        />
+                      ) : (
+                        account.email
+                      )}
+                    </td>
+
+                    {/* Birth Date */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                      {editingId === account.id ? (
+                        <DatePicker
+                          value={editFormData.birthDate || ""}
+                          onChange={(date) => handleEditFormChange({ target: { name: "birthDate", value: date } })}
+                          className={undefined}
+                          hasError={undefined}
+                        />
+                      ) : (
+                        account.birthDate
+                      )}
+                    </td>
+
+                    {/* Role */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                      {editingId === account.id ? (
+                        <select
+                          name="role"
+                          value={editFormData.role || ""}
+                          onChange={handleEditFormChange}
+                          className="border border-gray-300 rounded px-2 py-1 text-sm"
+                        >
+                          <option value="Admin">Admin</option>
+                          <option value="Staff">Staff</option>
+                          <option value="User">User</option>
+                        </select>
+                      ) : (
+                        account.role
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
+                      {editingId === account.id ? (
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => handleSaveEdit(account)}
+                            className="bg-green-100 hover:bg-green-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-green-300 text-green-700"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="bg-red-100 hover:bg-red-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-red-300 text-red-700"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => handleEditClick(account)}
+                            className="bg-blue-100 hover:bg-blue-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-blue-300 text-blue-700"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -326,6 +569,124 @@ const AccountDashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Change Confirmation Modal */}
+      {showChangeModal && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Xác nhận thay đổi</h3>
+            <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn lưu các thay đổi này?</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelChanges}
+                className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmChanges}
+                className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Account Modal */}
+      {showAddAccountModal && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Thêm tài khoản mới</h3>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={newAccount.name}
+                  onChange={handleNewAccountChange}
+                  className={`w-full border ${
+                    validationErrors.name ? "border-red-500" : "border-gray-300"
+                  } rounded px-3 py-2 text-sm`}
+                />
+                {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={newAccount.email}
+                  onChange={handleNewAccountChange}
+                  className={`w-full border ${
+                    validationErrors.email ? "border-red-500" : "border-gray-300"
+                  } rounded px-3 py-2 text-sm`}
+                />
+                {validationErrors.email && <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ngày sinh</label>
+                <DatePicker
+                  value={newAccount.birthDate}
+                  onChange={handleNewAccountChange}
+                  hasError={!!validationErrors.birthDate}
+                  className={`w-full ${validationErrors.birthDate ? "border-red-500" : "border-gray-300"}`}
+                />
+                {validationErrors.birthDate && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.birthDate}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
+                <select
+                  name="role"
+                  value={newAccount.role}
+                  onChange={handleNewAccountChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                >
+                  <option value="Admin">Admin</option>
+                  <option value="Staff">Staff</option>
+                  <option value="User">User</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                <select
+                  name="status"
+                  value={newAccount.status}
+                  onChange={handleNewAccountChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleCancelAddAccount}
+                className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSaveNewAccount}
+                className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
+              >
+                Lưu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
