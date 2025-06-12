@@ -1,12 +1,5 @@
 import { useState } from "react";
 import {
-  Home,
-  Users,
-  BarChart3,
-  Settings,
-  ChevronDown,
-  HelpCircle,
-  LogOut,
   ArrowUpDown,
   Edit,
   Filter,
@@ -18,7 +11,10 @@ import {
   Bell,
   User,
   Search,
+  ChevronDown,
 } from "lucide-react";
+import AdminSidebar from "./AdminSidebar";
+
 
 interface Account {
   id: number;
@@ -28,82 +24,6 @@ interface Account {
   birthDate: string;
   role: string;
 }
-
-interface AdminSidebarProps {
-  activeSidebarItem: string;
-  setActiveSidebarItem: (item: string) => void;
-}
-
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeSidebarItem, setActiveSidebarItem }) => {
-  return (
-    <aside className="bg-white w-64 flex flex-col border-r border-gray-200 shadow-sm">
-      <div className="flex-1">
-        <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">🔥</span>
-          </div>
-          <span className="text-lg font-semibold text-gray-800">Blood gang</span>
-        </div>
-        <nav className="py-6 px-3 space-y-4">
-          <button
-            onClick={() => setActiveSidebarItem("home")}
-            className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-              activeSidebarItem === "home" ? "bg-blue-600 text-white" : ""
-            }`}
-          >
-            <Home className="w-6 h-6" />
-            <span className="text-md font-medium">Trang chủ</span>
-          </button>
-          <button
-            onClick={() => setActiveSidebarItem("accounts")}
-            className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-              activeSidebarItem === "accounts" ? "bg-blue-600 text-white" : ""
-            }`}
-          >
-            <Users className="w-6 h-6" />
-            <span className="text-md font-medium">Tài khoản</span>
-          </button>
-          <button
-            onClick={() => setActiveSidebarItem("stats")}
-            className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-              activeSidebarItem === "stats" ? "bg-blue-600 text-white" : ""
-            }`}
-          >
-            <BarChart3 className="w-6 h-6" />
-            <span className="text-md font-medium">Thống kê</span>
-          </button>
-          <button
-            onClick={() => setActiveSidebarItem("settings")}
-            className={`flex items-center justify-between w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-              activeSidebarItem === "settings" ? "bg-blue-600 text-white" : ""
-            }`}
-          >
-            <div className="flex items-center gap-6">
-              <Settings className="w-6 h-6" />
-              <span className="text-md font-medium">Cài đặt</span>
-            </div>
-            <ChevronDown className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setActiveSidebarItem("help")}
-            className={`flex items-center gap-6 w-full px-4 py-4 text-md text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-lg cursor-pointer ${
-              activeSidebarItem === "help" ? "bg-blue-600 text-white" : ""
-            }`}
-          >
-            <HelpCircle className="w-6 h-6" />
-            <span className="text-md font-medium">Hỗ trợ</span>
-          </button>
-        </nav>
-      </div>
-      <div className="border-t border-gray-100 p-6">
-        <button className="flex items-center gap-4 w-full px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors rounded-lg cursor-pointer">
-          <LogOut className="w-5 h-5" />
-          <span className="text-sm font-medium">Đăng xuất</span>
-        </button>
-      </div>
-    </aside>
-  );
-};
 
 const AccountDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -207,6 +127,10 @@ const AccountDashboard = () => {
 
   return (
     <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
+      <AdminSidebar 
+        activeItem={activeSidebarItem} 
+        setActiveItem={setActiveSidebarItem} 
+      />
       {/* Main content */}
       <main className="flex-1 bg-[#EFEFEF]">
         {/* Top bar */}
@@ -338,7 +262,7 @@ const AccountDashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.birthDate}</td>
-                    <td className="px-6 py-4 whitespace- nowrap text-sm text-gray-500">{account.role}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.role}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button className="bg-gray-100 hover:bg-gray-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-gray-300">
                         <Edit className="w-4 h-4" />
