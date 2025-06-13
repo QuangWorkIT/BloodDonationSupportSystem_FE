@@ -99,9 +99,9 @@ export default function HealthCheckForm() {
         newErrors.height = "Chiều cao phải là số.";
       } else if (height <= 0) {
         newErrors.height = "Chiều cao phải lớn hơn 0.";
-      } else if (height > 300) {
+      } else if (height > 3) {
         newErrors.height = "Chiều cao không thể vượt quá 3m.";
-      } else if (height < 50) {
+      } else if (height < 0.5) {
         newErrors.height = "Chiều cao không thể nhỏ hơn 0.5m.";
       }
     }
@@ -230,7 +230,7 @@ export default function HealthCheckForm() {
         {/* Height and Weight */}
         <div className="flex items-center gap-4 mb-[40px]">
           <Label htmlFor="height" className="text-base w-1/4">
-            Chiều cao (cm) <span className="text-red-500">*</span>
+            Chiều cao (m) <span className="text-red-500">*</span>
           </Label>
           <div className="flex-1">
             <Input
