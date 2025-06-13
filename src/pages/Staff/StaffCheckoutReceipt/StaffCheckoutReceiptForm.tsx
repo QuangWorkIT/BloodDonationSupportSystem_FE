@@ -42,7 +42,7 @@ export default function StaffCheckoutReceiptForm() {
   return (
     <div className="w-[866px] mx-auto px-8 py-6 bg-white rounded-lg shadow-md border">
       <div className="flex justify-between">
-        <h2 className="text-[27px] font-normal mb-6 text-gray-500">Đơn xác nhận hoàn tất nhận máu</h2>
+        <h2 className="text-[27px] font-normal mb-6">Đơn xác nhận hoàn tất nhận máu</h2>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -65,10 +65,10 @@ export default function StaffCheckoutReceiptForm() {
             name="receiverName"
             render={({ field }) => (
               <FormItem className="flex justify-between">
-                <FormLabel className="text-gray-500 font-normal text-nowrap">Tên người nhận</FormLabel>
+                <FormLabel className="text-lg text-nowrap">Tên cơ sở</FormLabel>
                 <div className="flex flex-col items-start gap-2">
                   <FormControl>
-                    <Input placeholder="(Tên người nhận đã được điền hoặc staff tự nhập)" className="w-[600px] h-[50px]" {...field} />
+                    <Input placeholder="(Tên cơ sở đã được điền hoặc staff tự nhập)" className="w-[550px] h-[50px]" {...field} />
                   </FormControl>
                   <FormMessage />
                 </div>
@@ -82,13 +82,13 @@ export default function StaffCheckoutReceiptForm() {
             name="bloodType"
             render={({ field }) => (
               <FormItem className="flex justify-between text-nowrap">
-                <FormLabel className="text-gray-500 font-normal gap-0.5">
+                <FormLabel className="text-lg gap-0.5">
                   Nhóm máu cần <span className="text-red-600">*</span>
                 </FormLabel>
                 <div className="flex flex-col items-start gap-2">
                   <div className="flex gap-[100px]">
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl className="w-[250px] h-[50px]">
+                      <FormControl className="w-[225px] h-[50px]">
                         <SelectTrigger>
                           <SelectValue placeholder="Chọn ABO" />
                         </SelectTrigger>
@@ -102,7 +102,7 @@ export default function StaffCheckoutReceiptForm() {
                     </Select>
 
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl className="w-[250px] h-[50px]">
+                      <FormControl className="w-[225px] h-[50px]">
                         <SelectTrigger>
                           <SelectValue placeholder="Chọn Rh" />
                         </SelectTrigger>
@@ -125,10 +125,10 @@ export default function StaffCheckoutReceiptForm() {
             name="volume"
             render={({ field }) => (
               <FormItem className="flex justify-between text-nowrap">
-                <FormLabel className="text-gray-500 font-normal text-nowrap">Lượng máu đã nhận (ml)</FormLabel>
+                <FormLabel className="text-lg text-nowrap">Lượng máu đã nhận (ml)</FormLabel>
                 <div className="flex flex-col items-start gap-2">
                   <FormControl>
-                    <Input className="w-[600px] h-[50px]" placeholder="Vd: 250, 350,..." {...field} />
+                    <Input className="w-[550px] h-[50px]" placeholder="Vd: 250, 350,..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </div>
@@ -142,7 +142,7 @@ export default function StaffCheckoutReceiptForm() {
             name="note"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-500 font-normal text-nowrap">Ghi chú</FormLabel>
+                <FormLabel className="text-lg text-nowrap">Ghi chú</FormLabel>
                 <FormControl>
                   <Input className="w-full h-[130px]" placeholder="(Ghi chú thêm của nhân viên y tế cho bệnh nhân)" {...field} />
                 </FormControl>
@@ -156,10 +156,10 @@ export default function StaffCheckoutReceiptForm() {
             name="staffId"
             render={({ field }) => (
               <FormItem className="flex justify-between text-nowrap">
-                <FormLabel className="text-gray-500 font-normal text-nowrap">Tên / ID nhân viên y tế</FormLabel>
+                <FormLabel className="text-lg text-nowrap">Tên / ID nhân viên y tế</FormLabel>
                 <div className="flex flex-col items-start gap-2">
                   <FormControl>
-                    <Input className="w-[600px] h-[50px]" placeholder="(Tên hoặc ID của nhân viên y tế đã được điền)" {...field} />
+                    <Input className="w-[550px] h-[50px]" placeholder="(Tên hoặc ID của nhân viên y tế đã được điền)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </div>
