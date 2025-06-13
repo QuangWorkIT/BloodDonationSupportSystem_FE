@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import DatePicker from "@/components/ui/datepicker";
+import AddAccountModal from "./AddAccount";
 
 interface Account {
   id: number;
@@ -154,16 +155,6 @@ const AccountDashboard = () => {
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [accountToSave, setAccountToSave] = useState<Account | null>(null);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
-  const [newAccount, setNewAccount] = useState<Omit<Account, "id"> & { id?: number }>({
-    name: "",
-    status: "active",
-    email: "",
-    birthDate: "",
-    role: "User",
-    phone: "",
-    password: "",
-  });
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const togglePasswordVisibility = (id: number) => {
     setShowPassword((prev) => ({
@@ -254,6 +245,9 @@ const AccountDashboard = () => {
     const { name, value } = e.target;
     setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
+  const handleDateChange = (date: string) => {
+    setEditFormData((prev) => ({ ...prev, birthDate: date }));
+  };
 
   const handleSaveEdit = (account: Account) => {
     setAccountToSave({
@@ -283,105 +277,16 @@ const AccountDashboard = () => {
     setEditFormData({});
   };
 
-  const handleAddAccountClick = () => {
-    setShowAddAccountModal(true);
-    setNewAccount({
-      name: "",
-      status: "active",
-      email: "",
-      birthDate: "",
-      role: "User",
-      phone: "",
-      password: "",
-    });
-    setValidationErrors({});
-  };
-
-  const validateNewAccount = () => {
-    const errors: Record<string, string> = {};
-
-    if (!newAccount.name.trim()) {
-      errors.name = "Name is required";
-    }
-
-    if (!newAccount.email.trim()) {
-      errors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newAccount.email)) {
-      errors.email = "Invalid email format";
-    }
-
-    if (!newAccount.birthDate.trim()) {
-      errors.birthDate = "Birth date is required";
-    }
-
-    if (!newAccount.phone.trim()) {
-      errors.phone = "Phone is required";
-    }
-
-    if (!newAccount.password.trim()) {
-      errors.password = "Password is required";
-    } else if (newAccount.password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleBirthDateChange = (date: string) => {
-    setNewAccount((prev) => ({ ...prev, birthDate: date }));
-  };
-  const handleNewAccountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewAccount((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (validationErrors[name]) {
-      setValidationErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleSaveNewAccount = () => {
-    if (!validateNewAccount()) return;
-
+  const handleAddNewAccount = (account: Omit<Account, "id">) => {
     const newId = Math.max(...accounts.map((a) => a.id), 0) + 1;
     setAccounts([
       ...accounts,
       {
-        ...newAccount,
+        ...account,
         id: newId,
-      } as Account,
+      },
     ]);
     setShowAddAccountModal(false);
-    setNewAccount({
-      name: "",
-      status: "active",
-      email: "",
-      birthDate: "",
-      role: "User",
-      phone: "",
-      password: "",
-    });
-  };
-
-  const handleCancelAddAccount = () => {
-    setShowAddAccountModal(false);
-    setNewAccount({
-      name: "",
-      status: "active",
-      email: "",
-      birthDate: "",
-      role: "User",
-      phone: "",
-      password: "",
-    });
-    setValidationErrors({});
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -483,7 +388,7 @@ const AccountDashboard = () => {
                 Xuất
               </button>
               <button
-                onClick={handleAddAccountClick}
+                onClick={() => setShowAddAccountModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
@@ -673,7 +578,7 @@ const AccountDashboard = () => {
                         {editingId === account.id ? (
                           <DatePicker
                             value={editFormData.birthDate || ""}
-                            onChange={(date) => handleEditFormChange({ target: { name: "birthDate", value: date } })}
+                            onChange={(date) => handleDateChange(date || "")}
                             className={undefined}
                             hasError={undefined}
                           />
@@ -876,139 +781,10 @@ const AccountDashboard = () => {
 
       {/* Add Account Modal */}
       {showAddAccountModal && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Thêm tài khoản mới</h3>
-
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={newAccount.name}
-                  onChange={handleNewAccountChange}
-                  className={`w-full border ${
-                    validationErrors.name ? "border-red-500" : "border-gray-300"
-                  } rounded px-3 py-2 text-sm`}
-                />
-                {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={newAccount.email}
-                  onChange={handleNewAccountChange}
-                  className={`w-full border ${
-                    validationErrors.email ? "border-red-500" : "border-gray-300"
-                  } rounded px-3 py-2 text-sm`}
-                />
-                {validationErrors.email && <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ngày sinh</label>
-                <DatePicker
-                  value={newAccount.birthDate}
-                  onChange={handleBirthDateChange}
-                  hasError={!!validationErrors.birthDate}
-                  className={`w-full ${validationErrors.birthDate ? "border-red-500" : "border-gray-300"}`}
-                />
-                {validationErrors.birthDate && (
-                  <p className="text-red-500 text-xs mt-1">{validationErrors.birthDate}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={newAccount.phone}
-                  onChange={handleNewAccountChange}
-                  className={`w-full border ${
-                    validationErrors.phone ? "border-red-500" : "border-gray-300"
-                  } rounded px-3 py-2 text-sm`}
-                />
-                {validationErrors.phone && <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <div className="flex items-center">
-                  <input
-                    type={showPassword[0] ? "text" : "password"}
-                    name="password"
-                    value={newAccount.password}
-                    onChange={handleNewAccountChange}
-                    className={`w-full border ${
-                      validationErrors.password ? "border-red-500" : "border-gray-300"
-                    } rounded px-3 py-2 text-sm`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility(0)}
-                    className="ml-2 text-gray-500 hover:text-blue-600"
-                  >
-                    {showPassword[0] ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-                {validationErrors.password && (
-                  <p className="text-red-500 text-xs mt-1">{validationErrors.password}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
-                <select
-                  name="role"
-                  value={newAccount.role}
-                  onChange={handleNewAccountChange}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                >
-                  <option value="Admin">Admin</option>
-                  <option value="Staff">Staff</option>
-                  <option value="User">User</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                <select
-                  name="status"
-                  value={newAccount.status}
-                  onChange={handleNewAccountChange}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={handleCancelAddAccount}
-                className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleSaveNewAccount}
-                className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
-              >
-                Lưu
-              </button>
-            </div>
-          </div>
-        </div>
+        <AddAccountModal
+          onSave={handleAddNewAccount}
+          onCancel={() => setShowAddAccountModal(false)}
+        />
       )}
     </div>
   );
