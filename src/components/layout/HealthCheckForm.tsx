@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
-import { scale } from "framer-motion";
 
 interface HealthCheckData {
   fullName: string;
@@ -66,19 +65,103 @@ export default function HealthCheckForm() {
     }
     setFormData({ ...formData, [id]: type === "checkbox" ? checked : value });
   };
+
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
-    if (!formData.fullName) newErrors.fullName = "Đây là trường thông tin bắt buộc.";
-    if (!formData.birthDate) newErrors.birthDate = "Đây là trường thông tin bắt buộc.";
-    if (!formData.height) newErrors.height = "Đây là trường thông tin bắt buộc.";
-    if (!formData.weight) newErrors.weight = "Đây là trường thông tin bắt buộc.";
-    if (!formData.bloodPressure) newErrors.bloodPressure = "Đây là trường thông tin bắt buộc.";
-    if (!formData.temperature) newErrors.temperature = "Đây là trường thông tin bắt buộc.";
+    
+    // Full Name validation
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = "Đây là trường thông tin bắt buộc.";
+    } else if (formData.fullName.length > 100) {
+      newErrors.fullName = "Tên không được vượt quá 100 ký tự.";
+    }
 
-    // At least one hasReceivedBlood checkbox should be checked
+    // Birth Date validation
+    if (!formData.birthDate) {
+      newErrors.birthDate = "Đây là trường thông tin bắt buộc.";
+    } else {
+      const birthDate = new Date(formData.birthDate);
+      const currentDate = new Date();
+      
+      if (birthDate > currentDate) {
+        newErrors.birthDate = "Ngày sinh không thể ở tương lai.";
+      } else if (currentDate.getFullYear() - birthDate.getFullYear() > 60) {
+        newErrors.birthDate = "Người hiến máu phải dưới 60 tuổi.";
+      }
+    }
+
+    // Height validation
+    if (!formData.height) {
+      newErrors.height = "Đây là trường thông tin bắt buộc.";
+    } else {
+      const height = parseFloat(formData.height);
+      if (isNaN(height)) {
+        newErrors.height = "Chiều cao phải là số.";
+      } else if (height <= 0) {
+        newErrors.height = "Chiều cao phải lớn hơn 0.";
+      } else if (height > 300) {
+        newErrors.height = "Chiều cao không thể vượt quá 3m.";
+      } else if (height < 50) {
+        newErrors.height = "Chiều cao không thể nhỏ hơn 0.5m.";
+      }
+    }
+
+    // Weight validation
+    if (!formData.weight) {
+      newErrors.weight = "Đây là trường thông tin bắt buộc.";
+    } else {
+      const weight = parseFloat(formData.weight);
+      if (isNaN(weight)) {
+        newErrors.weight = "Cân nặng phải là số.";
+      } else if (weight <= 0) {
+        newErrors.weight = "Cân nặng phải lớn hơn 0.";
+      } else if (weight > 200) {
+        newErrors.weight = "Cân nặng không thể vượt quá 200kg.";
+      } else if (weight < 2) {
+        newErrors.weight = "Cân nặng không thể nhỏ hơn 2kg.";
+      }
+    }
+
+    // Blood Pressure validation
+    if (!formData.bloodPressure) {
+      newErrors.bloodPressure = "Đây là trường thông tin bắt buộc.";
+    } else {
+      // Check for format like "120/80"
+      const bpRegex = /^\d{2,3}\/\d{2,3}$/;
+      if (!bpRegex.test(formData.bloodPressure)) {
+        newErrors.bloodPressure = "Huyết áp phải có định dạng như 120/80.";
+      } else {
+        const [systolic, diastolic] = formData.bloodPressure.split('/').map(Number);
+        if (systolic <= 0 || diastolic <= 0) {
+          newErrors.bloodPressure = "Giá trị huyết áp phải dương.";
+        } else if (systolic > 300 || diastolic > 200) {
+          newErrors.bloodPressure = "Giá trị huyết áp quá cao.";
+        } else if (systolic < diastolic) {
+          newErrors.bloodPressure = "Huyết áp tâm thu phải cao hơn tâm trương.";
+        }
+      }
+    }
+
+    // Temperature validation
+    if (!formData.temperature) {
+      newErrors.temperature = "Đây là trường thông tin bắt buộc.";
+    } else {
+      const temp = parseFloat(formData.temperature);
+      if (isNaN(temp)) {
+        newErrors.temperature = "Nhiệt độ phải là số.";
+      } else if (temp < 25) {
+        newErrors.temperature = "Nhiệt độ quá thấp.";
+      } else if (temp > 35) {
+        newErrors.temperature = "Nhiệt độ quá cao.";
+      }
+    }
+
+    // Blood donation history validation
     if (!formData.hasReceivedBloodYes && !formData.hasReceivedBloodNo) {
       newErrors.hasReceivedBloodYes = "Vui lòng chọn một trong hai.";
     }
+
+    // Process completion validation
     if (!formData.processCompleted) {
       newErrors.processCompleted = "Bạn phải xác nhận hoàn tất quy trình.";
     }
@@ -94,6 +177,7 @@ export default function HealthCheckForm() {
     } else {
       setErrors({});
       console.log("Form submitted successfully:", formData);
+      // Here you would typically send the data to your backend
     }
   };
 
@@ -137,61 +221,24 @@ export default function HealthCheckForm() {
               className="py-4 text-base h-[40px] border-none"
               value={formData.birthDate}
               onChange={handleChange}
+              max={new Date().toISOString().split('T')[0]} // Prevent future dates
             />
             {errors.birthDate && <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>}
-          </div>
-        </div>
-
-        {/* Blood Type and Rh Factor */}
-        <div className="flex items-center gap-4 mb-[40px]">
-          <Label htmlFor="bloodType" className="text-base w-1/4">
-            Nhóm máu
-          </Label>
-          <div className="flex-1">
-            <select
-              id="bloodType"
-              className="py-2 pl-4 text-base w-full bg-[#F4F5F8] border-none"
-              value={formData.bloodType}
-              onChange={handleChange}
-            >
-              <option value="" disabled>
-                Chọn ABO
-              </option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="AB">AB</option>
-              <option value="O">O</option>
-            </select>
-          </div>
-          <Label htmlFor="rhFactor" className="text-base w-1/4">
-            Rh Factor
-          </Label>
-          <div className="flex-1">
-            <select
-              id="rhFactor"
-              className="py-2 pl-4 text-base w-full bg-[#F4F5F8] border-none"
-              value={formData.rhFactor}
-              onChange={handleChange}
-            >
-              <option value="" disabled>
-                Chọn Rh
-              </option>
-              <option value="+">+</option>
-              <option value="-">-</option>
-            </select>
           </div>
         </div>
 
         {/* Height and Weight */}
         <div className="flex items-center gap-4 mb-[40px]">
           <Label htmlFor="height" className="text-base w-1/4">
-            Chiều cao (m) <span className="text-red-500">*</span>
+            Chiều cao (cm) <span className="text-red-500">*</span>
           </Label>
           <div className="flex-1">
             <Input
               id="height"
               type="number"
               step="0.01"
+              min="0.5"
+              max="3"
               placeholder="Nhập chiều cao"
               className="py-4 text-base bg-[#F4F5F8] border-none"
               value={formData.height}
@@ -206,6 +253,8 @@ export default function HealthCheckForm() {
             <Input
               id="weight"
               type="number"
+              min="2"
+              max="300"
               placeholder="Nhập cân nặng"
               className="py-4 text-base bg-[#F4F5F8] border-none"
               value={formData.weight}
@@ -223,7 +272,7 @@ export default function HealthCheckForm() {
           <div className="flex-1">
             <Input
               id="bloodPressure"
-              placeholder="Nhập huyết áp"
+              placeholder="VD: 120/80"
               className="py-4 text-base bg-[#F4F5F8] border-none"
               value={formData.bloodPressure}
               onChange={handleChange}
@@ -238,6 +287,8 @@ export default function HealthCheckForm() {
               id="temperature"
               type="number"
               step="0.1"
+              min="25"
+              max="45"
               placeholder="Nhập nhiệt độ"
               className="py-4 text-base bg-[#F4F5F8] border-none"
               value={formData.temperature}
@@ -300,6 +351,7 @@ export default function HealthCheckForm() {
             className="py-2 px-3 text-base bg-[#F4F5F8] w-full h-24 resize-none border-none rounded-md"
             value={formData.additionalNotes}
             onChange={handleChange}
+            maxLength={500}
           />
         </div>
 
@@ -327,7 +379,7 @@ export default function HealthCheckForm() {
               type="checkbox"
               checked={formData.processCompleted}
               onChange={handleChange}
-              className="w-5 h-5 "
+              className="w-5 h-5"
               required
             />
             <span className="text-base">
