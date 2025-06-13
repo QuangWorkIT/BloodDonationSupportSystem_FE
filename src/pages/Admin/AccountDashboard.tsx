@@ -16,6 +16,8 @@ import {
   Plus,
   ArrowDown,
   ArrowUp,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import DatePicker from "@/components/ui/datepicker";
@@ -27,12 +29,15 @@ interface Account {
   email: string;
   birthDate: string;
   role: string;
+  phone: string;
+  password: string;
 }
 
 const AccountDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [activeSidebarItem, setActiveSidebarItem] = useState("accounts");
+  const [showPassword, setShowPassword] = useState<Record<number, boolean>>({});
   const [accounts, setAccounts] = useState<Account[]>([
     {
       id: 1,
@@ -41,6 +46,8 @@ const AccountDashboard = () => {
       email: "a.kelley@gmail.com",
       birthDate: "06/18/1978",
       role: "Admin",
+      phone: "123-456-7890",
+      password: "password123",
     },
     {
       id: 2,
@@ -49,6 +56,8 @@ const AccountDashboard = () => {
       email: "jaiden.n@gmail.com",
       birthDate: "08/30/1963",
       role: "Staff",
+      phone: "234-567-8901",
+      password: "password234",
     },
     {
       id: 3,
@@ -57,6 +66,8 @@ const AccountDashboard = () => {
       email: "ace.fo@yahoo.com",
       birthDate: "12/09/1985",
       role: "Staff",
+      phone: "345-678-9012",
+      password: "password345",
     },
     {
       id: 4,
@@ -65,6 +76,8 @@ const AccountDashboard = () => {
       email: "nikolai.schmidt964@outlook.com",
       birthDate: "03/22/1956",
       role: "Staff",
+      phone: "456-789-0123",
+      password: "password456",
     },
     {
       id: 5,
@@ -73,6 +86,8 @@ const AccountDashboard = () => {
       email: "me@clayton.com",
       birthDate: "10/14/1971",
       role: "Staff",
+      phone: "567-890-1234",
+      password: "password567",
     },
     {
       id: 6,
@@ -81,6 +96,8 @@ const AccountDashboard = () => {
       email: "prince.chen999@gmail.com",
       birthDate: "07/05/1992",
       role: "User",
+      phone: "678-901-2345",
+      password: "password678",
     },
     {
       id: 7,
@@ -89,6 +106,8 @@ const AccountDashboard = () => {
       email: "reece@yahoo.com",
       birthDate: "05/26/1980",
       role: "User",
+      phone: "789-012-3456",
+      password: "password789",
     },
     {
       id: 8,
@@ -97,6 +116,8 @@ const AccountDashboard = () => {
       email: "anastasia.spring@mcdaniel2.com",
       birthDate: "02/11/1968",
       role: "User",
+      phone: "890-123-4567",
+      password: "password890",
     },
     {
       id: 9,
@@ -105,6 +126,8 @@ const AccountDashboard = () => {
       email: "Me.boyle@gmail.com",
       birthDate: "08/03/1974",
       role: "User",
+      phone: "901-234-5678",
+      password: "password901",
     },
     {
       id: 10,
@@ -113,6 +136,8 @@ const AccountDashboard = () => {
       email: "Kailee.thomas@gmail.com",
       birthDate: "11/28/1954",
       role: "User",
+      phone: "012-345-6789",
+      password: "password012",
     },
   ]);
 
@@ -135,8 +160,17 @@ const AccountDashboard = () => {
     email: "",
     birthDate: "",
     role: "User",
+    phone: "",
+    password: "",
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  const togglePasswordVisibility = (id: number) => {
+    setShowPassword((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   // Filter and search logic
   const [sortConfig, setSortConfig] = useState<{
@@ -152,7 +186,8 @@ const AccountDashboard = () => {
       result = result.filter(
         (account) =>
           account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          account.email.toLowerCase().includes(searchTerm.toLowerCase())
+          account.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          account.phone.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -167,17 +202,16 @@ const AccountDashboard = () => {
     }
 
     // Apply sorting
-    if (sortConfig.key) {
-      result.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-      });
-    }
+    result.sort((a, b) => {
+      const key = sortConfig.key as keyof Account;
+      if (a[key] < b[key]) {
+        return sortConfig.direction === "ascending" ? -1 : 1;
+      }
+      if (a[key] > b[key]) {
+        return sortConfig.direction === "ascending" ? 1 : -1;
+      }
+      return 0;
+    });
 
     return result;
   }, [accounts, searchTerm, filters, sortConfig]);
@@ -211,6 +245,8 @@ const AccountDashboard = () => {
       birthDate: account.birthDate,
       role: account.role,
       status: account.status,
+      phone: account.phone,
+      password: account.password,
     });
   };
 
@@ -255,6 +291,8 @@ const AccountDashboard = () => {
       email: "",
       birthDate: "",
       role: "User",
+      phone: "",
+      password: "",
     });
     setValidationErrors({});
   };
@@ -272,10 +310,27 @@ const AccountDashboard = () => {
       errors.email = "Invalid email format";
     }
 
+    if (!newAccount.birthDate.trim()) {
+      errors.birthDate = "Birth date is required";
+    }
+
+    if (!newAccount.phone.trim()) {
+      errors.phone = "Phone is required";
+    }
+
+    if (!newAccount.password.trim()) {
+      errors.password = "Password is required";
+    } else if (newAccount.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
+  const handleBirthDateChange = (date: string) => {
+    setNewAccount((prev) => ({ ...prev, birthDate: date }));
+  };
   const handleNewAccountChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewAccount((prev) => ({
@@ -310,6 +365,8 @@ const AccountDashboard = () => {
       email: "",
       birthDate: "",
       role: "User",
+      phone: "",
+      password: "",
     });
   };
 
@@ -321,6 +378,8 @@ const AccountDashboard = () => {
       email: "",
       birthDate: "",
       role: "User",
+      phone: "",
+      password: "",
     });
     setValidationErrors({});
   };
@@ -538,6 +597,12 @@ const AccountDashboard = () => {
                       <ArrowUpDown className="w-3 h-3 text-gray-400" />
                     </div>
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                    Phone
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                    Password
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
@@ -635,6 +700,62 @@ const AccountDashboard = () => {
                         )}
                       </td>
 
+                      {/* Phone */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                        {editingId === account.id ? (
+                          <input
+                            type="text"
+                            name="phone"
+                            value={editFormData.phone || ""}
+                            onChange={handleEditFormChange}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                          />
+                        ) : (
+                          account.phone
+                        )}
+                      </td>
+
+                      {/* Password */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                        {editingId === account.id ? (
+                          <div className="flex items-center">
+                            <input
+                              type={showPassword[account.id] ? "text" : "password"}
+                              name="password"
+                              value={editFormData.password || ""}
+                              onChange={handleEditFormChange}
+                              className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => togglePasswordVisibility(account.id)}
+                              className="ml-2 text-gray-500 hover:text-blue-600"
+                            >
+                              {showPassword[account.id] ? (
+                                <EyeOff className="w-4 h-4" />
+                              ) : (
+                                <Eye className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center">
+                            <span>{showPassword[account.id] ? account.password : "****"}</span>
+                            <button
+                              type="button"
+                              onClick={() => togglePasswordVisibility(account.id)}
+                              className="ml-2 text-gray-500 hover:text-blue-600"
+                            >
+                              {showPassword[account.id] ? (
+                                <EyeOff className="w-4 h-4" />
+                              ) : (
+                                <Eye className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </td>
+
                       {/* Actions */}
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
                         {editingId === account.id ? (
@@ -667,7 +788,7 @@ const AccountDashboard = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colSpan={9} className="px-6 py-4 text-center text-sm text-gray-500">
                       Không tìm thấy tài khoản nào phù hợp
                     </td>
                   </tr>
@@ -792,12 +913,55 @@ const AccountDashboard = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Ngày sinh</label>
                 <DatePicker
                   value={newAccount.birthDate}
-                  onChange={handleNewAccountChange}
+                  onChange={handleBirthDateChange}
                   hasError={!!validationErrors.birthDate}
                   className={`w-full ${validationErrors.birthDate ? "border-red-500" : "border-gray-300"}`}
                 />
                 {validationErrors.birthDate && (
                   <p className="text-red-500 text-xs mt-1">{validationErrors.birthDate}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={newAccount.phone}
+                  onChange={handleNewAccountChange}
+                  className={`w-full border ${
+                    validationErrors.phone ? "border-red-500" : "border-gray-300"
+                  } rounded px-3 py-2 text-sm`}
+                />
+                {validationErrors.phone && <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <div className="flex items-center">
+                  <input
+                    type={showPassword[0] ? "text" : "password"}
+                    name="password"
+                    value={newAccount.password}
+                    onChange={handleNewAccountChange}
+                    className={`w-full border ${
+                      validationErrors.password ? "border-red-500" : "border-gray-300"
+                    } rounded px-3 py-2 text-sm`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility(0)}
+                    className="ml-2 text-gray-500 hover:text-blue-600"
+                  >
+                    {showPassword[0] ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                {validationErrors.password && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.password}</p>
                 )}
               </div>
 
