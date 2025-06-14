@@ -161,9 +161,9 @@ export default function HomePage() {
               <h2 className="text-[40px] font-semibold text-center mb-6 text-white">Tiêu chuẩn hiến máu</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
                 {criterias.map((item, idx) => (
-                  <div className="bg-white rounded-xl shadow-md shadow-gray-500 p-4 flex flex-col gap-2">
+                  <div key={idx}  className="bg-white rounded-xl shadow-md shadow-gray-500 p-4 flex flex-col gap-2">
                     <img src={item.image} alt="" width={50} />
-                    <div key={idx} className="text-md">
+                    <div className="text-md">
                       {item.text}
                     </div>
                   </div>

@@ -36,7 +36,11 @@ const routes: RouteObject[] = [
     { path: '/events', element: <EventPage /> },
 
     { path: '/compatibility', element: <Compatibility /> },
-    
+
+    {
+        path: '/staff', element: <div>Staff home</div>
+    },
+
     {
         path: '/admin', element: (
             <ProtectedRoute element={<AdminHome />} allowRole={["admin"]} />
