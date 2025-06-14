@@ -1,9 +1,16 @@
-import React from 'react'
-
+import BloodDonationNavbar from "@/components/layout/Navbar"
+import Footer from "@/components/layout/Footer"
+import RegisterForm from "@/components/layout/RegisterForm"
 function RegisterPage() {
   return (
-    <div>
-        Register page
+    <div className="min-h-screen relative">
+      <BloodDonationNavbar />
+      <div className="my-[50px]">
+        <RegisterForm />
+      </div>
+      <div className="w-full">
+        <Footer />
+      </div>
     </div>
   )
 }

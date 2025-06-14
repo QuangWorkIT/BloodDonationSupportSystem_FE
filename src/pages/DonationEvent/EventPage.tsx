@@ -6,7 +6,7 @@ function EventPage() {
   return (
     <>
       <BloodDonationNavbar />
-      <div className="my-[30px]">
+      <div className="mb-5">
         <Events />
       </div>
       <Footer />

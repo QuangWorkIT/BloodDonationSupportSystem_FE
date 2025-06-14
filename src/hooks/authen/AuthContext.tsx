@@ -1,12 +1,10 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-
-import type { User } from "@/types/User";
+import { isTokenExpired } from "@/utils/jwt"
+import useRefreshToken from "./useRefreshToken";
 
 interface AuthContextType {
-    user: User | null,
-    accessToken: string,
-    setUser: (user: User | null) => void,
-    setToken: (token: string) => void
+    accessToken: string | null,
+    setToken: (token: string | null) => void
 }
 
 interface AuthProviderProps {
@@ -18,37 +16,41 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // no user and access token when no login as default
-    const [user, setUser] = useState<User | null>(null)
-    const [accessToken, setToken] = useState<string>('')
+    const [accessToken, setToken] = useState<string | null>(null)
+    const refresh = useRefreshToken()
 
     useEffect(() => {
-        const storedToken = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
 
-        if (storedToken) setToken(storedToken);
-        if (storedUser) setUser(JSON.parse(storedUser));
+        // load access token from local storage
+        const initAuth = async () => {
+            const storedToken = localStorage.getItem("token");
+
+            if (storedToken && isTokenExpired(storedToken)) {
+                const newToken = await refresh()
+                setToken(newToken)
+            } else if (storedToken) {
+                setToken(storedToken) // valid token
+            }
+        }
+        
+        initAuth()
     }, []);
-    
-    // store user and token in local storage
+
+    // store token
     useEffect(() => {
         if (accessToken) localStorage.setItem("token", accessToken)
         else localStorage.removeItem("token")
     }, [accessToken])
 
 
-    useEffect(() => {
-        if (user) localStorage.setItem("user", JSON.stringify(user))
-        else localStorage.removeItem("user")
-    }, [user])
-
     return (
-        <AuthContext.Provider value={{ accessToken, user, setUser, setToken }} >
+        <AuthContext.Provider value={{ accessToken, setToken }} >
             {children}
         </AuthContext.Provider>
     )
 }
 
-// get user and access token (reset if needed)
+// get access token (reset if needed)
 export const useAuth = () => {
     const context = useContext(AuthContext)
 

@@ -2,6 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
 
 interface FormData {
   lastName: string;
@@ -12,7 +13,7 @@ interface FormData {
   confirmPassword: string;
   bloodType: string;
   rhFactor: string;
-  birthdate: string;
+  dob: string;
   gender: string;
   province: string;
   district: string;
@@ -33,7 +34,7 @@ export default function RegisterForm() {
     confirmPassword: "",
     bloodType: "",
     rhFactor: "",
-    birthdate: "",
+    dob: "",
     gender: "",
     province: "",
     district: "",
@@ -59,7 +60,7 @@ export default function RegisterForm() {
     if (!formData.password) newErrors.password = "Đây là trường thông tin bắt buộc.";
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Mật khẩu không khớp.";
     if (!formData.bloodType) newErrors.bloodType = "Đây là trường thông tin bắt buộc.";
-    if (!formData.birthdate) newErrors.birthdate = "Đây là trường thông tin bắt buộc.";
+    if (!formData.dob) newErrors.dob = "Đây là trường thông tin bắt buộc.";
     if (!formData.gender) newErrors.gender = "Đây là trường thông tin bắt buộc.";
     if (!formData.province) newErrors.province = "Đây là trường thông tin bắt buộc.";
     if (!formData.address) newErrors.address = "Đây là trường thông tin bắt buộc.";
@@ -76,6 +77,15 @@ export default function RegisterForm() {
       setErrors({});
       // Submit the form or perform further actions
       console.log("Form submitted successfully:", formData);
+
+      // reconstruct the form data
+      const copyForm = { ...formData } as Record<string, any>;
+      const bloodType = formData.bloodType + formData.rhFactor
+      copyForm.bloodType = bloodType
+
+      delete copyForm.rhFactor
+      
+      console.log("copy ",copyForm)
     }
   };
 
@@ -226,18 +236,18 @@ export default function RegisterForm() {
             </div>
           </div>
           <div className="space-y-3">
-            <Label htmlFor="birthdate" className="text-base">
+            <Label htmlFor="dob" className="text-base">
               Ngày tháng năm sinh<span className="text-red-500"> *</span>
             </Label>
             <Input
-              id="birthdate"
+              id="dob"
               type="date"
               className="py-2 text-base"
               required
-              value={formData.birthdate}
+              value={formData.dob}
               onChange={handleChange}
             />
-            {errors.birthdate && <p className="text-red-500">{errors.birthdate}</p>}
+            {errors.dob && <p className="text-red-500">{errors.dob}</p>}
           </div>
         </div>
 
@@ -252,10 +262,10 @@ export default function RegisterForm() {
                 id="male"
                 type="radio"
                 name="gender"
-                value="male"
+                value="true"
                 className="w-5 h-5"
                 required
-                checked={formData.gender === "male"}
+                checked={formData.gender === "true"}
                 onChange={handleChange}
               />
               <Label htmlFor="male" className="text-base">
@@ -267,10 +277,10 @@ export default function RegisterForm() {
                 id="female"
                 type="radio"
                 name="gender"
-                value="female"
+                value="false"
                 className="w-5 h-5"
                 required
-                checked={formData.gender === "female"}
+                checked={formData.gender === "false"}
                 onChange={handleChange}
               />
               <Label htmlFor="female" className="text-base">
@@ -344,9 +354,9 @@ export default function RegisterForm() {
       {/* Login Link */}
       <div className="text-center text-base pt-4">
         Bạn đã có tài khoản?{" "}
-        <a href="#" className="text-blue-600 hover:underline">
-          Đăng nhập
-        </a>
+        <Link to="/login" className="text-blue-600 hover:underline">
+          Đăng Nhập
+        </Link>
       </div>
     </div>
   );

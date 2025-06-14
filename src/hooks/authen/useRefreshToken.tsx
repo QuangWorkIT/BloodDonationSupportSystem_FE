@@ -1,36 +1,21 @@
-import { useAuth } from "./AuthContext"
 import type { User } from "@/types/User"
-
+import api from "@/lib/instance"
 interface DataResponse {
     user: User,
     token: string
 }
 function useRefreshToken(): () => Promise<string | null> {
-    const { setUser, setToken } = useAuth()
 
     const refresh = async (): Promise<string | null> => {
         try {
-            // call refresh api
-            const res = await fetch("api/auth/refresh", {
-                method: "Post",
-                credentials: "include"
-            })
-            if (res.ok) {
-                const data: DataResponse = await res.json()
-                setToken(data.token)
-                setUser(data.user)
-                return data.token
-            } else {
-                console.log("refresh fail")
-                setToken('')
-                setUser(null)
+            const res = await api.post('/api/Auth/renew-token');
+            if(res.data)
+                return res.data.token;
+            else
                 return null
-            }
         } catch (error) {
-            console.log("Error refreshing token", error)
-            setToken('')
-            setUser(null)
-            return null
+            console.log("Fail to refresh token", error);
+            return null;
         }
     }
 

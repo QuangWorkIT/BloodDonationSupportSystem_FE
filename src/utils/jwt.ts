@@ -3,6 +3,7 @@ export interface JwtPayload {
   iat?: number;
   sub?: string;
   key: string;
+  role: string
 }
 
 // decode jwt to get payload
@@ -19,8 +20,16 @@ export const decodeJwt = (token: string): JwtPayload | null => {
 // check for token expired time
 export const isTokenExpired = (token: string):boolean => {
     const decoded = decodeJwt(token)
-    if(decoded === null || !decoded.exp) return false
+    if(decoded === null || !decoded.exp) return true
 
     const now = Math.floor(Date.now() / 1000)
-    return decoded.exp < now
+    return decoded.exp < now // true if token is expired
+}
+
+// get user role
+export const getRole = (token: string): string => {
+    const decoded = decodeJwt(token)
+    if(decoded) 
+        return decoded.role
+    return ''
 }
