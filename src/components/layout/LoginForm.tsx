@@ -6,8 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
-import {authApi} from '@/lib/instance'
+import { authApi } from '@/lib/instance'
 import { useAuth } from "@/hooks/authen/AuthContext";
+import {type google} from "@react-oath/google"
 
 const formSchema = z.object({
   phone: z.string().min(10, "Số điện thoại không hợp lệ"),
@@ -22,15 +23,15 @@ type CredentialResponse = {
 
 declare global {
   interface Window {
-    google: any;
+    google?: typeof google;
   }
 }
 
 const clientID = "359043283189-gvumkk8gmenj0j2skbcr9jl6h28gk2hb.apps.googleusercontent.com";
 
 export default function LoginForm() {
-  const {setToken} = useAuth()
-  const [error,setError] = useState<string | null>(null)
+  const { setToken } = useAuth()
+  const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,27 +42,27 @@ export default function LoginForm() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-  try {
-    const res = await authApi.post('/api/Auth/login', {
-      phone: values.phone,
-      password: values.password,
-    });
+    try {
+      const res = await authApi.post('/api/Auth/login', {
+        phone: values.phone,
+        password: values.password,
+      });
 
-    const data = res.data;
+      const data = res.data;
 
-    if (!data?.isSuccess || !data?.token) {
-      setError("Login failed!");
-      console.warn("Login unsuccessful:", data);
-      return;
+      if (!data?.isSuccess || !data?.token) {
+        setError("Login failed!");
+        console.warn("Login unsuccessful:", data);
+        return;
+      }
+
+      setToken(data.token);
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.log("Login error:", error);
+      setError("Login failed! Please try again.");
     }
-
-    setToken(data.token);
-    navigate('/', { replace: true });
-  } catch (error) {
-    console.log("Login error:", error);
-    setError("Login failed! Please try again.");
-  }
-};
+  };
 
   useEffect(() => {
     const handleCredentialResponse = (response: CredentialResponse) => {
@@ -73,7 +74,10 @@ export default function LoginForm() {
       callback: handleCredentialResponse,
     });
 
-    window.google?.accounts.id.renderButton(document.getElementById("googleSignInDiv"), { theme: "outline", size: "large", width: 400 });
+    window.google?.accounts.id.renderButton(
+      document.getElementById("googleSignInDiv"),
+      { theme: "outline", size: "large", width: 400 }
+    );
   }, []);
 
   return (
@@ -114,7 +118,7 @@ export default function LoginForm() {
           <div id="googleSignInDiv" className="flex justify-center" />
           <div className="text-center text-sm">
             Chưa có tài khoản?{" "}
-            <Link to = "/register" className="text-blue-600">
+            <Link to="/register" className="text-blue-600">
               Đăng kí
             </Link>
           </div>

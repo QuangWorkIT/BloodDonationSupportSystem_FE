@@ -8,9 +8,7 @@ function useRefreshToken(): () => Promise<string | null> {
 
     const refresh = async (): Promise<string | null> => {
         try {
-            const res = await authApi.post('/api/Auth/renew-token', null, {
-                withCredentials: true, // send cookies
-            });
+            const res = await authApi.post('/api/Auth/renew-token', null);
             if(res.data)
                 return res.data.token;
             else

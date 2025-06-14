@@ -4,5 +4,6 @@ import axios from 'axios';
 export const authApi = axios.create({
     baseURL: "https://blood-donation-support-system.somee.com/",
     timeout: 5000, // time out 5s
-    headers: {'Content-Type': 'Application/json'}
+    headers: { 'Content-Type': 'Application/json' },
+    withCredentials: true, // send cookies
 })
