@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaHeart } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { Users2 } from "lucide-react";
+import { Users2, CalendarDays } from "lucide-react";
 
 interface Event {
   id: number;
@@ -59,7 +59,9 @@ const EventList = () => {
           <motion.button
             key={page}
             onClick={() => setCurrentPage(page)}
-            className={`w-10 h-10 rounded-md border ${currentPage === page ? "bg-[#C14B53] text-white" : "bg-white text-gray-700 hover:bg-gray-100"}`}
+            className={`w-10 h-10 rounded-md border cursor-pointer ${
+              currentPage === page ? "bg-[#C14B53] text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+            }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -72,8 +74,12 @@ const EventList = () => {
 
   return (
     <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
-      <div className="mb-4">
-        <h2 className="text-3xl font-medium text-gray-800">Các sự kiện nhận máu</h2>
+      <div className="mb-4 flex justify-between">
+        <h2 className="text-3xl font-medium text-gray-800 ml-2">Các sự kiện hiến máu</h2>
+        <button className="bg-blue-200 hover:bg-blue-400 text-gray-700 px-4 py-2 rounded-md text-lg flex items-center gap-2 cursor-pointer">
+          <CalendarDays className="w-5" />
+          Tạo sự kiện hiến máu
+        </button>
       </div>
 
       {/* Events list */}
@@ -87,28 +93,33 @@ const EventList = () => {
             transition={{ delay: index * 0.1, duration: 0.3 }}
             whileHover={{ y: -5 }}
           >
-            <div className="flex flex-col md:flex-row p-6">
+            <div className="flex flex-col items-center md:flex-row p-6">
               <div className="w-16 h-16 bg-[#C14B53] rounded-full flex items-center justify-center mr-6 mb-4 md:mb-0 shadow-sm">
                 <FaHeart className="text-white text-xl" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-medium mb-2">{event.name}</h3>
-                <p className="text-gray-600 mb-1">{event.address}</p>
-                <p className="text-gray-600 mb-1">
-                  Thời gian hoạt động: {event.date}, từ {event.time}
+                <h3 className="text-2xl text-red-700 font-semibold mb-5">{event.name}</h3>
+                <p className="text-xl text-gray-600 mb-5">
+                  Địa chỉ: <span className="font-semibold text-black">{event.address}</span>
                 </p>
-                <p className="text-gray-600">Ưu tiên nhóm máu: {event.bloodTypes}</p>
+                <p className="text-xl text-gray-600 mb-5">
+                  Thời gian hoạt động: <span className="font-semibold text-black">{event.date}</span>, từ
+                  <span className="font-semibold text-black">{event.time}</span>
+                </p>
+                <p className="text-xl text-gray-600">
+                  Ưu tiên nhóm máu: <span className="font-semibold text-black">{event.bloodTypes}</span>
+                </p>
               </div>
-              <div className="flex flex-col gap-0.5 justify-between items-center mt-4 md:mt-0">
-                <div className="flex gap-1 font-semibold">
+              <div className="flex flex-col items-center mt-4 md:mt-0">
+                <div className="flex gap-1 font-semibold mb-2">
                   <Users2 className="w-4" />
                   Người đăng ký
                 </div>
-                <span className="text-red-700 font-medium text-2xl">
+                <span className="text-red-700 font-medium text-2xl mb-[64px]">
                   {event.registered} / {event.capacity}
                 </span>
                 <motion.button
-                  className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
+                  className="bg-[#C14B53] text-white text-xl font-semibold px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleCancelClick(event)}
