@@ -1,10 +1,14 @@
 import React from 'react'
+import BloodInformation from './BloodInformation'
+import BloodDonationNavbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 
 function BloodInfoPage() {
   return (
-    <div>
-      <h1>Blood Information Page</h1>
-    </div>
+    <><BloodDonationNavbar />
+    <BloodInformation />
+    <Footer />
+    </>
   )
 }
 
