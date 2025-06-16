@@ -136,8 +136,8 @@ const BloodInformation = () => {
               <h3 className="text-xl font-semibold mb-4 text-[#C14B53]">Nhóm máu là gì?</h3>
               <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100 mb-4">
                 <p className="text-gray-700">
-                  Nhóm máu được xác định bởi sự có mặt hoặc vắng mặt của các kháng nguyên nhất định trên bề mặt hồng cầu.
-                  Hai hệ thống phân loại chính là hệ thống ABO và hệ thống Rh.
+                  Nhóm máu được xác định bởi sự có mặt hoặc vắng mặt của các kháng nguyên nhất định trên bề mặt hồng
+                  cầu. Hai hệ thống phân loại chính là hệ thống ABO và hệ thống Rh.
                 </p>
               </div>
 
@@ -145,14 +145,16 @@ const BloodInformation = () => {
                 <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                   <h4 className="text-lg font-medium mb-2 text-[#C14B53]">Hệ Thống Nhóm Máu ABO</h4>
                   <p className="text-gray-700">
-                    Hệ thống ABO phân loại máu thành bốn loại: A, B, AB và O, dựa trên sự hiện diện của kháng nguyên A và B.
+                    Hệ thống ABO phân loại máu thành bốn loại: A, B, AB và O, dựa trên sự hiện diện của kháng nguyên A
+                    và B.
                   </p>
                 </div>
 
                 <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                   <h4 className="text-lg font-medium mb-2 text-[#C14B53]">Yếu Tố Rh</h4>
                   <p className="text-gray-700">
-                    Yếu tố Rh là một kháng nguyên khác trên hồng cầu. Nếu có, nhóm máu là dương tính (+); nếu không có, nó là âm tính (-).
+                    Yếu tố Rh là một kháng nguyên khác trên hồng cầu. Nếu có, nhóm máu là dương tính (+); nếu không có,
+                    nó là âm tính (-).
                   </p>
                 </div>
               </div>
@@ -184,19 +186,12 @@ const BloodInformation = () => {
             transition={{ duration: 0.3 }}
             className="bg-white rounded-md shadow-sm p-8 border border-gray-200"
           >
-            
-              <h2 className="text-2xl font-bold text-[#C14B53] mb-6">Tương Thích Nhóm Máu</h2>
-              <p className="text-gray-700 mb-6">
-                Hiểu về các nhóm máu có thể hiến và nhận từ nhau.
-              </p>
+            <h2 className="text-2xl font-bold text-[#C14B53] mb-6">Tương Thích Nhóm Máu</h2>
+            <p className="text-gray-700 mb-6">Hiểu về các nhóm máu có thể hiến và nhận từ nhau.</p>
 
+            {/* Tab selector */}
             <div className="flex justify-center mb-8">
-              <motion.div
-                className="flex bg-white rounded-full shadow-sm border border-gray-200 overflow-hidden"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
+              <motion.div className="flex bg-white rounded-full shadow-sm border border-gray-200 overflow-hidden">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -240,131 +235,150 @@ const BloodInformation = () => {
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8">
               {compatibilityType === "whole-blood" ? (
                 <div>
-                  <h3 className="text-xl font-semibold mb-2 text-[#C14B53]">Tương Thích Máu Toàn Phần</h3>
-                  <p className="text-gray-700 mb-4">
-                    Tìm hiểu nhóm máu nào tương thích để truyền máu toàn phần.
-                  </p>
+                  <h3 className="text-xl font-semibold mb-4 text-[#C14B53]">Tương Thích Máu Toàn Phần</h3>
+                  <p className="text-gray-700 mb-6">Tìm hiểu nhóm máu nào tương thích để truyền máu toàn phần.</p>
 
-                  <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100 mb-6">
-                    <h4 className="text-lg font-medium mb-3 text-[#C14B53]">Chọn Nhóm Máu</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {/* Blood type dropdown */}
+                  <div className="mb-8 max-w-md mx-auto">
+                    <label htmlFor="blood-type" className="block text-sm font-medium text-gray-700 mb-2">
+                      Chọn Nhóm Máu
+                    </label>
+                    <select
+                      id="blood-type"
+                      value={selectedBloodType}
+                      onChange={(e) => setSelectedBloodType(e.target.value)}
+                      className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
+                    >
                       {bloodTypes.map((type) => (
-                        <motion.button
-                          key={type}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setSelectedBloodType(type)}
-                          className={`py-2 px-4 rounded-md border ${
-                            selectedBloodType === type
-                              ? "bg-[#C14B53] text-white border-[#C14B53]"
-                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                          }`}
-                        >
+                        <option key={type} value={type}>
                           {type}
-                        </motion.button>
+                        </option>
                       ))}
-                    </div>
+                    </select>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
-                      <h4 className="text-lg font-medium mb-3 text-[#C14B53]">Có Thể Hiến Cho</h4>
-                      <ul className="space-y-2">
-                        {compatibilityData[selectedBloodType]["whole-blood"].donateTo.map((type) => (
-                          <li key={`donate-${type}`} className="flex items-center bg-gray-50 p-2 rounded">
+                  {/* Compatibility results in flex row */}
+                  {/* Compatibility results in single row */}
+                  <div className="flex flex-col md:flex-row gap-6 justify-center">
+                    {/* Can Donate To */}
+                    <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
+                      <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Hiến Cho</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {compatibilityData[selectedBloodType][
+                          compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent
+                        ].donateTo.map((type) => (
+                          <span
+                            key={`donate-${type}`}
+                            className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                          >
                             <FaCheck className="text-green-500 mr-2" />
-                            <span>{type}</span>
-                          </li>
+                            <span className="font-medium">{type}</span>
+                          </span>
                         ))}
-                      </ul>
+                      </div>
                     </div>
 
-                    <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
-                      <h4 className="text-lg font-medium mb-3 text-[#C14B53]">Có Thể Nhận Từ</h4>
-                      <ul className="space-y-2">
-                        {compatibilityData[selectedBloodType]["whole-blood"].receiveFrom.map((type) => (
-                          <li key={`receive-${type}`} className="flex items-center bg-gray-50 p-2 rounded">
+                    {/* Can Receive From */}
+                    <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
+                      <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Nhận Từ</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {compatibilityData[selectedBloodType][
+                          compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent
+                        ].receiveFrom.map((type) => (
+                          <span
+                            key={`receive-${type}`}
+                            className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                          >
                             <FaCheck className="text-green-500 mr-2" />
-                            <span>{type}</span>
-                          </li>
+                            <span className="font-medium">{type}</span>
+                          </span>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-xl font-semibold mb-2 text-[#C14B53]">Tương Thích Thành Phần Máu</h3>
-                  <p className="text-gray-700 mb-4">
+                  <h3 className="text-xl font-semibold mb-4 text-[#C14B53]">Tương Thích Thành Phần Máu</h3>
+                  <p className="text-gray-700 mb-6">
                     Tìm hiểu nhóm máu nào tương thích để truyền các thành phần máu cụ thể.
                   </p>
 
-                  <div className="space-y-4">
-                    <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
-                      <h4 className="text-lg font-medium mb-3 text-[#C14B53]">Chọn Nhóm Máu</h4>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {/* Blood type and component dropdowns */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                      <label htmlFor="component-blood-type" className="block text-sm font-medium text-gray-700 mb-2">
+                        Chọn Nhóm Máu
+                      </label>
+                      <select
+                        id="component-blood-type"
+                        value={selectedBloodType}
+                        onChange={(e) => setSelectedBloodType(e.target.value)}
+                        className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
+                      >
                         {bloodTypes.map((type) => (
-                          <motion.button
-                            key={type}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setSelectedBloodType(type)}
-                            className={`py-2 px-4 rounded-md border ${
-                              selectedBloodType === type
-                                ? "bg-[#C14B53] text-white border-[#C14B53]"
-                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                            }`}
-                          >
+                          <option key={type} value={type}>
                             {type}
-                          </motion.button>
+                          </option>
                         ))}
-                      </div>
+                      </select>
                     </div>
 
-                    <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
-                      <h4 className="text-lg font-medium mb-3 text-[#C14B53]">Chọn Thành Phần</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label htmlFor="blood-component" className="block text-sm font-medium text-gray-700 mb-2">
+                        Chọn Thành Phần
+                      </label>
+                      <select
+                        id="blood-component"
+                        value={selectedComponent}
+                        onChange={(e) => setSelectedComponent(e.target.value)}
+                        className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
+                      >
                         {bloodComponents.map((component) => (
-                          <motion.button
-                            key={component}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setSelectedComponent(component.toLowerCase().replace(" ", "-"))}
-                            className={`py-2 px-4 rounded-md border ${
-                              selectedComponent === component.toLowerCase().replace(" ", "-")
-                                ? "bg-[#C14B53] text-white border-[#C14B53]"
-                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                            }`}
-                          >
+                          <option key={component} value={component.toLowerCase().replace(" ", "-")}>
                             {component}
-                          </motion.button>
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Compatibility results in flex row */}
+                  {/* Compatibility results in single row */}
+                  <div className="flex flex-col md:flex-row gap-6 justify-center">
+                    {/* Can Donate To */}
+                    <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
+                      <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Hiến Cho</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {compatibilityData[selectedBloodType][
+                          compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent
+                        ].donateTo.map((type) => (
+                          <span
+                            key={`donate-${type}`}
+                            className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                          >
+                            <FaCheck className="text-green-500 mr-2" />
+                            <span className="font-medium">{type}</span>
+                          </span>
                         ))}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
-                        <h4 className="text-lg font-medium mb-3 text-[#C14B53]">Có Thể Hiến Cho</h4>
-                        <ul className="space-y-2">
-                          {compatibilityData[selectedBloodType][selectedComponent].donateTo.map((type) => (
-                            <li key={`donate-${type}`} className="flex items-center bg-gray-50 p-2 rounded">
-                              <FaCheck className="text-green-500 mr-2" />
-                              <span>{type}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
-                        <h4 className="text-lg font-medium mb-3 text-[#C14B53]">Có Thể Nhận Từ</h4>
-                        <ul className="space-y-2">
-                          {compatibilityData[selectedBloodType][selectedComponent].receiveFrom.map((type) => (
-                            <li key={`receive-${type}`} className="flex items-center bg-gray-50 p-2 rounded">
-                              <FaCheck className="text-green-500 mr-2" />
-                              <span>{type}</span>
-                            </li>
-                          ))}
-                        </ul>
+                    {/* Can Receive From */}
+                    <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
+                      <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Nhận Từ</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {compatibilityData[selectedBloodType][
+                          compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent
+                        ].receiveFrom.map((type) => (
+                          <span
+                            key={`receive-${type}`}
+                            className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                          >
+                            <FaCheck className="text-green-500 mr-2" />
+                            <span className="font-medium">{type}</span>
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -372,6 +386,7 @@ const BloodInformation = () => {
               )}
             </div>
 
+            {/* Special notes section */}
             <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
               <h3 className="text-xl font-semibold mb-3 text-[#C14B53]">Lưu Ý Đặc Biệt Về Tương Thích</h3>
               <p className="text-gray-700 mb-4">Thông tin quan trọng về tương thích nhóm máu.</p>
@@ -380,24 +395,26 @@ const BloodInformation = () => {
                 <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                   <h4 className="font-medium text-[#C14B53] mb-2">Người Hiến Phổ Quát</h4>
                   <p className="text-gray-700 text-sm">
-                    Nhóm máu O- được gọi là người hiến phổ quát vì có thể truyền cho bệnh nhân có bất kỳ nhóm máu nào trong trường hợp khẩn cấp.
-                    Điều này làm cho người hiến nhóm máu O- đặc biệt quý giá cho các trường hợp truyền máu khẩn cấp khi không có thời gian xác định nhóm máu của bệnh nhân.
+                    Nhóm máu O- được gọi là người hiến phổ quát vì có thể truyền cho bệnh nhân có bất kỳ nhóm máu nào
+                    trong trường hợp khẩn cấp. Điều này làm cho người hiến nhóm máu O- đặc biệt quý giá cho các trường
+                    hợp truyền máu khẩn cấp khi không có thời gian xác định nhóm máu của bệnh nhân.
                   </p>
                 </div>
 
                 <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                   <h4 className="font-medium text-[#C14B53] mb-2">Người Nhận Phổ Quát</h4>
                   <p className="text-gray-700 text-sm">
-                    Nhóm máu AB+ được gọi là người nhận phổ quát vì những người có nhóm máu này có thể nhận máu từ bất kỳ người hiến nào.
-                    Tuy nhiên, họ chỉ có thể hiến máu cho những người có nhóm máu AB+ khác.
+                    Nhóm máu AB+ được gọi là người nhận phổ quát vì những người có nhóm máu này có thể nhận máu từ bất
+                    kỳ người hiến nào. Tuy nhiên, họ chỉ có thể hiến máu cho những người có nhóm máu AB+ khác.
                   </p>
                 </div>
 
                 <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                   <h4 className="font-medium text-[#C14B53] mb-2">Tương Thích Theo Thành Phần</h4>
                   <p className="text-gray-700 text-sm">
-                    Quy tắc tương thích có thể khác nhau đối với các thành phần máu khác nhau. Ví dụ, tương thích huyết tương về cơ bản là ngược lại với tương thích hồng cầu.
-                    Huyết tương AB là người hiến huyết tương phổ quát, trong khi huyết tương O có nhiều kháng thể và chỉ có thể truyền cho người nhận nhóm máu O.
+                    Quy tắc tương thích có thể khác nhau đối với các thành phần máu khác nhau. Ví dụ, tương thích huyết
+                    tương về cơ bản là ngược lại với tương thích hồng cầu. Huyết tương AB là người hiến huyết tương phổ
+                    quát, trong khi huyết tương O có nhiều kháng thể và chỉ có thể truyền cho người nhận nhóm máu O.
                   </p>
                 </div>
               </div>
@@ -481,22 +498,24 @@ const BloodInformation = () => {
                   <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                     <h4 className="font-medium text-[#C14B53]">Đăng Ký</h4>
                     <p className="text-gray-700 text-sm mt-2">
-                      Bạn sẽ hoàn thành mẫu đăng ký và xem tài liệu hướng dẫn. Nhân viên sẽ kiểm tra giấy tờ tùy thân và trả lời mọi câu hỏi.
+                      Bạn sẽ hoàn thành mẫu đăng ký và xem tài liệu hướng dẫn. Nhân viên sẽ kiểm tra giấy tờ tùy thân và
+                      trả lời mọi câu hỏi.
                     </p>
                   </div>
 
                   <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                     <h4 className="font-medium text-[#C14B53]">Kiểm Tra Sức Khỏe</h4>
                     <p className="text-gray-700 text-sm mt-2">
-                      Nhân viên y tế sẽ kiểm tra nhiệt độ, mạch, huyết áp và nồng độ hemoglobin. Bạn cũng sẽ hoàn thành bảng câu hỏi sức khỏe bảo mật.
+                      Nhân viên y tế sẽ kiểm tra nhiệt độ, mạch, huyết áp và nồng độ hemoglobin. Bạn cũng sẽ hoàn thành
+                      bảng câu hỏi sức khỏe bảo mật.
                     </p>
                   </div>
 
                   <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                     <h4 className="font-medium text-[#C14B53]">Hiến Máu</h4>
                     <p className="text-gray-700 text-sm mt-2">
-                      Quá trình hiến máu thực tế mất khoảng 8-10 phút. Một lần hiến máu toàn phần là khoảng một đơn vị máu.
-                      Bạn sẽ nghỉ ngơi 10-15 phút sau đó với đồ ăn nhẹ.
+                      Quá trình hiến máu thực tế mất khoảng 8-10 phút. Một lần hiến máu toàn phần là khoảng một đơn vị
+                      máu. Bạn sẽ nghỉ ngơi 10-15 phút sau đó với đồ ăn nhẹ.
                     </p>
                   </div>
                 </div>
@@ -509,14 +528,16 @@ const BloodInformation = () => {
                   <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                     <h4 className="font-medium text-[#C14B53]">Hiến Máu Toàn Phần</h4>
                     <p className="text-gray-700 text-sm mt-2">
-                      Loại hiến máu phổ biến nhất, thu khoảng một đơn vị máu. Mất khoảng 8-10 phút. Có thể hiến mỗi 56 ngày.
+                      Loại hiến máu phổ biến nhất, thu khoảng một đơn vị máu. Mất khoảng 8-10 phút. Có thể hiến mỗi 56
+                      ngày.
                     </p>
                   </div>
 
                   <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                     <h4 className="font-medium text-[#C14B53]">Hiến Tiểu Cầu</h4>
                     <p className="text-gray-700 text-sm mt-2">
-                      Chỉ thu tiểu cầu và trả lại các thành phần máu khác. Mất khoảng 2-3 giờ. Có thể hiến mỗi 7 ngày, tối đa 24 lần/năm.
+                      Chỉ thu tiểu cầu và trả lại các thành phần máu khác. Mất khoảng 2-3 giờ. Có thể hiến mỗi 7 ngày,
+                      tối đa 24 lần/năm.
                     </p>
                   </div>
 
@@ -530,7 +551,8 @@ const BloodInformation = () => {
                   <div className="bg-white p-4 rounded-md shadow-sm border border-gray-100">
                     <h4 className="font-medium text-[#C14B53]">Hiến Hồng Cầu Kép</h4>
                     <p className="text-gray-700 text-sm mt-2">
-                      Thu hai đơn vị hồng cầu và trả lại huyết tương và tiểu cầu. Mất khoảng 30 phút. Có thể hiến mỗi 112 ngày.
+                      Thu hai đơn vị hồng cầu và trả lại huyết tương và tiểu cầu. Mất khoảng 30 phút. Có thể hiến mỗi
+                      112 ngày.
                     </p>
                   </div>
                 </div>
