@@ -2,10 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
 interface DatePickerProps {
-  value: string;
+  value: unknown;
   onChange: (value: string) => void;
   className?: string;
   hasError?: boolean;
+  dateFormat?: "MM/dd/yyyy" | "dd/MM/yyyy" | "yyyy-MM-dd";
+  placeholderText?: string;
+  showYearDropdown?: boolean;
+  maxDate?: Date;
 }
 
 const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, className, hasError }) => {
@@ -171,6 +175,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, className, has
           role="button"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleCalendar(); }}
+          
         />
       </div>
 
