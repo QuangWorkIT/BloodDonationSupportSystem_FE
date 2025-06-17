@@ -9,7 +9,6 @@ interface SidebarProps {
 const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   const location = useLocation();
 
-  // Define your navigation items with their paths
   const navItems = [
     {
       id: "inventory",
@@ -19,7 +18,7 @@ const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
     },
     {
       id: "donation-management",
-      path: "/test",
+      path: "/",
       icon: <Droplet className="w-6 h-6" />,
       label: "Quản lý hiến máu",
     },
@@ -38,7 +37,7 @@ const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   ];
 
   return (
-    <aside className="bg-white h-full w-64 border-r border-gray-300 shadow-lg">
+    <aside className="bg-white h-full w-64 border-r border-gray-300 shadow-lg shadow-gray-500">
       <nav className="py-6 px-3 space-y-4 flex-1 flex flex-col">
         {navItems.map((item) => (
           <Link

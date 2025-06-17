@@ -7,7 +7,7 @@ export default function StaffManageReceiptPage() {
     <>
       <StaffNavbar />
       <div className="flex">
-        <StaffSidebar activeItem="" setActiveItem={() => {}} />
+        <StaffSidebar activeItem="donation-management" setActiveItem={() => {}} />
         <EventList />
       </div>
     </>
