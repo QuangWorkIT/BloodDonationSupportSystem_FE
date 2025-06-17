@@ -1,7 +1,167 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DatePicker from "../ui/datepicker";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+
+// Simple DatePicker component
+const DatePicker = ({ value, onChange, className, minDate, maxDate, placeholderText }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(value || new Date());
+  const [inputValue, setInputValue] = useState("");
+
+  // Update input value when value prop changes
+  React.useEffect(() => {
+    if (value) {
+      const formatted = formatDate(value);
+      setInputValue(formatted);
+    } else {
+      setInputValue("");
+    }
+  }, [value]);
+
+  const formatDate = (date) => {
+    if (!date) return "";
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const parseDate = (dateString) => {
+    if (!dateString) return null;
+    const [day, month, year] = dateString.split('/').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+
+    const days = [];
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+    
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(new Date(year, month, day));
+    }
+    
+    return days;
+  };
+
+  const isDateDisabled = (date) => {
+    if (!date) return true;
+    if (minDate && date < minDate) return true;
+    if (maxDate && date > maxDate) return true;
+    return false;
+  };
+
+  const handleDateClick = (date) => {
+    if (isDateDisabled(date)) return;
+    onChange(date);
+    setIsOpen(false);
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+    
+    // Try to parse the date if it matches the format
+    if (value.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const parsedDate = parseDate(value);
+      if (parsedDate && !isNaN(parsedDate.getTime())) {
+        onChange(parsedDate);
+      }
+    }
+  };
+
+  const monthNames = [
+    "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+    "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+  ];
+
+  const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+  return (
+    <div className="relative">
+      <div className="relative">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onClick={() => setIsOpen(!isOpen)}
+          placeholder={placeholderText || "dd/MM/yyyy"}
+          className={`${className} pr-10`}
+          readOnly={false}
+        />
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+        >
+          <Calendar size={16} className="text-gray-400" />
+        </button>
+      </div>
+      
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg z-50 p-4 min-w-80">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              type="button"
+              onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <div className="font-medium">
+              {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+            </div>
+            <button
+              type="button"
+              onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {dayNames.map(day => (
+              <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
+                {day}
+              </div>
+            ))}
+          </div>
+          
+          <div className="grid grid-cols-7 gap-1">
+            {getDaysInMonth(currentMonth).map((date, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => date && handleDateClick(date)}
+                disabled={isDateDisabled(date)}
+                className={`
+                  p-2 text-sm rounded hover:bg-gray-100 
+                  ${!date ? "invisible" : ""}
+                  ${isDateDisabled(date) ? "text-gray-300 cursor-not-allowed" : "cursor-pointer"}
+                  ${value && date && date.toDateString() === value.toDateString() ? "bg-[#C14B53] text-white hover:bg-[#C14B53]" : ""}
+                `}
+              >
+                {date ? date.getDate() : ""}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Define types for our form data and errors
 type FormData = {
@@ -179,13 +339,11 @@ const AccountEdit = () => {
           </label>
           <DatePicker
             value={formData.birthDate}
-            onChange={(date: string) => handleChange("birthDate", date)}
-            dateFormat="dd/MM/yyyy"
+            onChange={(date: Date) => handleChange("birthDate", date)}
             placeholderText="dd/MM/yyyy"
             className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 ${
               errors.birthDate ? "border-red-500 focus:ring-red-500" : "focus:ring-[#C14B53]"
             }`}
-            showYearDropdown
             maxDate={new Date()}
           />
           {errors.birthDate && <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>}
@@ -260,7 +418,7 @@ const AccountEdit = () => {
   );
 };
 
-// DonationHistory component with added facility and address fields
+// DonationHistory component
 const DonationHistory = () => {
   const donations = [
     {
@@ -330,6 +488,7 @@ const DonationHistory = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
+          onClick={() => alert("Xem chi tiết lịch sử hiến máu")}
         >
           Xem chi tiết
         </motion.button>
@@ -338,8 +497,29 @@ const DonationHistory = () => {
   );
 };
 
-// SettingsSidebar component (unchanged)
+// SettingsSidebar component
 const SettingsSidebar = () => {
+  const [settings, setSettings] = useState({
+    smsNotifications: false,
+    showDonationStatus: false,
+    autoUpdate: false,
+    logoutOtherDevices: false,
+  });
+
+  const handleSettingChange = (setting: string, value: boolean) => {
+    setSettings(prev => ({ ...prev, [setting]: value }));
+  };
+
+  const handleLogout = () => {
+    alert("Đăng xuất thành công!");
+  };
+
+  const handleDeleteAccount = () => {
+    if (confirm("Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.")) {
+      alert("Tài khoản đã được xóa.");
+    }
+  };
+
   return (
     <div className="bg-white rounded-md shadow-md p-6 sticky top-8">
       <div className="text-center mb-6">
@@ -350,37 +530,211 @@ const SettingsSidebar = () => {
       </div>
 
       <div className="mb-6">
-        <button className="w-full text-[#C14B53] hover:bg-gray-100 py-2 rounded-md text-left px-4">Đăng xuất</button>
+        <button 
+          onClick={handleLogout}
+          className="w-full text-[#C14B53] hover:bg-gray-100 py-2 rounded-md text-left px-4"
+        >
+          Đăng xuất
+        </button>
       </div>
 
       <h3 className="font-medium text-lg mb-4">Cài đặt</h3>
       <div className="space-y-3 mb-6">
         <label className="flex items-center">
-          <input type="checkbox" className="text-[#C14B53] focus:ring-[#C14B53] rounded" />
+          <input 
+            type="checkbox" 
+            className="text-[#C14B53] focus:ring-[#C14B53] rounded"
+            checked={settings.smsNotifications}
+            onChange={(e) => handleSettingChange('smsNotifications', e.target.checked)}
+          />
           <span className="ml-2">Nhận thông báo (SMS) hiến máu gần đây</span>
         </label>
         <label className="flex items-center">
-          <input type="checkbox" className="text-[#C14B53] focus:ring-[#C14B53] rounded" />
+          <input 
+            type="checkbox" 
+            className="text-[#C14B53] focus:ring-[#C14B53] rounded"
+            checked={settings.showDonationStatus}
+            onChange={(e) => handleSettingChange('showDonationStatus', e.target.checked)}
+          />
           <span className="ml-2">Hiển thị trạng thái sẵn sàng hiến máu</span>
         </label>
         <label className="flex items-center">
-          <input type="checkbox" className="text-[#C14B53] focus:ring-[#C14B53] rounded" />
+          <input 
+            type="checkbox" 
+            className="text-[#C14B53] focus:ring-[#C14B53] rounded"
+            checked={settings.autoUpdate}
+            onChange={(e) => handleSettingChange('autoUpdate', e.target.checked)}
+          />
           <span className="ml-2">Tự động cập nhật hệ thống (nếu có)</span>
         </label>
         <label className="flex items-center">
-          <input type="checkbox" className="text-[#C14B53] focus:ring-[#C14B53] rounded" />
+          <input 
+            type="checkbox" 
+            className="text-[#C14B53] focus:ring-[#C14B53] rounded"
+            checked={settings.logoutOtherDevices}
+            onChange={(e) => handleSettingChange('logoutOtherDevices', e.target.checked)}
+          />
           <span className="ml-2">Đăng xuất khỏi các thiết bị khác</span>
         </label>
       </div>
 
       <div className="pt-4 border-t">
-        <button className="text-red-500 hover:underline">Xóa tài khoản</button>
+        <button 
+          onClick={handleDeleteAccount}
+          className="text-red-500 hover:underline"
+        >
+          Xóa tài khoản
+        </button>
       </div>
     </div>
   );
 };
 
-// Main UserProfile component (unchanged)
+// Registration component with working DatePicker
+const RegistrationComponent = () => {
+  const [registrations, setRegistrations] = useState([
+    {
+      id: 1,
+      eventName: "Ngày hội hiến máu Xuân hồng 2025",
+      date: "15/02/2025",
+      time: "08:00 - 12:00",
+      location: "Cung Văn hóa Hữu nghị Việt - Xô, 91 Trần Hưng Đạo, Hà Nội",
+      type: "normal",
+      registeredDate: "10/01/2025"
+    },
+    {
+      id: 2,
+      eventName: "Hiến máu nhân đạo tại Bệnh viện Bạch Mai",
+      date: "20/03/2025",
+      time: "07:30 - 11:30",
+      location: "Bệnh viện Bạch Mai, 78 Giải Phóng, Hà Nội",
+      type: "volunteer",
+      registeredDate: "05/02/2025",
+      volunteerDate: "20/03/2025"
+    },
+  ]);
+
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [volunteerDates, setVolunteerDates] = useState<Record<number, Date | null>>(
+    registrations.reduce((acc, reg) => {
+      if (reg.type === "volunteer" && reg.volunteerDate) {
+        const dateParts = reg.volunteerDate.split('/');
+        acc[reg.id] = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+      } else {
+        acc[reg.id] = null;
+      }
+      return acc;
+    }, {} as Record<number, Date | null>)
+  );
+
+  const handleCancel = (id: number) => {
+    if (confirm(`Bạn có chắc chắn muốn hủy đăng ký sự kiện này?`)) {
+      setRegistrations(prev => prev.filter(reg => reg.id !== id));
+      alert(`Đã hủy đăng ký sự kiện thành công!`);
+    }
+  };
+
+  const handleDateChange = (id: number, date: Date | null) => {
+    setVolunteerDates(prev => ({ ...prev, [id]: date }));
+  };
+
+  const handleSaveDate = (id: number) => {
+    if (!volunteerDates[id]) {
+      alert('Vui lòng chọn ngày tình nguyện');
+      return;
+    }
+    
+    const formattedDate = volunteerDates[id]?.toLocaleDateString('en-GB');
+    alert(`Đã cập nhật ngày tình nguyện thành ${formattedDate}`);
+    setEditingId(null);
+  };
+
+  const parseDateString = (dateString: string): Date => {
+    const [day, month, year] = dateString.split('/').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="bg-white rounded-md shadow-md p-6"
+    >
+      <h2 className="text-xl font-bold mb-6 text-[#C14B53]">Lịch đăng ký hiến máu</h2>
+
+      {registrations.length === 0 ? (
+        <p className="text-gray-500">Bạn chưa đăng ký tham gia sự kiện hiến máu nào.</p>
+      ) : (
+        <div className="space-y-6">
+          {registrations.map(reg => (
+            <div key={reg.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-[#C14B53]">{reg.eventName}</h3>
+                  <p className="text-gray-600 mt-1">
+                    <span className="font-medium">Ngày diễn ra:</span> {reg.date} ({reg.time})
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-medium">Địa điểm:</span> {reg.location}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-medium">Ngày đăng ký:</span> {reg.registeredDate}
+                  </p>
+                  {reg.type === "volunteer" && (
+                    <div className="mt-2">
+                      {editingId === reg.id ? (
+                        <div className="flex items-center gap-2">
+                          <DatePicker
+                            value={volunteerDates[reg.id]}
+                            onChange={(date: Date | null) => handleDateChange(reg.id, date)}
+                            className="border rounded-md px-3 py-1"
+                            minDate={parseDateString(reg.date)}
+                            placeholderText="Chọn ngày tình nguyện"
+                          />
+                          <button
+                            onClick={() => handleSaveDate(reg.id)}
+                            className="bg-[#C14B53] text-white px-3 py-1 rounded-md text-sm hover:bg-[#a83a42]"
+                          >
+                            Lưu
+                          </button>
+                          <button
+                            onClick={() => setEditingId(null)}
+                            className="text-gray-600 px-3 py-1 rounded-md text-sm border hover:bg-gray-50"
+                          >
+                            Hủy
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-gray-600">
+                          <span className="font-medium">Ngày tình nguyện:</span> {volunteerDates[reg.id]?.toLocaleDateString('en-GB') || reg.date}
+                          <button
+                            onClick={() => setEditingId(reg.id)}
+                            className="ml-2 text-[#C14B53] text-sm hover:underline"
+                          >
+                            Chỉnh sửa
+                          </button>
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleCancel(reg.id)}
+                  className="text-red-500 hover:text-red-700 text-sm font-medium ml-4"
+                >
+                  Hủy đăng ký
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+// Main UserProfile component
 const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("account-edit");
 
@@ -406,7 +760,7 @@ const UserProfile = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveTab("account-edit")}
-                className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
+                className={`flex-1 px-4 py-2 text-sm font-medium cursor-pointer relative ${
                   activeTab === "account-edit" ? "text-white" : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -418,14 +772,14 @@ const UserProfile = () => {
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
                 )}
-                <span className="relative z-10">Chỉnh sửa tài khoản</span>
+                <span className="relative z-10">Tài khoản</span>
               </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveTab("donation-history")}
-                className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
+                className={`flex-1 px-4 py-2 text-sm font-medium cursor-pointer relative ${
                   activeTab === "donation-history" ? "text-white" : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -437,14 +791,39 @@ const UserProfile = () => {
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
                 )}
-                <span className="relative z-10">Lịch sử hiến máu</span>
+                <span className="relative z-10">Lịch sử</span>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveTab("registrations")}
+                className={`flex-1 px-4 py-2 text-sm font-medium cursor-pointer relative ${
+                  activeTab === "registrations" ? "text-white" : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {activeTab === "registrations" && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">Đăng ký</span>
               </motion.button>
             </motion.div>
           </div>
 
           {/* Conditional Rendering */}
           <AnimatePresence mode="wait">
-            {activeTab === "account-edit" ? <AccountEdit /> : <DonationHistory />}
+            {activeTab === "account-edit" ? (
+              <AccountEdit />
+            ) : activeTab === "donation-history" ? (
+              <DonationHistory />
+            ) : (
+              <RegistrationComponent />
+            )}
           </AnimatePresence>
         </div>
       </div>
