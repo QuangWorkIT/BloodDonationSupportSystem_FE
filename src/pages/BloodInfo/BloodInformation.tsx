@@ -2,11 +2,24 @@ import { useState } from "react";
 import { FaHeart, FaInfoCircle, FaCheck, FaArrowRight } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
+type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+type BloodComponent = "whole-blood" | "red-blood-cells" | "plasma" | "platelets";
+
+interface CompatibilityInfo {
+donateTo: BloodType[];
+receiveFrom: BloodType[];
+}
+
+interface BloodCompatibility {
+[key: BloodType]: {
+  [component in BloodComponent]: CompatibilityInfo;
+};
+}
 const BloodInformation = () => {
-  const [activeTab, setActiveTab] = useState("blood-types");
-  const [compatibilityType, setCompatibilityType] = useState("whole-blood");
-  const [selectedBloodType, setSelectedBloodType] = useState("A+");
-  const [selectedComponent, setSelectedComponent] = useState("red-blood-cells");
+  const [activeTab, setActiveTab] = useState<"blood-types" | "compatibility" | "donation-process">("blood-types");
+  const [compatibilityType, setCompatibilityType] = useState<"whole-blood" | "blood-component">("whole-blood");
+  const [selectedBloodType, setSelectedBloodType] = useState<BloodType>("A+");
+  const [selectedComponent, setSelectedComponent] = useState<BloodComponent>("red-blood-cells");
 
   // Blood type distribution data
   const bloodTypeDistribution = [
@@ -19,6 +32,7 @@ const BloodInformation = () => {
     { type: "B-", percentage: "2%", description: "Rất hiếm" },
     { type: "AB-", percentage: "1%", description: "Cực kỳ hiếm" },
   ];
+
 
   // Compatibility data
   const compatibilityData = {
