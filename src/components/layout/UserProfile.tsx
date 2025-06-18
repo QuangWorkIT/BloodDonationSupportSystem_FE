@@ -18,7 +18,7 @@ const DatePicker = ({ value, onChange, className, minDate, maxDate, placeholderT
     }
   }, [value]);
 
-  const formatDate = (date) => {
+  const formatDate = (date: { getDate: () => { (): unknown; new(): unknown; toString: { (): string; new(): unknown; }; }; getMonth: () => number; getFullYear: () => unknown; }) => {
     if (!date) return "";
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -26,13 +26,13 @@ const DatePicker = ({ value, onChange, className, minDate, maxDate, placeholderT
     return `${day}/${month}/${year}`;
   };
 
-  const parseDate = (dateString) => {
+  const parseDate = (dateString: unknown) => {
     if (!dateString) return null;
     const [day, month, year] = dateString.split('/').map(Number);
     return new Date(year, month - 1, day);
   };
 
-  const getDaysInMonth = (date) => {
+  const getDaysInMonth = (date: { getFullYear: () => unknown; getMonth: () => unknown; }) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
@@ -55,20 +55,20 @@ const DatePicker = ({ value, onChange, className, minDate, maxDate, placeholderT
     return days;
   };
 
-  const isDateDisabled = (date) => {
+  const isDateDisabled = (date: number | Date | null) => {
     if (!date) return true;
     if (minDate && date < minDate) return true;
     if (maxDate && date > maxDate) return true;
     return false;
   };
 
-  const handleDateClick = (date) => {
+  const handleDateClick = (date: Date) => {
     if (isDateDisabled(date)) return;
     onChange(date);
     setIsOpen(false);
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: { target: { value: unknown; }; }) => {
     const value = e.target.value;
     setInputValue(value);
     
@@ -590,7 +590,7 @@ const SettingsSidebar = () => {
   );
 };
 
-// Registration component with working DatePicker
+// Registration component with working DatePicker// Registration component with modals for all actions
 const RegistrationComponent = () => {
   const [registrations, setRegistrations] = useState([
     {
@@ -614,7 +614,6 @@ const RegistrationComponent = () => {
     },
   ]);
 
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [volunteerDates, setVolunteerDates] = useState<Record<number, Date | null>>(
     registrations.reduce((acc, reg) => {
       if (reg.type === "volunteer" && reg.volunteerDate) {
@@ -626,27 +625,54 @@ const RegistrationComponent = () => {
       return acc;
     }, {} as Record<number, Date | null>)
   );
+  
+  // Modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
+  const [tempVolunteerDate, setTempVolunteerDate] = useState<Date | null>(null);
+  const [registrationToCancel, setRegistrationToCancel] = useState<number | null>(null);
 
-  const handleCancel = (id: number) => {
-    if (confirm(`Bạn có chắc chắn muốn hủy đăng ký sự kiện này?`)) {
-      setRegistrations(prev => prev.filter(reg => reg.id !== id));
-      alert(`Đã hủy đăng ký sự kiện thành công!`);
-    }
+  const openEditModal = (reg: any) => {
+    setSelectedRegistration(reg);
+    setTempVolunteerDate(volunteerDates[reg.id] || parseDateString(reg.date));
+    setIsEditModalOpen(true);
   };
 
-  const handleDateChange = (id: number, date: Date | null) => {
-    setVolunteerDates(prev => ({ ...prev, [id]: date }));
+  const openCancelModal = (id: number) => {
+    setRegistrationToCancel(id);
+    setIsCancelModalOpen(true);
   };
 
-  const handleSaveDate = (id: number) => {
-    if (!volunteerDates[id]) {
+  const closeAllModals = () => {
+    setIsEditModalOpen(false);
+    setIsCancelModalOpen(false);
+    setSelectedRegistration(null);
+    setTempVolunteerDate(null);
+    setRegistrationToCancel(null);
+  };
+
+  const handleSaveDate = () => {
+    if (!tempVolunteerDate) {
       alert('Vui lòng chọn ngày tình nguyện');
       return;
     }
     
-    const formattedDate = volunteerDates[id]?.toLocaleDateString('en-GB');
-    alert(`Đã cập nhật ngày tình nguyện thành ${formattedDate}`);
-    setEditingId(null);
+    setVolunteerDates(prev => ({ ...prev, [selectedRegistration.id]: tempVolunteerDate }));
+    closeAllModals();
+  };
+
+  const handleConfirmCancel = () => {
+    if (registrationToCancel) {
+      setRegistrations(prev => prev.filter(reg => reg.id !== registrationToCancel));
+      closeAllModals();
+      
+      // Show success feedback
+      setIsCancelModalOpen(false);
+      setTimeout(() => {
+        alert(`Đã hủy đăng ký sự kiện thành công!`);
+      }, 300);
+    }
   };
 
   const parseDateString = (dateString: string): Date => {
@@ -683,44 +709,20 @@ const RegistrationComponent = () => {
                   </p>
                   {reg.type === "volunteer" && (
                     <div className="mt-2">
-                      {editingId === reg.id ? (
-                        <div className="flex items-center gap-2">
-                          <DatePicker
-                            value={volunteerDates[reg.id]}
-                            onChange={(date: Date | null) => handleDateChange(reg.id, date)}
-                            className="border rounded-md px-3 py-1"
-                            minDate={parseDateString(reg.date)}
-                            placeholderText="Chọn ngày tình nguyện"
-                          />
-                          <button
-                            onClick={() => handleSaveDate(reg.id)}
-                            className="bg-[#C14B53] text-white px-3 py-1 rounded-md text-sm hover:bg-[#a83a42]"
-                          >
-                            Lưu
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="text-gray-600 px-3 py-1 rounded-md text-sm border hover:bg-gray-50"
-                          >
-                            Hủy
-                          </button>
-                        </div>
-                      ) : (
-                        <p className="text-gray-600">
-                          <span className="font-medium">Ngày tình nguyện:</span> {volunteerDates[reg.id]?.toLocaleDateString('en-GB') || reg.date}
-                          <button
-                            onClick={() => setEditingId(reg.id)}
-                            className="ml-2 text-[#C14B53] text-sm hover:underline"
-                          >
-                            Chỉnh sửa
-                          </button>
-                        </p>
-                      )}
+                      <p className="text-gray-600">
+                        <span className="font-medium">Ngày tình nguyện:</span> {volunteerDates[reg.id]?.toLocaleDateString('en-GB') || reg.date}
+                        <button
+                          onClick={() => openEditModal(reg)}
+                          className="ml-2 text-[#C14B53] text-sm hover:underline"
+                        >
+                          Chỉnh sửa
+                        </button>
+                      </p>
                     </div>
                   )}
                 </div>
                 <button
-                  onClick={() => handleCancel(reg.id)}
+                  onClick={() => openCancelModal(reg.id)}
                   className="text-red-500 hover:text-red-700 text-sm font-medium ml-4"
                 >
                   Hủy đăng ký
@@ -730,6 +732,105 @@ const RegistrationComponent = () => {
           ))}
         </div>
       )}
+
+      {/* Edit Volunteer Date Modal */}
+      <AnimatePresence>
+        {isEditModalOpen && selectedRegistration && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={closeAllModals}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-[#C14B53] mb-4">
+                Chỉnh sửa ngày tình nguyện
+              </h3>
+              
+              <p className="mb-2 font-medium">{selectedRegistration.eventName}</p>
+              
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">
+                  Ngày tình nguyện
+                </label>
+                <DatePicker
+                  value={tempVolunteerDate}
+                  onChange={(date: Date | null) => setTempVolunteerDate(date)}
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#C14B53]"
+                  minDate={parseDateString(selectedRegistration.date)}
+                  placeholderText="Chọn ngày tình nguyện"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={closeAllModals}
+                  className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleSaveDate}
+                  className="px-4 py-2 bg-[#C14B53] text-white rounded-md hover:bg-[#a83a42]"
+                >
+                  Lưu thay đổi
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cancel Registration Confirmation Modal */}
+      <AnimatePresence>
+        {isCancelModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={closeAllModals}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-[#C14B53] mb-4">
+                Xác nhận hủy đăng ký
+              </h3>
+              
+              <p className="mb-4">
+                Bạn có chắc chắn muốn hủy đăng ký tham gia sự kiện này không?
+              </p>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={closeAllModals}
+                  className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50"
+                >
+                  Quay lại
+                </button>
+                <button
+                  onClick={handleConfirmCancel}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                >
+                  Xác nhận hủy
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
