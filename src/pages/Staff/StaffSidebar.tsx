@@ -9,7 +9,6 @@ interface SidebarProps {
 const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   const location = useLocation();
 
-  // Define your navigation items with their paths
   const navItems = [
     {
       id: "inventory",
