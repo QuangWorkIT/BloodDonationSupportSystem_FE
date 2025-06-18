@@ -7,7 +7,7 @@ export default function StaffManageBloodAnalysisPage() {
     <>
       <StaffNavbar />
       <div className="flex">
-        <StaffSidebar activeItem="" setActiveItem={() => {}} />
+        <StaffSidebar activeItem="waiting-analysis" setActiveItem={() => {}} />
         <EventList />
       </div>
     </>
