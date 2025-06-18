@@ -6,9 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
-import api from '@/lib/instance'
 import { useAuth } from "@/hooks/authen/AuthContext";
-import { getRole } from "@/utils/jwt"
+import { getUser } from "@/utils/permisson";
+import api from '@/lib/instance'
+
 
 const formSchema = z.object({
   phone: z.string().min(10, "Số điện thoại không hợp lệ"),
@@ -23,7 +24,7 @@ declare global {
 
 const clientID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 export default function LoginForm() {
-  const { setToken } = useAuth()
+  const { setToken, setUser } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,17 +47,17 @@ export default function LoginForm() {
         console.warn("Login unsuccessful:", data);
         return;
       }
-
       setToken(data.token);
-      const role = getRole(data.token)
-      if (role.length === 0) {
-        setError('Something wrong')
+
+      const user = getUser(data.token)
+      if (user === null) {
+        setError('Something wrong when fetching user')
         return
       }
+      setUser(user)
 
-      if (role === 'Member') navigate('/', { replace: true })
-      if (role === 'Staff') navigate('/staff', { replace: true })
-      if (role === 'Admin') navigate('/admin', { replace: true })
+      const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
+      navigate(path, { replace: true })
 
     } catch (error) {
       console.log("Login error:", error);
@@ -71,21 +72,21 @@ export default function LoginForm() {
       try {
         const res = await api.post('/api/Auth/google', { credential: response.credential })
         const data = res.data
-
         setToken(data.token); // store token
-        const role = getRole(data.token)
-        if (!role) {
-          setError('Role is wrong')
+
+        const user = getUser(data.token)
+        if (user === null) {
+          setError('Something wrong when fetching user')
           return
         }
-
-        if (role === 'Member') navigate('/', { replace: true })
-        if (role === 'Staff') navigate('/staff', { replace: true })
-        if (role === 'Admin') navigate('/admin', { replace: true })
+        setUser(user)
+        
+        const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
+        navigate(path, { replace: true })
 
       } catch (error) {
-        console.log("google error ", error)
-        setError('Login failed! Please try again.')
+        console.log("Login error:", error);
+        setError("Login failed! Please try again.");
       }
     };
 

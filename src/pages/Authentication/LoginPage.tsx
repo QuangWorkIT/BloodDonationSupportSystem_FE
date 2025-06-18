@@ -1,4 +1,4 @@
-import LoginForm from "@/components/layout/LoginForm"
+import LoginForm from "@/pages/Authentication/LoginForm"
 import BloodDonationNavbar from "@/components/layout/Navbar"
 import Footer from "@/components/layout/Footer"
 
