@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// this instance uses for authentication such as: login, register, update profile
+// this instance uses for calling api
 const api = axios.create({
     baseURL: "https://blood-donation-support-system.somee.com/",
     timeout: 5000, // time out 5s

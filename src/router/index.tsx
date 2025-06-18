@@ -17,6 +17,12 @@ import Forbidden from '@/pages/Error/Forbidden';
 import ProtectedRoute from './ProtectedRoute';
 import Compatibility from '@/pages/BloodCompatibility/BloodCompatibilityPage'
 import AccountDashboard from '@/pages/Admin/AccountDashboard';
+import Staffhome from '@/pages/Staff';
+import BloodAnalysisEventList from '@/pages/Staff/BloodAnalysis/BloodAnalysisEventList';
+import BloodCollectEventList from '@/pages/Staff/BloodCollection/BloodCollectEventList';
+import ReceiptEventList from '@/pages/Staff/ManageReceipt/ReceiptEventList';
+import StandardReceiptForm from '@/pages/Staff/StandardReceiptRequest/StandardReceiptForm';
+import BloodAnalysisForm from '@/pages/Staff/BloodAnalysis/BloodAnalysisForm';
 
 
 // define routes
@@ -38,9 +44,21 @@ const routes: RouteObject[] = [
     { path: '/compatibility', element: <Compatibility /> },
 
     {
-        path: '/staff', element: <div>Staff home</div>
+        path: '/staff', element: (
+            <ProtectedRoute element={<Staffhome />} allowRole={["Staff"]} />
+        ),
+        children: [
+            { index: true, element: <h1>Inventory</h1> },
+
+            { path: 'receipt', element: <ReceiptEventList /> },
+
+            { path: 'bloodcollect', element: <BloodCollectEventList /> },
+
+            { path: 'bloodanalysis', element: <BloodAnalysisEventList /> }
+        ]
     },
 
+    {path: '/test', element: <BloodAnalysisForm />},
     {
         path: '/admin', element: (
             <ProtectedRoute element={<AdminHome />} allowRole={["admin"]} />

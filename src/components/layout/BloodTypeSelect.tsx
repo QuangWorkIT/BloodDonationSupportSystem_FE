@@ -11,6 +11,22 @@ interface SelectProps {
     defaultVal?: string
 }
 
+export function BloodComponentSelect({ onValueChange, defaultVal }: SelectProps) {
+    return (
+        <Select onValueChange={onValueChange} defaultValue={defaultVal}>
+            <SelectTrigger className="w-full">
+                <SelectValue placeholder="Chọn loại máu" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="redbloodcell">Hồng cầu</SelectItem>
+                <SelectItem value="whitebloodcell">Bạch cầu</SelectItem>
+                <SelectItem value="platelet">Tiểu cầu</SelectItem>
+                <SelectItem value="plasma">Huyết tương</SelectItem>
+            </SelectContent>
+        </Select>
+    )
+}
+
 export function BloodTypeSelectRh({ onValueChange, defaultVal }: SelectProps) {
     return (
         <Select onValueChange={onValueChange} defaultValue={defaultVal}>

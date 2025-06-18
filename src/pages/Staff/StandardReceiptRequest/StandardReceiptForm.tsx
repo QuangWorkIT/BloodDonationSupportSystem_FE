@@ -11,6 +11,9 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
+interface StandardReceiptProps {
+  onCick: () => void;
+}
 const formSchema = z.object({
   fullName: z.string().min(1, "Không được để trống"),
   address: z.string().min(1, "Không được để trống"),
@@ -25,7 +28,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const StandardReceiptForm = () => {
+const StandardReceiptForm = ({onCick}: StandardReceiptProps) => {
   const [date, setDate] = useState<Date>();
 
   const form = useForm<FormData>({
@@ -50,6 +53,7 @@ const StandardReceiptForm = () => {
       <div className="flex justify-between">
         <h2 className="text-[27px] font-normal mb-6 text-gray-500">Đơn yêu cầu nhận máu</h2>
         <svg
+          onClick={onCick}
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"

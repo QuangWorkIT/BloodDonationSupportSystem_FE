@@ -13,33 +13,33 @@ const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   const navItems = [
     {
       id: "inventory",
-      path: "/",
+      path: "/staff/",
       icon: <Archive className="w-6 h-6" />,
       label: "Kho máu",
     },
     {
       id: "donation-management",
-      path: "/test",
+      path: "/staff/receipt",
       icon: <Droplet className="w-6 h-6" />,
       label: "Quản lý hiến máu",
     },
     {
       id: "waiting-receive",
-      path: "/",
+      path: "/staff/bloodcollect",
       icon: <HeartPlus className="w-6 h-6" />,
       label: "Chờ lấy máu",
     },
     {
       id: "waiting-analysis",
-      path: "/",
+      path: "/staff/bloodanalysis",
       icon: <SquareActivity className="w-6 h-6" />,
       label: "Chờ xét nghiệm máu",
     },
   ];
 
   return (
-    <aside className="bg-white h-full w-64 border-r border-gray-300 shadow-lg">
-      <nav className="py-6 px-3 space-y-4 flex-1 flex flex-col">
+    <aside className="bg-white min-h-screen w-[250px] border-r border-gray-300 shadow-lg">
+      <nav className="py-6 px-3 space-y-4 flex-1 flex flex-col mt-5">
         {navItems.map((item) => (
           <Link
             key={item.id}
