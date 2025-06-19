@@ -1,167 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
-
-// Simple DatePicker component
-const DatePicker = ({ value, onChange, className, minDate, maxDate, placeholderText }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(value || new Date());
-  const [inputValue, setInputValue] = useState("");
-
-  // Update input value when value prop changes
-  React.useEffect(() => {
-    if (value) {
-      const formatted = formatDate(value);
-      setInputValue(formatted);
-    } else {
-      setInputValue("");
-    }
-  }, [value]);
-
-  const formatDate = (date: { getDate: () => { (): unknown; new(): unknown; toString: { (): string; new(): unknown; }; }; getMonth: () => number; getFullYear: () => unknown; }) => {
-    if (!date) return "";
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
-  const parseDate = (dateString: unknown) => {
-    if (!dateString) return null;
-    const [day, month, year] = dateString.split('/').map(Number);
-    return new Date(year, month - 1, day);
-  };
-
-  const getDaysInMonth = (date: { getFullYear: () => unknown; getMonth: () => unknown; }) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    const days = [];
-    
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-    
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(new Date(year, month, day));
-    }
-    
-    return days;
-  };
-
-  const isDateDisabled = (date: number | Date | null) => {
-    if (!date) return true;
-    if (minDate && date < minDate) return true;
-    if (maxDate && date > maxDate) return true;
-    return false;
-  };
-
-  const handleDateClick = (date: Date) => {
-    if (isDateDisabled(date)) return;
-    onChange(date);
-    setIsOpen(false);
-  };
-
-  const handleInputChange = (e: { target: { value: unknown; }; }) => {
-    const value = e.target.value;
-    setInputValue(value);
-    
-    // Try to parse the date if it matches the format
-    if (value.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-      const parsedDate = parseDate(value);
-      if (parsedDate && !isNaN(parsedDate.getTime())) {
-        onChange(parsedDate);
-      }
-    }
-  };
-
-  const monthNames = [
-    "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
-    "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
-  ];
-
-  const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-
-  return (
-    <div className="relative">
-      <div className="relative">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          onClick={() => setIsOpen(!isOpen)}
-          placeholder={placeholderText || "dd/MM/yyyy"}
-          className={`${className} pr-10`}
-          readOnly={false}
-        />
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="absolute right-3 top-1/2 transform -translate-y-1/2"
-        >
-          <Calendar size={16} className="text-gray-400" />
-        </button>
-      </div>
-      
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg z-50 p-4 min-w-80">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              type="button"
-              onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <div className="font-medium">
-              {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-            </div>
-            <button
-              type="button"
-              onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-              className="p-1 hover:bg-gray-100 rounded"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {dayNames.map(day => (
-              <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
-                {day}
-              </div>
-            ))}
-          </div>
-          
-          <div className="grid grid-cols-7 gap-1">
-            {getDaysInMonth(currentMonth).map((date, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => date && handleDateClick(date)}
-                disabled={isDateDisabled(date)}
-                className={`
-                  p-2 text-sm rounded hover:bg-gray-100 
-                  ${!date ? "invisible" : ""}
-                  ${isDateDisabled(date) ? "text-gray-300 cursor-not-allowed" : "cursor-pointer"}
-                  ${value && date && date.toDateString() === value.toDateString() ? "bg-[#C14B53] text-white hover:bg-[#C14B53]" : ""}
-                `}
-              >
-                {date ? date.getDate() : ""}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+import DatePicker from "../ui/datepicker";
 
 // Define types for our form data and errors
 type FormData = {
@@ -184,6 +23,66 @@ type FormErrors = {
 
 type FormField = keyof FormData;
 
+// Feedback Modal component
+const FeedbackModal = ({ isOpen, onClose, title, message, type = "info" }: { isOpen: boolean; onClose: () => void; title: string; message: string; type?: "info" | "success" | "error" | "warning" }) => {
+  const typeColors = {
+    info: "bg-blue-500",
+    success: "bg-green-500",
+    error: "bg-red-500",
+    warning: "bg-yellow-500",
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={`w-16 h-16 rounded-full ${typeColors[type]} flex items-center justify-center mx-auto mb-4`}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                {type === "success" ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                ) : type === "error" ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                )}
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-center mb-2">{title}</h3>
+            <p className="text-gray-600 text-center mb-6">{message}</p>
+            <div className="flex justify-center">
+              <button
+                onClick={onClose}
+                className={`px-6 py-2 ${type === "error" ? "bg-red-500" : type === "success" ? "bg-green-500" : type === "warning" ? "bg-yellow-500" : "bg-blue-500"} text-white rounded-md hover:opacity-90`}
+              >
+                Đóng
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 // AccountEdit component with validation
 const AccountEdit = () => {
   const [formData, setFormData] = useState<FormData>({
@@ -204,48 +103,68 @@ const AccountEdit = () => {
     bloodType: "",
   });
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   const bloodTypeOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
-  const validateField = (name: FormField, value: any): string => {
+  const validateField = (name: FormField, value: unknown): string => {
     let error = "";
-
+  
     switch (name) {
       case "fullName":
-        if (!value.trim()) error = "Họ và tên là bắt buộc";
-        else if (value.length < 5) error = "Họ và tên quá ngắn";
+        if (typeof value !== "string") {
+          error = "Họ và tên phải là chuỗi";
+        } else if (!value.trim()) {
+          error = "Họ và tên là bắt buộc";
+        } else if (value.length < 5) {
+          error = "Họ và tên quá ngắn";
+        }
         break;
       case "gender":
-        if (!value) error = "Vui lòng chọn giới tính";
+        if (value !== "male" && value !== "female") {
+          error = "Vui lòng chọn giới tính";
+        }
         break;
       case "birthDate":
-        if (!value) error = "Vui lòng chọn ngày sinh";
-        else {
+        if (!(value instanceof Date)) {
+          error = "Vui lòng chọn ngày sinh";
+        } else {
           const today = new Date();
-          const birthDate = new Date(value);
+          const birthDate = value;
           const age = today.getFullYear() - birthDate.getFullYear();
           if (age < 18) error = "Bạn phải từ 18 tuổi trở lên";
         }
         break;
       case "phone":
-        if (!value.trim()) error = "Số điện thoại là bắt buộc";
-        else if (!/^\d{10,11}$/.test(value)) error = "Số điện thoại không hợp lệ";
+        if (typeof value !== "string") {
+          error = "Số điện thoại phải là chuỗi";
+        } else if (!value.trim()) {
+          error = "Số điện thoại là bắt buộc";
+        } else if (!/^\d{10,11}$/.test(value)) {
+          error = "Số điện thoại không hợp lệ";
+        }
         break;
       case "email":
-        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        if (value && typeof value === "string" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
           error = "Email không hợp lệ";
         }
         break;
       case "bloodType":
-        if (!value.trim()) error = "Nhóm máu là bắt buộc";
+        if (typeof value !== "string") {
+          error = "Nhóm máu phải là chuỗi";
+        } else if (!value.trim()) {
+          error = "Nhóm máu là bắt buộc";
+        }
         break;
       default: {
         const _exhaustiveCheck: never = name;
         return _exhaustiveCheck;
       }
     }
-
+  
     return error;
   };
+  
 
   const handleChange = (name: FormField, value: string | Date) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -273,7 +192,7 @@ const AccountEdit = () => {
     if (isValid) {
       // Submit form
       console.log("Form submitted:", formData);
-      alert("Thông tin đã được cập nhật thành công!");
+      setShowSuccessModal(true);
     }
   };
 
@@ -414,6 +333,14 @@ const AccountEdit = () => {
           </motion.button>
         </div>
       </form>
+
+      <FeedbackModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Thành công"
+        message="Thông tin đã được cập nhật thành công!"
+        type="success"
+      />
     </motion.div>
   );
 };
@@ -446,6 +373,8 @@ const DonationHistory = () => {
       address: "12 Chu Văn An, Ba Đình, Hà Nội",
     },
   ];
+
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   return (
     <motion.div
@@ -488,11 +417,19 @@ const DonationHistory = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
-          onClick={() => alert("Xem chi tiết lịch sử hiến máu")}
+          onClick={() => setShowDetailsModal(true)}
         >
           Xem chi tiết
         </motion.button>
       </div>
+
+      <FeedbackModal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        title="Chi tiết lịch sử hiến máu"
+        message="Đây là chi tiết đầy đủ về lịch sử hiến máu của bạn."
+        type="info"
+      />
     </motion.div>
   );
 };
@@ -506,18 +443,31 @@ const SettingsSidebar = () => {
     logoutOtherDevices: false,
   });
 
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLogoutSuccess, setShowLogoutSuccess] = useState(false);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+
   const handleSettingChange = (setting: string, value: boolean) => {
-    setSettings(prev => ({ ...prev, [setting]: value }));
+    setSettings((prev) => ({ ...prev, [setting]: value }));
   };
 
   const handleLogout = () => {
-    alert("Đăng xuất thành công!");
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    setShowLogoutSuccess(true);
   };
 
   const handleDeleteAccount = () => {
-    if (confirm("Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.")) {
-      alert("Tài khoản đã được xóa.");
-    }
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    setShowDeleteModal(false);
+    setShowDeleteSuccess(true);
   };
 
   return (
@@ -530,7 +480,7 @@ const SettingsSidebar = () => {
       </div>
 
       <div className="mb-6">
-        <button 
+        <button
           onClick={handleLogout}
           className="w-full text-[#C14B53] hover:bg-gray-100 py-2 rounded-md text-left px-4"
         >
@@ -541,56 +491,120 @@ const SettingsSidebar = () => {
       <h3 className="font-medium text-lg mb-4">Cài đặt</h3>
       <div className="space-y-3 mb-6">
         <label className="flex items-center">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             className="text-[#C14B53] focus:ring-[#C14B53] rounded"
             checked={settings.smsNotifications}
-            onChange={(e) => handleSettingChange('smsNotifications', e.target.checked)}
+            onChange={(e) => handleSettingChange("smsNotifications", e.target.checked)}
           />
           <span className="ml-2">Nhận thông báo (SMS) hiến máu gần đây</span>
         </label>
         <label className="flex items-center">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             className="text-[#C14B53] focus:ring-[#C14B53] rounded"
             checked={settings.showDonationStatus}
-            onChange={(e) => handleSettingChange('showDonationStatus', e.target.checked)}
+            onChange={(e) => handleSettingChange("showDonationStatus", e.target.checked)}
           />
           <span className="ml-2">Hiển thị trạng thái sẵn sàng hiến máu</span>
         </label>
         <label className="flex items-center">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             className="text-[#C14B53] focus:ring-[#C14B53] rounded"
             checked={settings.autoUpdate}
-            onChange={(e) => handleSettingChange('autoUpdate', e.target.checked)}
+            onChange={(e) => handleSettingChange("autoUpdate", e.target.checked)}
           />
           <span className="ml-2">Tự động cập nhật hệ thống (nếu có)</span>
         </label>
         <label className="flex items-center">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             className="text-[#C14B53] focus:ring-[#C14B53] rounded"
             checked={settings.logoutOtherDevices}
-            onChange={(e) => handleSettingChange('logoutOtherDevices', e.target.checked)}
+            onChange={(e) => handleSettingChange("logoutOtherDevices", e.target.checked)}
           />
           <span className="ml-2">Đăng xuất khỏi các thiết bị khác</span>
         </label>
       </div>
 
       <div className="pt-4 border-t">
-        <button 
-          onClick={handleDeleteAccount}
-          className="text-red-500 hover:underline"
-        >
+        <button onClick={handleDeleteAccount} className="text-red-500 hover:underline">
           Xóa tài khoản
         </button>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <FeedbackModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title="Xác nhận đăng xuất"
+        message="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này không?"
+        type="warning"
+      >
+        <div className="flex justify-center space-x-4 mt-4">
+          <button
+            onClick={() => setShowLogoutModal(false)}
+            className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={confirmLogout}
+            className="px-4 py-2 bg-[#C14B53] text-white rounded-md hover:bg-[#a83a42]"
+          >
+            Xác nhận
+          </button>
+        </div>
+      </FeedbackModal>
+
+      {/* Logout Success Modal */}
+      <FeedbackModal
+        isOpen={showLogoutSuccess}
+        onClose={() => setShowLogoutSuccess(false)}
+        title="Đăng xuất thành công"
+        message="Bạn đã đăng xuất khỏi tài khoản thành công."
+        type="success"
+      />
+
+      {/* Delete Account Confirmation Modal */}
+
+      <FeedbackModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Xác nhận xóa tài khoản"
+        message="Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn."
+        type="error"
+      >
+        <div className="flex justify-center space-x-4 mt-4">
+          <button
+            onClick={() => setShowDeleteModal(false)}
+            className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={confirmDeleteAccount}
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+          >
+            Xác nhận xóa
+          </button>
+        </div>
+      </FeedbackModal>
+
+      {/* Delete Account Success Modal */}
+      <FeedbackModal
+        isOpen={showDeleteSuccess}
+        onClose={() => setShowDeleteSuccess(false)}
+        title="Tài khoản đã bị xóa"
+        message="Tài khoản của bạn đã được xóa thành công."
+        type="success"
+      />
     </div>
   );
 };
 
-// Registration component with working DatePicker// Registration component with modals for all actions
+// Registration component with working DatePicker
 const RegistrationComponent = () => {
   const [registrations, setRegistrations] = useState([
     {
@@ -600,7 +614,7 @@ const RegistrationComponent = () => {
       time: "08:00 - 12:00",
       location: "Cung Văn hóa Hữu nghị Việt - Xô, 91 Trần Hưng Đạo, Hà Nội",
       type: "normal",
-      registeredDate: "10/01/2025"
+      registeredDate: "10/01/2025",
     },
     {
       id: 2,
@@ -610,14 +624,14 @@ const RegistrationComponent = () => {
       location: "Bệnh viện Bạch Mai, 78 Giải Phóng, Hà Nội",
       type: "volunteer",
       registeredDate: "05/02/2025",
-      volunteerDate: "20/03/2025"
+      volunteerDate: "20/03/2025",
     },
   ]);
 
   const [volunteerDates, setVolunteerDates] = useState<Record<number, Date | null>>(
     registrations.reduce((acc, reg) => {
       if (reg.type === "volunteer" && reg.volunteerDate) {
-        const dateParts = reg.volunteerDate.split('/');
+        const dateParts = reg.volunteerDate.split("/");
         acc[reg.id] = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
       } else {
         acc[reg.id] = null;
@@ -625,15 +639,19 @@ const RegistrationComponent = () => {
       return acc;
     }, {} as Record<number, Date | null>)
   );
-  
+
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [showCancelSuccess, setShowCancelSuccess] = useState(false);
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [showDateError, setShowDateError] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
   const [tempVolunteerDate, setTempVolunteerDate] = useState<Date | null>(null);
   const [registrationToCancel, setRegistrationToCancel] = useState<number | null>(null);
 
-  const openEditModal = (reg: any) => {
+  const openEditModal = (reg: unknown) => {
     setSelectedRegistration(reg);
     setTempVolunteerDate(volunteerDates[reg.id] || parseDateString(reg.date));
     setIsEditModalOpen(true);
@@ -654,29 +672,33 @@ const RegistrationComponent = () => {
 
   const handleSaveDate = () => {
     if (!tempVolunteerDate) {
-      alert('Vui lòng chọn ngày tình nguyện');
+      setShowDateError(true);
       return;
     }
-    
-    setVolunteerDates(prev => ({ ...prev, [selectedRegistration.id]: tempVolunteerDate }));
-    closeAllModals();
+
+    // Ensure we're passing a Date object
+    const selectedDate = tempVolunteerDate ? new Date(tempVolunteerDate) : null;
+
+    if (selectedDate && selectedRegistration) {
+      setVolunteerDates((prev) => ({
+        ...prev,
+        [selectedRegistration.id]: selectedDate,
+      }));
+      closeAllModals();
+      setShowSaveSuccess(true);
+    }
   };
 
   const handleConfirmCancel = () => {
     if (registrationToCancel) {
-      setRegistrations(prev => prev.filter(reg => reg.id !== registrationToCancel));
+      setRegistrations((prev) => prev.filter((reg) => reg.id !== registrationToCancel));
       closeAllModals();
-      
-      // Show success feedback
-      setIsCancelModalOpen(false);
-      setTimeout(() => {
-        alert(`Đã hủy đăng ký sự kiện thành công!`);
-      }, 300);
+      setShowCancelSuccess(true);
     }
   };
 
   const parseDateString = (dateString: string): Date => {
-    const [day, month, year] = dateString.split('/').map(Number);
+    const [day, month, year] = dateString.split("/").map(Number);
     return new Date(year, month - 1, day);
   };
 
@@ -693,7 +715,7 @@ const RegistrationComponent = () => {
         <p className="text-gray-500">Bạn chưa đăng ký tham gia sự kiện hiến máu nào.</p>
       ) : (
         <div className="space-y-6">
-          {registrations.map(reg => (
+          {registrations.map((reg) => (
             <div key={reg.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -710,10 +732,11 @@ const RegistrationComponent = () => {
                   {reg.type === "volunteer" && (
                     <div className="mt-2">
                       <p className="text-gray-600">
-                        <span className="font-medium">Ngày tình nguyện:</span> {volunteerDates[reg.id]?.toLocaleDateString('en-GB') || reg.date}
+                        <span className="font-medium">Ngày tình nguyện:</span>{" "}
+                        {volunteerDates[reg.id]?.toLocaleDateString("en-GB") || reg.date}
                         <button
                           onClick={() => openEditModal(reg)}
-                          className="ml-2 text-[#C14B53] text-sm hover:underline"
+                          className="ml-2 text-[#C14B53] text-sm hover:underline cursor-pointer"
                         >
                           Chỉnh sửa
                         </button>
@@ -723,7 +746,7 @@ const RegistrationComponent = () => {
                 </div>
                 <button
                   onClick={() => openCancelModal(reg.id)}
-                  className="text-red-500 hover:text-red-700 text-sm font-medium ml-4"
+                  className="text-red-500 hover:text-red-700 text-sm font-medium ml-4 cursor-pointer"
                 >
                   Hủy đăng ký
                 </button>
@@ -750,16 +773,12 @@ const RegistrationComponent = () => {
               className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-[#C14B53] mb-4">
-                Chỉnh sửa ngày tình nguyện
-              </h3>
-              
+              <h3 className="text-lg font-bold text-[#C14B53] mb-4">Chỉnh sửa ngày tình nguyện</h3>
+
               <p className="mb-2 font-medium">{selectedRegistration.eventName}</p>
-              
+
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">
-                  Ngày tình nguyện
-                </label>
+                <label className="block text-gray-700 mb-2">Ngày tình nguyện</label>
                 <DatePicker
                   value={tempVolunteerDate}
                   onChange={(date: Date | null) => setTempVolunteerDate(date)}
@@ -768,17 +787,14 @@ const RegistrationComponent = () => {
                   placeholderText="Chọn ngày tình nguyện"
                 />
               </div>
-              
+
               <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={closeAllModals}
-                  className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50"
-                >
+                <button onClick={closeAllModals} className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50">
                   Hủy
                 </button>
                 <button
                   onClick={handleSaveDate}
-                  className="px-4 py-2 bg-[#C14B53] text-white rounded-md hover:bg-[#a83a42]"
+                  className="px-4 py-2 bg-[#C14B53] text-white rounded-md hover:bg-[#a83a42] cursor-pointer"
                 >
                   Lưu thay đổi
                 </button>
@@ -805,24 +821,17 @@ const RegistrationComponent = () => {
               className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-[#C14B53] mb-4">
-                Xác nhận hủy đăng ký
-              </h3>
-              
-              <p className="mb-4">
-                Bạn có chắc chắn muốn hủy đăng ký tham gia sự kiện này không?
-              </p>
-              
+              <h3 className="text-lg font-bold text-[#C14B53] mb-4">Xác nhận hủy đăng ký</h3>
+
+              <p className="mb-4">Bạn có chắc chắn muốn hủy đăng ký tham gia sự kiện này không?</p>
+
               <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={closeAllModals}
-                  className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50"
-                >
+                <button onClick={closeAllModals} className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50">
                   Quay lại
                 </button>
                 <button
                   onClick={handleConfirmCancel}
-                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 cursor-pointer"
                 >
                   Xác nhận hủy
                 </button>
@@ -831,6 +840,31 @@ const RegistrationComponent = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Success and Error Modals */}
+      <FeedbackModal
+        isOpen={showCancelSuccess}
+        onClose={() => setShowCancelSuccess(false)}
+        title="Thành công"
+        message="Đã hủy đăng ký sự kiện thành công!"
+        type="success"
+      />
+
+      <FeedbackModal
+        isOpen={showSaveSuccess}
+        onClose={() => setShowSaveSuccess(false)}
+        title="Thành công"
+        message="Ngày tình nguyện đã được cập nhật!"
+        type="success"
+      />
+
+      <FeedbackModal
+        isOpen={showDateError}
+        onClose={() => setShowDateError(false)}
+        title="Lỗi"
+        message="Vui lòng chọn ngày tình nguyện"
+        type="error"
+      />
     </motion.div>
   );
 };
