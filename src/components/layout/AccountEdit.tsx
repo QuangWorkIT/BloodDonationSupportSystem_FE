@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import DatePicker from "./DatePicker";
-import Modal from "./Modal";
+import { AnimatePresence, motion } from "framer-motion";
+import DatePicker from "../ui/datepicker";
+
 
 type FormData = {
   fullName: string;
@@ -42,54 +42,144 @@ const AccountEdit = () => {
     bloodType: "",
   });
 
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const FeedbackModal = ({ 
+    isOpen, 
+    onClose, 
+    title, 
+    message, 
+    type = "info"  }: { 
+    isOpen: boolean; 
+    onClose: () => void; 
+    title: string; 
+    message: string; 
+    type?: "info" | "success" | "error" | "warning";
+    children?: React.ReactNode;
+  }) => {
+    const typeColors = {
+      info: "bg-blue-500",
+      success: "bg-green-500",
+      error: "bg-red-500",
+      warning: "bg-yellow-500",
+    };
+  
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={onClose}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={`w-16 h-16 rounded-full ${typeColors[type]} flex items-center justify-center mx-auto mb-4`}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  {type === "success" ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  ) : type === "error" ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  )}
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-center mb-2">{title}</h3>
+              <p className="text-gray-600 text-center mb-6">{message}</p>
+              <div className="flex justify-center">
+                <button
+                  onClick={onClose}
+                  className={`px-6 py-2 ${type === "error" ? "bg-red-500" : type === "success" ? "bg-green-500" : type === "warning" ? "bg-yellow-500" : "bg-blue-500"} text-white rounded-md hover:opacity-90`}
+                >
+                  Đóng
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  };
+  
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const bloodTypeOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
-  const validateField = (name: FormField, value: any): string => {
+  const validateField = (name: FormField, value: unknown): string => {
     let error = "";
-
+  
     switch (name) {
       case "fullName":
-        if (!value.trim()) error = "Họ và tên là bắt buộc";
-        else if (value.length < 5) error = "Họ và tên quá ngắn";
+        if (typeof value !== "string") {
+          error = "Họ và tên phải là chuỗi";
+        } else if (!value.trim()) {
+          error = "Họ và tên là bắt buộc";
+        } else if (value.length < 5) {
+          error = "Họ và tên quá ngắn";
+        }
         break;
       case "gender":
-        if (!value) error = "Vui lòng chọn giới tính";
+        if (value !== "male" && value !== "female") {
+          error = "Vui lòng chọn giới tính";
+        }
         break;
       case "birthDate":
-        if (!value) error = "Vui lòng chọn ngày sinh";
-        else {
+        if (!(value instanceof Date)) {
+          error = "Vui lòng chọn ngày sinh";
+        } else {
           const today = new Date();
-          const birthDate = new Date(value);
+          const birthDate = value;
           const age = today.getFullYear() - birthDate.getFullYear();
           if (age < 18) error = "Bạn phải từ 18 tuổi trở lên";
         }
         break;
       case "phone":
-        if (!value.trim()) error = "Số điện thoại là bắt buộc";
-        else if (!/^\d{10,11}$/.test(value)) error = "Số điện thoại không hợp lệ";
+        if (typeof value !== "string") {
+          error = "Số điện thoại phải là chuỗi";
+        } else if (!value.trim()) {
+          error = "Số điện thoại là bắt buộc";
+        } else if (!/^\d{10,11}$/.test(value)) {
+          error = "Số điện thoại không hợp lệ";
+        }
         break;
       case "email":
-        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        if (value && typeof value === "string" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
           error = "Email không hợp lệ";
         }
         break;
       case "bloodType":
-        if (!value.trim()) error = "Nhóm máu là bắt buộc";
+        if (typeof value !== "string") {
+          error = "Nhóm máu phải là chuỗi";
+        } else if (!value.trim()) {
+          error = "Nhóm máu là bắt buộc";
+        }
         break;
       default: {
         const _exhaustiveCheck: never = name;
         return _exhaustiveCheck;
       }
     }
-
+  
     return error;
   };
+  
 
-  const handleChange = (name: FormField, value: string | Date | null) => {
+  const handleChange = (name: FormField, value: string | Date) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
+    // Validate on change
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
     }
@@ -98,6 +188,7 @@ const AccountEdit = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate all fields
     const newErrors = {} as FormErrors;
     (Object.keys(formData) as FormField[]).forEach((key) => {
       newErrors[key] = validateField(key, formData[key]);
@@ -105,11 +196,13 @@ const AccountEdit = () => {
 
     setErrors(newErrors);
 
+    // Check if there are any errors
     const isValid = Object.values(newErrors).every((error) => !error);
 
     if (isValid) {
+      // Submit form
       console.log("Form submitted:", formData);
-      setIsSuccessModalOpen(true);
+      setShowSuccessModal(true);
     }
   };
 
@@ -175,7 +268,7 @@ const AccountEdit = () => {
           </label>
           <DatePicker
             value={formData.birthDate}
-            onChange={(date: Date | null) => handleChange("birthDate", date)}
+            onChange={(date: Date) => handleChange("birthDate", date)}
             placeholderText="dd/MM/yyyy"
             className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 ${
               errors.birthDate ? "border-red-500 focus:ring-red-500" : "focus:ring-[#C14B53]"
@@ -251,15 +344,13 @@ const AccountEdit = () => {
         </div>
       </form>
 
-      <Modal
-        isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
+      <FeedbackModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
         title="Thành công"
-        confirmText="Đóng"
-        onConfirm={() => setIsSuccessModalOpen(false)}
-      >
-        <p>Thông tin đã được cập nhật thành công!</p>
-      </Modal>
+        message="Thông tin đã được cập nhật thành công!"
+        type="success"
+      />
     </motion.div>
   );
 };

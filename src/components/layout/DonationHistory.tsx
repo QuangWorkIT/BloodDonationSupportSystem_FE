@@ -1,10 +1,65 @@
-import React from "react";
-import { motion } from "framer-motion";
-import Modal from "./Modal";
+import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
+const FeedbackModal = ({ isOpen, onClose, title, message, type = "info" }: { isOpen: boolean; onClose: () => void; title: string; message: string; type?: "info" | "success" | "error" | "warning" }) => {
+  const typeColors = {
+    info: "bg-blue-500",
+    success: "bg-green-500",
+    error: "bg-red-500",
+    warning: "bg-yellow-500",
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={`w-16 h-16 rounded-full ${typeColors[type]} flex items-center justify-center mx-auto mb-4`}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                {type === "success" ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                ) : type === "error" ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                )}
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-center mb-2">{title}</h3>
+            <p className="text-gray-600 text-center mb-6">{message}</p>
+            <div className="flex justify-center">
+              <button
+                onClick={onClose}
+                className={`px-6 py-2 ${type === "error" ? "bg-red-500" : type === "success" ? "bg-green-500" : type === "warning" ? "bg-yellow-500" : "bg-blue-500"} text-white rounded-md hover:opacity-90`}
+              >
+                Đóng
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 const DonationHistory = () => {
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-
   const donations = [
     {
       date: "01 / 01 / 2024",
@@ -31,6 +86,8 @@ const DonationHistory = () => {
       address: "12 Chu Văn An, Ba Đình, Hà Nội",
     },
   ];
+
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   return (
     <motion.div
@@ -73,28 +130,19 @@ const DonationHistory = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
-          onClick={() => setIsDetailModalOpen(true)}
+          onClick={() => setShowDetailsModal(true)}
         >
           Xem chi tiết
         </motion.button>
       </div>
 
-      <Modal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
+      <FeedbackModal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
         title="Chi tiết lịch sử hiến máu"
-      >
-        <div className="space-y-4">
-          {donations.map((donation, index) => (
-            <div key={index} className="border-b pb-4 last:border-b-0">
-              <h4 className="font-bold text-[#C14B53]">{donation.facility}</h4>
-              <p className="text-gray-600">Ngày: {donation.date}</p>
-              <p className="text-gray-600">Loại hiến máu: {donation.type}</p>
-              <p className="text-gray-600">Địa chỉ: {donation.address}</p>
-            </div>
-          ))}
-        </div>
-      </Modal>
+        message="Đây là chi tiết đầy đủ về lịch sử hiến máu của bạn."
+        type="info"
+      />
     </motion.div>
   );
 };
