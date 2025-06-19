@@ -23,6 +23,7 @@ import BloodCollectEventList from '@/pages/Staff/BloodCollection/BloodCollectEve
 import ReceiptEventList from '@/pages/Staff/ManageReceipt/ReceiptEventList';
 import StandardReceiptForm from '@/pages/Staff/StandardReceiptRequest/StandardReceiptForm';
 import BloodAnalysisForm from '@/pages/Staff/BloodAnalysis/BloodAnalysisForm';
+import DonorLookup from '@/pages/Staff/DonorLookup/DonorLookup';
 
 
 // define routes
@@ -58,7 +59,7 @@ const routes: RouteObject[] = [
         ]
     },
 
-    {path: '/test', element: <BloodAnalysisForm />},
+    {path: '/test', element: <DonorLookup />},
     {
         path: '/admin', element: (
             <ProtectedRoute element={<AdminHome />} allowRole={["admin"]} />
