@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import maleImg from '@/assets/images/male icon.png'
+import { useState } from "react"
 const formSchema = z.object({
     facility: z.string()
         .min(1, "Hãy nhập tên cơ sở y tế")
@@ -46,6 +47,7 @@ const donorFound = [
     }
 ]
 function DonorLookup() {
+    const [isAllChecked, setAllChecked] = useState(false)
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -122,10 +124,10 @@ function DonorLookup() {
                     </Select>
                 </section>
                 {/* list found */}
-                <section className="">
+                <section className="relative flex flex-col  items-end">
                     <div className="py-5">
                         <label htmlFor="selectall">Chọn tất cả</label>
-                        <input type="checkbox" id="selectall" className="ml-2" />
+                        <input type="checkbox" id="selectall" className="ml-5" onClick={() => setAllChecked(!isAllChecked)}/>
                     </div>
                     <div className="flex flex-col gap-10 pb-10 items-center">
                         {donorFound && (
@@ -151,17 +153,21 @@ function DonorLookup() {
 
                                         <div className="absolute right-5 top-5">
                                             <p>Khoảng {donor.location} km</p>
-                                            <input type="checkbox" id="selectall" className="ml-2" />
+                                            <input type="checkbox" id="selectall" className="ml-2" checked = {isAllChecked}/>
                                         </div>
                                     </div>
                                 )
                             })
                         )}
                     </div>
+                    <Button className="bg-[#4F81E5] text-[16px] text-white rounded-[7px] h-[50px] hover:bg-[#2c54a3] hover:cursor-pointer">
+                        Tạo yêu cầu cần máu
+                    </Button>
                 </section>
             </div>
         </div>
     )
 }
+// absolute right-0 
 
 export default DonorLookup
