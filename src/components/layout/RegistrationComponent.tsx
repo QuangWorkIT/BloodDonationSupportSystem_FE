@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import DatePicker from "../ui/datepicker";
@@ -112,14 +113,14 @@ const RegistrationComponent = () => {
   const [showCancelSuccess, setShowCancelSuccess] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [showDateError, setShowDateError] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
   const [tempVolunteerDate, setTempVolunteerDate] = useState<Date | null>(null);
   const [registrationToCancel, setRegistrationToCancel] = useState<number | null>(null);
 
   const openEditModal = (reg: unknown) => {
     setSelectedRegistration(reg);
-    setTempVolunteerDate(volunteerDates[reg.id] || parseDateString(reg.date));
+    setTempVolunteerDate(volunteerDates[(reg as any).id] || parseDateString((reg as any).date));
     setIsEditModalOpen(true);
   };
 
