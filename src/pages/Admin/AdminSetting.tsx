@@ -51,7 +51,8 @@ const AdminSettings = () => {
   };
 
   return (
-    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex w-full">
+    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
+      <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
 
       <main className="flex-1 bg-[#EFEFEF]">
         {/* Header */}
