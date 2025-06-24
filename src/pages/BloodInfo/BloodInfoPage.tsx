@@ -5,7 +5,8 @@ import Footer from '@/components/layout/Footer'
 
 function BloodInfoPage() {
   return (
-    <><BloodDonationNavbar />
+    <>
+    <BloodDonationNavbar />
     <BloodInformation />
     <Footer />
     </>

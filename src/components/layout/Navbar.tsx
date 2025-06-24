@@ -17,7 +17,7 @@ const BloodDonationNavbar = () => {
   const navigate = useNavigate()
   const navItems: NavItem[] = [
     { id: "su-kien", label: "Sự kiện hiến máu", href: "/events" },
-    { id: "trang-chu", label: "Trang chủ", href: "/" },
+    { id: "trang-chu", label: "Trang chủ", href: "/home" },
 
     { id: "thong-tin-mau", label: "Thông tin máu", href: "/bloodinfo" },
     { id: "chia-se", label: "Chia sẻ", href: "/blogs" },
