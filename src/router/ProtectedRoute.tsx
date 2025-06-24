@@ -8,8 +8,8 @@ interface ProtectedRouteProps {
 }
 
 function ProtectedRoute({ element, allowRole }: ProtectedRouteProps) {
-    // const { user } = useAuth()
-    const user = {id:"1", role: "Staff"}
+    const { user } = useAuth()
+    // const user = {id:1, role: 'Admin'}
 
     if (user === null) return <Navigate to={'/login'} replace />
 

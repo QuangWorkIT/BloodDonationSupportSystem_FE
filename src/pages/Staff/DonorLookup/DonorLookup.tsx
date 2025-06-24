@@ -62,7 +62,7 @@ function DonorLookup() {
     }
 
     return (
-        <div className="flex flex-col items-center bg-[#EFEFEF] rounded-t-lg">
+        <div className="flex flex-col items-center bg-gray-100 shadow-md rounded-xl w-full m-4 p-6">
             {/* search engine */}
             <div className="flex justify-center p-10">
                 <Form {...form}>
@@ -168,6 +168,6 @@ function DonorLookup() {
         </div>
     )
 }
-// absolute right-0 
+
 
 export default DonorLookup

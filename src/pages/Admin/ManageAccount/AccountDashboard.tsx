@@ -19,7 +19,6 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import AdminSidebar from "./AdminSidebar";
 import DatePicker from "@/components/ui/datepicker";
 import AddAccountModal from "./AddAccount";
 
@@ -310,7 +309,6 @@ const AccountDashboard = () => {
 
   return (
     <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
-      <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
 
       {/* Main content */}
       <main className="flex-1 bg-[#EFEFEF]">
