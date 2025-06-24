@@ -80,10 +80,10 @@ const routes: RouteObject[] = [
 // create router object
 const router = createBrowserRouter(routes)
 
-function AppRounter() {
+function AppRouter() {
     return (
         <RouterProvider router={router}></RouterProvider>
     )
 }
 
-export default AppRounter
+export default AppRouter
