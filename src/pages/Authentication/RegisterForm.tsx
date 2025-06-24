@@ -2,13 +2,16 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import { getLongLat } from "@/utils/gecoding";
+import api from "@/lib/instance";
+import { AxiosError } from "axios";
+import { getTypeId } from "@/types/BloodCompatibility";
 interface FormData {
   lastName: string;
   firstName: string;
   phone: string;
-  email: string;
+  gmail: string;
   password: string;
   confirmPassword: string;
   bloodType: string;
@@ -25,11 +28,12 @@ interface FormErrors {
 }
 
 export default function RegisterForm() {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState<FormData>({
     lastName: "",
     firstName: "",
     phone: "",
-    email: "",
+    gmail: "",
     password: "",
     confirmPassword: "",
     bloodType: "",
@@ -68,24 +72,49 @@ export default function RegisterForm() {
     return newErrors;
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
       setErrors({});
-      // Submit the form or perform further actions
-      console.log("Form submitted successfully:", formData);
-
       // reconstruct the form data
-      const copyForm = { ...formData } as Record<string, any>;
-      const bloodType = formData.bloodType + formData.rhFactor
-      copyForm.bloodType = bloodType
-
+      const copyForm = { ...formData } as Record<string, string | number>;
+      delete copyForm.bloodType
       delete copyForm.rhFactor
-      
-      console.log("copy ",copyForm)
+      delete copyForm.address
+      delete copyForm.district
+      delete copyForm.province
+      delete copyForm.confirmPassword
+
+      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor)
+      const address = formData.address + " " + formData.district + " " + formData.province + " Việt Nam"
+      try {
+        const geoCoding = await getLongLat(address)
+        if (geoCoding !== null) {
+          copyForm.longitude = geoCoding.longitude
+          copyForm.latitude = geoCoding.latitude
+        }
+        else {
+          console.log("Address not found")
+        }
+      } catch (error) {
+        console.log("Geocoding register failed ", error)
+      }
+
+      // call register post api after formatting data
+      try {
+        console.log("copy ", copyForm)
+        const response = await api.post("/api/register", copyForm)
+        if (response.status === 200) 
+          navigate('/login')
+      } catch (error) {
+        const axiosErr = error as AxiosError
+
+        if(axiosErr.response)
+          console.log("Error register ", axiosErr.response)
+      }
     }
   };
 
@@ -145,15 +174,15 @@ export default function RegisterForm() {
           </div>
 
           <div className="space-y-3">
-            <Label htmlFor="email" className="text-base">
+            <Label htmlFor="gmail" className="text-base">
               Gmail
             </Label>
             <Input
-              id="email"
-              type="email"
+              id="gmail"
+              type="gmail"
               placeholder="Nhập gmail"
               className="py-2 text-base"
-              value={formData.email}
+              value={formData.gmail}
               onChange={handleChange}
             />
           </div>

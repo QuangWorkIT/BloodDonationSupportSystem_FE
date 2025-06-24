@@ -4,22 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { Filter, Layers } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface BlogCardProps {
+  id: number;
   title: string;
   summary: string;
   date: string;
   image: string;
 }
 
-const blogs: BlogCardProps[] = [
+export const blogs: BlogCardProps[] = [
   {
+    id: 1,
     title: "Khởi động tháng nhân đạo 2025",
     summary: "Ngày 8-5, tại TPHCM, Trung ương Hội Chữ thập đỏ Việt Nam và UBND TPHCM phối hợp tổ chức lễ...",
     date: "10/5/2025",
     image: "src/assets/images/event1.png",
   },
   {
+    id:2,
     title: "Các câu hỏi thường gặp",
     summary: "Các câu hỏi thường gặp đối với người hiến máu lần đầu và một số lưu ý quan trọng khác...",
     date: "7/5/2025",
@@ -74,7 +78,9 @@ export default function BlogPage() {
               <div className="p-5 flex flex-col justify-between min-h-[200px]">
                 <p className="text-gray-400 text-lg mb-4 line-clamp-3">{blog.summary}</p>
                 <div className="flex flex-col items-center mt-auto space-y-3">
-                  <Button className="bg-red-700 hover:bg-red-800 text-lg text-white w-[350px] py-6 cursor-pointer">Đọc tiếp...</Button>
+                  <Link to={`/blogcontent/${blog.id}`}>
+                    <Button className="bg-red-700 hover:bg-red-800 text-lg text-white w-[200px] py-6 cursor-pointer">Đọc tiếp...</Button>
+                  </Link>
                   <p className="text-gray-400 place-self-end">Đã đăng ngày {blog.date}</p>
                 </div>
               </div>

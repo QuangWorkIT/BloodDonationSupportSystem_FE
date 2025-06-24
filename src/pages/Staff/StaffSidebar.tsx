@@ -12,7 +12,7 @@ const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   const navItems = [
     {
       id: "inventory",
-      path: "/staff/",
+      path: "/staff",
       icon: <Archive className="w-6 h-6" />,
       label: "Kho máu",
     },
@@ -44,7 +44,7 @@ const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
             key={item.id}
             to={item.path}
             onClick={() => setActiveItem(item.id)}
-            className={`flex items-center gap-6 w-full px-4 py-4 text-md transition-colors rounded-lg cursor-pointer ${
+            className={`flex items-center gap-6 w-full h-[80px] px-4 py-4 text-md transition-colors rounded-lg cursor-pointer ${
               location.pathname === item.path || activeItem === item.id ? "bg-red-400 text-white" : "text-gray-600 hover:bg-red-50 hover:text-red-400"
             }`}
           >

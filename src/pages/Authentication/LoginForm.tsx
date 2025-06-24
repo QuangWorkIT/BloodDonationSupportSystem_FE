@@ -38,7 +38,7 @@ export default function LoginForm() {
   // login by phone number
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const res = await api.post('/api/Auth/login', values);
+      const res = await api.post('/api/login', values);
 
       const data = res.data;
 
@@ -70,7 +70,7 @@ export default function LoginForm() {
     const handleCredentialResponse = async (response: google.accounts.id.CredentialResponse) => {
       console.log("Google JWT Token:", response.credential);
       try {
-        const res = await api.post('/api/Auth/google', { credential: response.credential })
+        const res = await api.post('/api/google', { credential: response.credential })
         const data = res.data
         setToken(data.token); // store token
 
@@ -80,7 +80,7 @@ export default function LoginForm() {
           return
         }
         setUser(user)
-        
+
         const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
         navigate(path, { replace: true })
 

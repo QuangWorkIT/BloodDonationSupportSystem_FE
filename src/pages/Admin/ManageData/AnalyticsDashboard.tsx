@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Doughnut, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
-import AdminSidebar from "./AdminSidebar";
+import AdminSidebar from "../AdminSidebar";
 
 // Register ChartJS components
 ChartJS.register(
@@ -271,8 +271,7 @@ const AnalyticsDashboard = () => {
   };
 
   return (
-    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
-      <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
+    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex w-full">
 
       {/* Main content */}
       <main className="flex-1 bg-[#EFEFEF]">

@@ -1,8 +1,11 @@
+import { Outlet } from "react-router-dom"
+import AdminSidebar from "./AdminSidebar"
 
 function AdminHome() {
   return (
-    <div>
-      Admin home page
+    <div className="flex">
+      <AdminSidebar activeItem="" setActiveItem={() => {}}/>
+      <Outlet />
     </div>
   )
 }
