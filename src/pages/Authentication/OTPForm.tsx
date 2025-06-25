@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function OTPForm() {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
-  const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return; //only number or null input

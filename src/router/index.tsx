@@ -29,6 +29,7 @@ import AdminHelp from '@/pages/Admin/AdminHelp';
 import LoginForm from '@/pages/Authentication/LoginForm';
 import RegisterForm from '@/pages/Authentication/RegisterForm';
 import UserProfile from '@/components/layout/UserProfile';
+import OTPForm from '@/pages/Authentication/OTPForm';
 
 
 // define routes
@@ -38,6 +39,8 @@ const routes: RouteObject[] = [
     { path: '/home', element: <HomePage /> },
 
     { path: '/login', element: <LoginForm /> },
+
+    { path: '/otp', element: <OTPForm /> },
 
     { path: '/register', element: <RegisterForm /> },
 

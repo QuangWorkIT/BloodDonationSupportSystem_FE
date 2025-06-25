@@ -23,6 +23,7 @@ declare global {
 }
 
 const clientID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
 export default function LoginForm() {
   const { setToken, setUser } = useAuth()
   const [error, setError] = useState<string | null>(null)
@@ -97,6 +98,7 @@ export default function LoginForm() {
       window.google.accounts.id.initialize({
         client_id: clientID,
         callback: handleCredentialResponse,
+        auto_select: false
       });
 
       window.google.accounts.id.renderButton(
@@ -108,7 +110,7 @@ export default function LoginForm() {
   }, [clientID]);
 
   return (
-    <div className="w-full h-screen flex items-center justify-center">
+    <div className="w-full h-screen flex items-center justify-center bg-[#F5F5F5]">
       <div className="max-w-md h-max border rounded-lg shadow p-6 space-y-6 bg-white">
         <h2 className="text-2xl font-semibold text-red-600">Đăng nhập</h2>
         <Form {...form}>
@@ -133,7 +135,7 @@ export default function LoginForm() {
                 <FormItem>
                   <FormLabel>Mật khẩu</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Mật khẩu" {...field} />
+                    <Input type="password" placeholder="Mật khẩu" {...field}  />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
