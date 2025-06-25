@@ -189,20 +189,13 @@ const BloodInformation = () => {
   };
 
   const bloodTypes: BloodType[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-  const bloodComponents = ["Hồng cầu", "Huyết tương", "Tiểu cầu"];
+  const bloodComponents = [
+    { name: "Máu Toàn Phần", value: "whole-blood" },
+    { name: "Hồng Cầu", value: "red-blood-cells" },
+    { name: "Huyết Tương", value: "plasma" },
+    { name: "Tiểu Cầu", value: "platelets" },
+  ];
 
-  const getSelectedComponentKey = (componentName: string): BloodComponent => {
-    switch (componentName) {
-      case "Hồng cầu":
-        return "red-blood-cells";
-      case "Huyết tương":
-        return "plasma";
-      case "Tiểu cầu":
-        return "platelets";
-      default:
-        return "red-blood-cells";
-    }
-  };
 
   const currentCompatibilityInfo =
     compatibilityData[selectedBloodType][compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent];
@@ -455,84 +448,91 @@ const BloodInformation = () => {
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-xl font-semibold mb-4 text-[#C14B53]">Tương Thích Thành Phần Máu</h3>
-                  <p className="text-gray-700 mb-6">
-                    Tìm hiểu nhóm máu nào tương thích để truyền các thành phần máu cụ thể.
-                  </p>
-
-                  {/* Blood type and component dropdowns */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  {compatibilityType === "blood-component" && (
                     <div>
-                      <label htmlFor="component-blood-type" className="block text-sm font-medium text-gray-700 mb-2">
-                        Chọn Nhóm Máu
-                      </label>
-                      <select
-                        id="component-blood-type"
-                        value={selectedBloodType}
-                        onChange={(e) => setSelectedBloodType(e.target.value as BloodType)}
-                        className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
-                      >
-                        {bloodTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                      <h3 className="text-xl font-semibold mb-4 text-[#C14B53]">Tương Thích Thành Phần Máu</h3>
+                      <p className="text-gray-700 mb-6">
+                        Tìm hiểu nhóm máu nào tương thích để truyền các thành phần máu cụ thể.
+                      </p>
 
-                    <div>
-                      <label htmlFor="blood-component" className="block text-sm font-medium text-gray-700 mb-2">
-                        Chọn Thành Phần
-                      </label>
-                      <select
-                        id="blood-component"
-                        value={selectedComponent}
-                        onChange={(e) => setSelectedComponent(getSelectedComponentKey(e.target.value))}
-                        className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
-                      >
-                        {bloodComponents.map((component) => (
-                          <option key={component} value={component}>
-                            {component}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Compatibility results */}
-                  <div className="flex flex-col md:flex-row gap-6 justify-center">
-                    {/* Can Donate To */}
-                    <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
-                      <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Hiến Cho</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {currentCompatibilityInfo.donateTo.map((type: string) => (
-                          <span
-                            key={`donate-${type}`}
-                            className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                      {/* Blood type and component dropdowns */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                          <label
+                            htmlFor="component-blood-type"
+                            className="block text-sm font-medium text-gray-700 mb-2"
                           >
-                            <FaCheck className="text-green-500 mr-2" />
-                            <span className="font-medium">{type}</span>
-                          </span>
-                        ))}
+                            Chọn Nhóm Máu
+                          </label>
+                          <select
+                            id="component-blood-type"
+                            value={selectedBloodType}
+                            onChange={(e) => setSelectedBloodType(e.target.value as BloodType)}
+                            className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
+                          >
+                            {bloodTypes.map((type) => (
+                              <option key={type} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label htmlFor="blood-component" className="block text-sm font-medium text-gray-700 mb-2">
+                            Chọn Thành Phần
+                          </label>
+                          <select
+                            id="blood-component"
+                            value={selectedComponent}
+                            onChange={(e) => setSelectedComponent(e.target.value as BloodComponent)}
+                            className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
+                          >
+                            {bloodComponents.map((component) => (
+                              <option key={component.value} value={component.value}>
+                                {component.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Compatibility results */}
+                      <div className="flex flex-col md:flex-row gap-6 justify-center">
+                        {/* Can Donate To */}
+                        <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
+                          <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Hiến Cho</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {currentCompatibilityInfo.donateTo.map((type: string) => (
+                              <span
+                                key={`donate-${type}`}
+                                className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                              >
+                                <FaCheck className="text-green-500 mr-2" />
+                                <span className="font-medium">{type}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Can Receive From */}
+                        <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
+                          <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Nhận Từ</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {currentCompatibilityInfo.receiveFrom.map((type: string) => (
+                              <span
+                                key={`receive-${type}`}
+                                className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                              >
+                                <FaCheck className="text-green-500 mr-2" />
+                                <span className="font-medium">{type}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Can Receive From */}
-                    <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
-                      <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Nhận Từ</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {currentCompatibilityInfo.receiveFrom.map((type: string) => (
-                          <span
-                            key={`receive-${type}`}
-                            className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
-                          >
-                            <FaCheck className="text-green-500 mr-2" />
-                            <span className="font-medium">{type}</span>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
