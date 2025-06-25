@@ -1,19 +1,18 @@
 import axios from 'axios';
 
-// this instance uses for calling api
+// call public api
 const api = axios.create({
     baseURL: "https://blood-donation-support-system.somee.com/",
     timeout: 10000, // time out 10s
     headers: { 'Content-Type': 'Application/json' },
-    // withCredentials: true, // send cookies
 })
 
+
+// call authenticated api
 export const authenApi = axios.create({
     baseURL: "https://blood-donation-support-system.somee.com",
     timeout: 10000,
-    headers: {
-        'Authorization': localStorage.getItem('token')
-    }
+    withCredentials: true
 })
 
 authenApi.interceptors.request.use((config) => {
