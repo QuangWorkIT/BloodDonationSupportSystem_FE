@@ -1,6 +1,6 @@
 import BloodDonationNavbar from "@/components/layout/Navbar"
 import Footer from "@/components/layout/Footer"
-import RegisterForm from "@/components/layout/RegisterForm"
+import RegisterForm from "@/pages/Authentication/RegisterForm"
 function RegisterPage() {
   return (
     <div className="min-h-screen relative">

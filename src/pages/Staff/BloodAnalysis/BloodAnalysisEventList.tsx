@@ -23,7 +23,7 @@ interface Donor {
   time: string;
 }
 
-const EventList = () => {
+const BloodAnalysisEventList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const eventsPerPage = 5;
   const [events, setEvents] = useState([]);
@@ -221,4 +221,4 @@ const EventList = () => {
   );
 };
 
-export default EventList;
+export default BloodAnalysisEventList;

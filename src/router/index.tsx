@@ -16,14 +16,25 @@ import AdminHome from '@/pages/Admin/AdminHome';
 import Forbidden from '@/pages/Error/Forbidden';
 import ProtectedRoute from './ProtectedRoute';
 import Compatibility from '@/pages/BloodCompatibility/BloodCompatibilityPage'
-import AccountDashboard from '@/pages/Admin/AccountDashboard';
+import AccountDashboard from '@/pages/Admin/ManageAccount/AccountDashboard';
+import Staffhome from '@/pages/Staff';
+import BloodAnalysisEventList from '@/pages/Staff/BloodAnalysis/BloodAnalysisEventList';
+import BloodCollectEventList from '@/pages/Staff/BloodCollection/BloodCollectEventList';
+import ReceiptEventList from '@/pages/Staff/ManageReceipt/ReceiptEventList';
+import DonorLookup from '@/pages/Staff/DonorLookup/DonorLookup';
+import BlogContent from '@/pages/Blog/BlogContent';
+import Inventory from '@/pages/Staff/BloodInventory/Inventory';
+import RoleBaseRedirect from './RoleBaseRedirect';
+import AnalyticsDashboard from '@/pages/Admin/ManageData/AnalyticsDashboard';
+import AdminSettings from '@/pages/Admin/AdminSetting';
+import AdminHelp from '@/pages/Admin/AdminHelp';
 
 
 // define routes
 const routes: RouteObject[] = [
-    { path: '/', element: <HomePage /> },
+    { path: '/', element: <RoleBaseRedirect />},
 
-    { path: '/home', element: <Navigate to={'/'} replace /> },
+    { path: '/home', element: <HomePage /> },
 
     { path: '/login', element: <LoginPage /> },
 
@@ -33,24 +44,44 @@ const routes: RouteObject[] = [
 
     { path: '/blogs', element: <BlogPage /> },
 
+    { path: '/blogcontent/:id', element: <BlogContent /> },
+
     { path: '/events', element: <EventPage /> },
 
     { path: '/compatibility', element: <Compatibility /> },
 
     {
-        path: '/staff', element: <div>Staff home</div>
+        path: '/staff', element: (
+            <ProtectedRoute element={<Staffhome />} allowRole={["Staff"]} />
+        ),
+        children: [
+            { index: true, element: <Inventory /> },
+
+            { path: 'receipt', element: <ReceiptEventList /> },
+
+            { path: 'bloodcollect', element: <BloodCollectEventList /> },
+
+            { path: 'bloodanalysis', element: <BloodAnalysisEventList /> },
+
+            { path: 'donorsearch', element: <DonorLookup /> }
+        ]
     },
 
     {
         path: '/admin', element: (
-            <ProtectedRoute element={<AdminHome />} allowRole={["admin"]} />
-        )
-    },
+            <ProtectedRoute element={<AdminHome />} allowRole={["Admin"]} />
+        ), 
+        children: [
+            {index: true, element: <AccountDashboard/>},
 
-    {
-        path: '/admin/accounts', element: (
-            <ProtectedRoute element={<AccountDashboard />} allowRole={["admin"]} />
-        )
+            {path: 'accounts', element: <Navigate to={'/admin'} replace/>},
+
+            {path: 'analytics', element: <AnalyticsDashboard/>},
+
+            {path: 'settings', element: <AdminSettings/>},
+
+            {path: 'help', element: <AdminHelp/>},
+        ]
     },
 
     { path: '/unauthorized', element: <Forbidden /> },
@@ -61,10 +92,10 @@ const routes: RouteObject[] = [
 // create router object
 const router = createBrowserRouter(routes)
 
-function AppRounter() {
+function AppRouter() {
     return (
         <RouterProvider router={router}></RouterProvider>
     )
 }
 
-export default AppRounter
+export default AppRouter

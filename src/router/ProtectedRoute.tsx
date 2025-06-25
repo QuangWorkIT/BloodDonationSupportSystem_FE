@@ -7,13 +7,13 @@ interface ProtectedRouteProps {
     allowRole?: string[]
 }
 
-function ProtectedRoute({element, allowRole}: ProtectedRouteProps) {
-    // const {user} = useAuth()
-    const user = {id:"1", role: "admin"}
+function ProtectedRoute({ element, allowRole }: ProtectedRouteProps) {
+    const { user } = useAuth()
+    // const user = {id:1, role: 'Admin'}
 
-    if(user === null) return <Navigate to={'/login'} replace />
+    if (user === null) return <Navigate to={'/login'} replace />
 
-    if(!allowRole?.includes(user.role)) return <Navigate to={'/unauthorized'} replace />
+    if (!allowRole?.includes(user.role)) return <Navigate to={'/unauthorized'} replace />
     return element
 }
 

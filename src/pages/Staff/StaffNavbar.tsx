@@ -14,8 +14,7 @@ const StaffNavbar = () => {
   const [showSearch, setShowSearch] = useState(false);
 
   const navItems: NavItem[] = [
-    { id: "urgent", label: "Khẩn cấp", href: "/" },
-    { id: "trang-chu", label: "Trang chủ", href: "/" },
+    { id: "urgent", label: "Khẩn cấp", href: "donorsearch" },
     { id: "chia-se", label: "Chia sẻ", href: "/blogs" },
   ];
 
