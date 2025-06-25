@@ -8,7 +8,7 @@ function useRefreshToken(): () => Promise<string | null> {
 
     const refresh = async (): Promise<string | null> => {
         try {
-            const res = await api.post('/api/Auth/renew-token');
+            const res = await api.post('/api/refresh-token');
             if(res.data)
                 return res.data.token;
             else

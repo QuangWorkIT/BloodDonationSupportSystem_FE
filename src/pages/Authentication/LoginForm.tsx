@@ -70,7 +70,7 @@ export default function LoginForm() {
     const handleCredentialResponse = async (response: google.accounts.id.CredentialResponse) => {
       console.log("Google JWT Token:", response.credential);
       try {
-        const res = await api.post("/api/Auth/google", { credential: response.credential });
+        const res = await api.post("/api/google", { credential: response.credential });
         const data = res.data;
         setToken(data.token); // store token
 
