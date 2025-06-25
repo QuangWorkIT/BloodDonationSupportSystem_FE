@@ -104,7 +104,7 @@ export default function RegisterForm() {
       }
 
       localStorage.setItem('tempUser', JSON.stringify(copyForm))
-      navigate('/otp')
+      navigate('/otp', {replace:true})
     }
   };
 

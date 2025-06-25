@@ -11,7 +11,6 @@ import { hiddenPhone } from "@/utils/format";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/instance";
 import { type FormData } from '@/pages/Authentication/RegisterForm'
-import type { AxiosError } from "axios";
 
 export default function OTPForm() {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -90,25 +89,20 @@ export default function OTPForm() {
       return
     }
     try {
-      const creadentail = await confirmationResult?.confirm(enteredOtp)
-      console.log("otp correct: ", creadentail)
+      const credential = await confirmationResult?.confirm(enteredOtp)
+      console.log("otp correct: ", credential)
+
+      console.log(registerUser)
+      // only proceed if OTP is correct
+      const response = await api.post("/api/register", registerUser)
+      if (response.status === 200) {
+        localStorage.removeItem('tempUser')
+        navigate('/login', { replace: true })
+      }
     } catch (error) {
       console.log('failed to verify otp', error)
     }
 
-    // call register post api after verifying otp
-    try {
-      const response = await api.post("/api/register", registerUser)
-      if (response.status === 200){
-        localStorage.removeItem('tempUser')
-        navigate('/login')
-      }
-    } catch (error) {
-      const axiosErr = error as AxiosError
-
-      if (axiosErr.response)
-        console.log("Error register ", axiosErr.response)
-    }
   }
 
   return (
