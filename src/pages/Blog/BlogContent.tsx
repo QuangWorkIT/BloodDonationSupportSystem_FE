@@ -2,15 +2,17 @@ import Footer from "@/components/layout/Footer";
 import BloodDonationNavbar from "@/components/layout/Navbar";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { FaPaperPlane } from "react-icons/fa";
-
+import{ blogs} from './BlogPage'
 interface Comment {
   name: string;
   content: string;
 }
 
 export default function BlogContent() {
+  // const {id} = useParams()
+  // const blog = blogs.find((b) => b.id === Number(id))
   //Demo content
   const contents = {
     title: "MỘT SỐ CÂU HỎI THƯỜNG GẶP",

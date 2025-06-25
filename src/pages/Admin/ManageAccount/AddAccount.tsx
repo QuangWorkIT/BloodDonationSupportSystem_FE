@@ -139,16 +139,24 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
             {validationErrors.email && <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ngày sinh</label>
+          <div className="mb-4">
+            <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">
+              Ngày sinh
+            </label>
+
             <DatePicker
-              value={newAccount.birthDate}
-              onChange={handleBirthDateChange}
-              hasError={!!validationErrors.birthDate}
-              className={`w-full ${validationErrors.birthDate ? "border-red-500" : "border-gray-300"}`}
+              value={newAccount.birthDate ? new Date(newAccount.birthDate) : null}
+              onChange={(date: Date) => handleBirthDateChange(date.toISOString())}
+              hasError={Boolean(validationErrors?.birthDate)}
+              className={`w-full ${validationErrors?.birthDate ? "border-red-500" : "border-gray-300"}`}
+              aria-invalid={Boolean(validationErrors?.birthDate)}
+              aria-describedby={validationErrors?.birthDate ? "birthDate-error" : undefined}
             />
-            {validationErrors.birthDate && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.birthDate}</p>
+
+            {validationErrors?.birthDate && (
+              <p id="birthDate-error" className="text-red-500 text-xs mt-1">
+                {validationErrors.birthDate}
+              </p>
             )}
           </div>
 
@@ -186,9 +194,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            {validationErrors.password && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.password}</p>
-            )}
+            {validationErrors.password && <p className="text-red-500 text-xs mt-1">{validationErrors.password}</p>}
           </div>
 
           <div>

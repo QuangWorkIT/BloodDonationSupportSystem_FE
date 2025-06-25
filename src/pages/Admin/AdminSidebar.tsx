@@ -1,5 +1,4 @@
 import {
-  Home,
   Users,
   BarChart3,
   Settings,
@@ -20,20 +19,14 @@ const AdminSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   // Define your navigation items with their paths
   const navItems = [
     {
-      id: "home",
-      path: "/admin",
-      icon: <Home className="w-6 h-6" />,
-      label: "Trang chủ",
-    },
-    {
       id: "accounts",
-      path: "/admin/accounts",
+      path: "/admin",
       icon: <Users className="w-6 h-6" />,
       label: "Tài khoản",
     },
     {
       id: "stats",
-      path: "/admin/stats",
+      path: "/admin/analytics",
       icon: <BarChart3 className="w-6 h-6" />,
       label: "Thống kê",
     },

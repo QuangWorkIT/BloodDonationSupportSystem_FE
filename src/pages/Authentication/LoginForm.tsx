@@ -37,7 +37,7 @@ export default function LoginForm() {
   // login by phone number
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const res = await api.post("/api/Auth/login", values);
+      const res = await api.post("/api/login", values);
 
       const data = res.data;
 
