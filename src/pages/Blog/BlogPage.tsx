@@ -23,7 +23,7 @@ export const blogs: BlogCardProps[] = [
     image: "src/assets/images/event1.png",
   },
   {
-    id:2,
+    id: 2,
     title: "Các câu hỏi thường gặp",
     summary: "Các câu hỏi thường gặp đối với người hiến máu lần đầu và một số lưu ý quan trọng khác...",
     date: "7/5/2025",
@@ -40,7 +40,7 @@ export default function BlogPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 justify-center items-center mb-8">
           <motion.h1
-            className="text-[34px] text-center font-bold font-serif text-white"
+            className="sm:text-[34px] text-2xl text-center font-bold font-serif text-white"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -48,7 +48,7 @@ export default function BlogPage() {
             THÔNG TIN & TIN TỨC
           </motion.h1>
           <Select>
-            <SelectTrigger className="w-[150px] h-[45px] font-medium bg-white text-black place-self-end flex items-center gap-2 cursor-pointer -mt-15">
+            <SelectTrigger className="sm:w-[150px] sm:h-[45px] font-medium bg-white text-black sm:place-self-end flex items-center gap-2 cursor-pointer sm:-mt-15">
               <Filter size={16} />
               <SelectValue placeholder="Phân loại" />
             </SelectTrigger>
@@ -68,15 +68,15 @@ export default function BlogPage() {
           {blogs.map((blog, index) => (
             <motion.div
               key={index}
-              className="bg-white max-w-[600px] rounded-xl shadow hover:shadow-md transition overflow-hidden"
+              className="bg-white sm:max-w-[600px] max-w-[360px] rounded-xl shadow-lg transition overflow-hidden"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <h2 className="text-[30px] text-center font-semibold text-[#705c7d] m-4">{blog.title}</h2>
+              <h2 className="sm:text-[30px] text-xl text-center font-semibold text-[#705c7d] m-4">{blog.title}</h2>
               <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover" />
               <div className="p-5 flex flex-col justify-between min-h-[200px]">
-                <p className="text-gray-400 text-lg mb-4 line-clamp-3">{blog.summary}</p>
+                <p className="text-gray-400 sm:text-lg text-md mb-4 line-clamp-3">{blog.summary}</p>
                 <div className="flex flex-col items-center mt-auto space-y-3">
                   <Link to={`/blogcontent/${blog.id}`}>
                     <Button className="bg-red-700 hover:bg-red-800 text-lg text-white w-[200px] py-6 cursor-pointer">Đọc tiếp...</Button>
