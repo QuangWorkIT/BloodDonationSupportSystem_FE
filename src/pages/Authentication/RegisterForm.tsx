@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { getLongLat } from "@/utils/gecoding";
-import api from "@/lib/instance";
-import { AxiosError } from "axios";
 import { getTypeId } from "@/types/BloodCompatibility";
-interface FormData {
+import { formatPhone } from "@/utils/format";
+export interface FormData {
   lastName: string;
   firstName: string;
   phone: string;
@@ -88,6 +87,7 @@ export default function RegisterForm() {
       delete copyForm.province
       delete copyForm.confirmPassword
 
+      copyForm.phone = formatPhone(formData.phone)
       copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor)
       const address = formData.address + " " + formData.district + " " + formData.province + " Việt Nam"
       try {
@@ -103,18 +103,8 @@ export default function RegisterForm() {
         console.log("Geocoding register failed ", error)
       }
 
-      // call register post api after formatting data
-      try {
-        console.log("copy ", copyForm)
-        const response = await api.post("/api/register", copyForm)
-        if (response.status === 200)
-          navigate('/login')
-      } catch (error) {
-        const axiosErr = error as AxiosError
-
-        if (axiosErr.response)
-          console.log("Error register ", axiosErr.response)
-      }
+      localStorage.setItem('tempUser', JSON.stringify(copyForm))
+      navigate('/otp')
     }
   };
 

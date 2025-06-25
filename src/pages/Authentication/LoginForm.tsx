@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { getUser } from "@/utils/permisson";
 import api from '@/lib/instance'
+import type { RecaptchaVerifier } from "firebase/auth";
 
 
 const formSchema = z.object({
@@ -19,6 +20,7 @@ const formSchema = z.object({
 declare global {
   interface Window {
     google?: typeof google;
+    recaptchaVerifier?: RecaptchaVerifier;
   }
 }
 
