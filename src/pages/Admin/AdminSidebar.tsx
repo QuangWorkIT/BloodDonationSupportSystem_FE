@@ -1,5 +1,4 @@
 import {
-  Home,
   Users,
   BarChart3,
   Settings,

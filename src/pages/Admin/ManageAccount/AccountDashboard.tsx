@@ -19,6 +19,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import AdminSidebar from "../AdminSidebar";
 import DatePicker from "@/components/ui/datepicker";
 import AddAccountModal from "./AddAccount";
 
@@ -309,6 +310,7 @@ const AccountDashboard = () => {
 
   return (
     <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
+      <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
 
       {/* Main content */}
       <main className="flex-1 bg-[#EFEFEF]">
@@ -575,10 +577,10 @@ const AccountDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
                         {editingId === account.id ? (
                           <DatePicker
-                            value={editFormData.birthDate || ""}
-                            onChange={(date) => handleDateChange(date || "")}
-                            className={undefined}
-                            hasError={undefined}
+                            value={editFormData.birthDate ? new Date(editFormData.birthDate) : null}
+                            onChange={(date: Date) => handleDateChange(date.toISOString())}
+                            className=""
+                            hasError={false}
                           />
                         ) : (
                           account.birthDate
@@ -634,11 +636,7 @@ const AccountDashboard = () => {
                               onClick={() => togglePasswordVisibility(account.id)}
                               className="ml-2 text-gray-500 hover:text-blue-600"
                             >
-                              {showPassword[account.id] ? (
-                                <EyeOff className="w-4 h-4" />
-                              ) : (
-                                <Eye className="w-4 h-4" />
-                              )}
+                              {showPassword[account.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                           </div>
                         ) : (
@@ -649,11 +647,7 @@ const AccountDashboard = () => {
                               onClick={() => togglePasswordVisibility(account.id)}
                               className="ml-2 text-gray-500 hover:text-blue-600"
                             >
-                              {showPassword[account.id] ? (
-                                <EyeOff className="w-4 h-4" />
-                              ) : (
-                                <Eye className="w-4 h-4" />
-                              )}
+                              {showPassword[account.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                           </div>
                         )}
@@ -779,10 +773,7 @@ const AccountDashboard = () => {
 
       {/* Add Account Modal */}
       {showAddAccountModal && (
-        <AddAccountModal
-          onSave={handleAddNewAccount}
-          onCancel={() => setShowAddAccountModal(false)}
-        />
+        <AddAccountModal onSave={handleAddNewAccount} onCancel={() => setShowAddAccountModal(false)} />
       )}
     </div>
   );
