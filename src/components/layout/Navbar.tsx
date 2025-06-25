@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { FaSearch, FaTimes, FaUser } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 type NavItem = {
   id: string;
   label: string;
@@ -13,8 +18,7 @@ type NavItem = {
 const BloodDonationNavbar = () => {
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
-  const { accessToken, setToken } = useAuth()
-  const navigate = useNavigate()
+  const { accessToken } = useAuth()
   const navItems: NavItem[] = [
     { id: "su-kien", label: "Sự kiện hiến máu", href: "/events" },
     { id: "trang-chu", label: "Trang chủ", href: "/home" },
@@ -24,14 +28,14 @@ const BloodDonationNavbar = () => {
 
   ];
 
-  const handleLogout = () => {
-    setToken(null)
-    console.log("Logout success")
-    navigate('/', {replace: true})
-  }
+  // const handleLogout = () => {
+  //   setToken(null)
+  //   console.log("Logout success")
+  //   navigate('/', { replace: true })
+  // }
 
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="bg-white shadow-md z-1">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between h-20">
         <div className="flex items-center">
           <div className="w-10 h-10 bg-[#C14B53] rounded-full flex items-center justify-center mr-3">
@@ -101,36 +105,33 @@ const BloodDonationNavbar = () => {
                 )}
               </AnimatePresence>
             </div>
-            {/* Login button */}
-            <div className="">
-              {
-                accessToken ? (
-                  <button className="flex flex-col items-center justify-center ml-6" onClick={handleLogout}>
-                    <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center mb-1 hover:bg-[#8B0B1A] transition duration-200 cursor-pointer">
-                      <FaUser size={18} color="#fff" />
-                    </div>
-                    <div className="text-[#C14B53] text-sm font-medium hover: transition duration-200 cursor-pointer">
-                      Đăng xuất
-                    </div>
-                  </button>
-                ) : (
-                  <Link to={'/login'} className="flex flex-col items-center justify-center ml-6">
-                    <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center mb-1 hover:bg-[#8B0B1A] transition duration-200 cursor-pointer">
-                      <FaUser size={18} color="#fff" />
-                    </div>
-                    <div className="text-[#C14B53] text-sm font-medium hover: transition duration-200 cursor-pointer">
-                      Đăng nhập
-                    </div>
-                  </Link>
-                )
-              }
-            </div>
+            
+            {/* account dropdown*/}
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center mb-1 hover:bg-[#8B0B1A] transition duration-200 cursor-pointer">
+                  <FaUser size={18} color="#fff" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <Link to={'/profile'}>
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                </Link>
+                {
+                  !accessToken && (
+                    <Link to={'/login'}>
+                      <DropdownMenuItem>Login</DropdownMenuItem>
+                    </Link>
+                  )
+                }
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-
-        {/* Empty div to balance the flex layout */}
-        <div className="w-10"></div>
       </div>
+
+      {/* Empty div to balance the flex layout */}
+      <div className="w-10"></div>
     </nav>
   );
 };

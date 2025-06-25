@@ -52,7 +52,7 @@ export default function HomePage() {
       title: "Máu của tôi sẽ được xét nghiệm như thế nào?",
       content: [
         "Tất cả những đơn vị máu thu được sẽ được kiểm tra nhóm máu (hệ ABO, hệ Rh), HIV, virus viêm gan B, virus viêm gan C, giang mai, sốt rét.",
-        "Bạn sẽ được thông báo kết quả, được giữ kín và được tư vấn (miễn phí) khi phát hiện ra các bệnh nhiễm trùng nói trên.",
+        "Bạn sẽ được thông báo kết quả, được giữ kín và được hỗ trợ khi phát hiện ra các bệnh nhiễm trùng nói trên.",
       ],
     },
   ];
@@ -82,7 +82,7 @@ export default function HomePage() {
 
       <div className="flex flex-col gap-[100px]">
         {/* Hero Slider */}
-        <section className="h-[450px] bg-red-300 flex justify-center items-center gap-12 pl-28">
+        <section className="mt-1 h-[450px] bg-red-300 flex justify-center items-center gap-12 pl-28 z-0">
           <div className="w-1/2 flex flex-col justify-center gap-4 mb-24">
             <h2 className="text-[45px]/[1.3] font-bold text-red-800 whitespace-pre-line">{slides[currentSlide].title}</h2>
             {slides[currentSlide].description && (
@@ -92,16 +92,16 @@ export default function HomePage() {
             <span className="flex gap-8 mt-[360px] absolute">
               {slides && slides.length
                 ? slides.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentSlide(index)}
-                      className={
-                        currentSlide === index
-                          ? "bg-white h-[10px] w-[10px] p-[10px] rounded-full cursor-pointer"
-                          : "bg-gray-300 h-[10px] w-[10px] p-[10px] rounded-full cursor-pointer"
-                      }
-                    ></button>
-                  ))
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={
+                      currentSlide === index
+                        ? "bg-white h-[10px] w-[10px] p-[10px] rounded-full cursor-pointer"
+                        : "bg-gray-300 h-[10px] w-[10px] p-[10px] rounded-full cursor-pointer"
+                    }
+                  ></button>
+                ))
                 : null}
             </span>
           </div>
@@ -119,7 +119,7 @@ export default function HomePage() {
                 <h2 className="text-blue-600 font-semibold text-2xl">Buổi hiến máu đầu tiên</h2>
                 <p>Những gì bạn cần biết cho lần đầu tiên hiến máu</p>
                 <span className="relative inline-block group w-max">
-                  <Link to="#" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
+                  <Link to="/bloodinfo" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </Link>
                   <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
@@ -133,7 +133,7 @@ export default function HomePage() {
                 <h2 className="text-blue-600 font-semibold text-2xl">Quy trình hiến máu</h2>
                 <p>Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả</p>
                 <span className="relative inline-block group w-max">
-                  <Link to="#" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
+                  <Link to="/bloodinfo" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </Link>
                   <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
@@ -141,15 +141,18 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <h2 className="mt-14 text-3xl font-semibold mb-4">
+        </section>
+
+        <div className="my-[50px] flex flex-col items-center justify-center">
+          <h2 className="text-3xl font-semibold mb-4">
             Một giọt <span className="text-red-700">máu</span> ngàn yêu thương
           </h2>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-lg max-w-[800px] text-center">
             Cơ sở Hiến máu Nhân đạo - nơi kết nối những tấm lòng nhân ái vì cộng đồng. Chúng tôi là đơn vị y tế chuyên tiếp nhận, quản lý và điều phối nguồn máu
             từ người hiến tới những bệnh nhân cần truyền máu kịp thời. Với đội ngũ y bác sĩ tận tâm, hệ thống lưu trữ máu hiện đại cùng nền tảng công nghệ hỗ
             trợ hiệu quả, chúng tôi cam kết mang lại quy trình hiến máu an toàn, nhanh chóng và minh bạch.
           </p>
-        </section>
+        </div>
 
         {/* Blood Donation Criteria Section */}
         <section className="bg-red-300 py-8 px-12">
@@ -161,7 +164,7 @@ export default function HomePage() {
               <h2 className="text-[40px] font-semibold text-center mb-6 text-white">Tiêu chuẩn hiến máu</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
                 {criterias.map((item, idx) => (
-                  <div key={idx}  className="bg-white rounded-xl shadow-md shadow-gray-500 p-4 flex flex-col gap-2">
+                  <div key={idx} className="bg-white rounded-xl shadow-md shadow-gray-500 p-4 flex flex-col gap-2">
                     <img src={item.image} alt="" width={50} />
                     <div className="text-md">
                       {item.text}
@@ -174,7 +177,7 @@ export default function HomePage() {
         </section>
 
         {/* Important Notes Section */}
-        <section className="text-center px-6">
+        <section className="my-[50px] text-center px-6">
           <h2 className="text-3xl font-semibold font-serif mb-8">Lưu ý quan trọng</h2>
           <div className="max-w-3xl mx-auto space-y-4 mb-8">
             {importantNotes.map((note, index) => (
@@ -195,7 +198,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <Link to="/" className="text-sm text-blue-500 underline">
+          <Link to="/blogs" className="text-sm text-blue-500 underline">
             Xem thêm...
           </Link>
         </section>
