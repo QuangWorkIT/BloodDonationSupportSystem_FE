@@ -1,18 +1,20 @@
-import BloodDonationNavbar from "@/components/layout/Navbar"
-import Footer from "@/components/layout/Footer"
-import RegisterForm from "@/pages/Authentication/RegisterForm"
+import BloodDonationNavbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import RegisterForm from "@/pages/Authentication/RegisterForm";
 function RegisterPage() {
   return (
     <div className="min-h-screen relative">
-      <BloodDonationNavbar />
+      <div className="max-sm:hidden">
+        <BloodDonationNavbar />
+      </div>
       <div className="my-[50px]">
         <RegisterForm />
       </div>
-      <div className="w-full">
+      <div className="w-full max-sm:hidden">
         <Footer />
       </div>
     </div>
-  )
+  );
 }
 
-export default RegisterPage
+export default RegisterPage;

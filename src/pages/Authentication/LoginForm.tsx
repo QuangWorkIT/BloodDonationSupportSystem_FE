@@ -8,8 +8,7 @@ import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { getUser } from "@/utils/permisson";
-import api from '@/lib/instance'
-
+import api from "@/lib/instance";
 
 const formSchema = z.object({
   phone: z.string().min(10, "Số điện thoại không hợp lệ"),
@@ -24,9 +23,9 @@ declare global {
 
 const clientID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 export default function LoginForm() {
-  const { setToken, setUser } = useAuth()
-  const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
+  const { setToken, setUser } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,7 +37,7 @@ export default function LoginForm() {
   // login by phone number
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const res = await api.post('/api/Auth/login', values);
+      const res = await api.post("/api/Auth/login", values);
 
       const data = res.data;
 
@@ -49,16 +48,15 @@ export default function LoginForm() {
       }
       setToken(data.token);
 
-      const user = getUser(data.token)
+      const user = getUser(data.token);
       if (user === null) {
-        setError('Something wrong when fetching user')
-        return
+        setError("Something wrong when fetching user");
+        return;
       }
-      setUser(user)
+      setUser(user);
 
-      const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
-      navigate(path, { replace: true })
-
+      const path = user.role === "Member" ? "/" : user.role === "Staff" ? "/staff" : "/admin";
+      navigate(path, { replace: true });
     } catch (error) {
       console.log("Login error:", error);
       setError("Login failed! Please try again.");
@@ -70,20 +68,19 @@ export default function LoginForm() {
     const handleCredentialResponse = async (response: google.accounts.id.CredentialResponse) => {
       console.log("Google JWT Token:", response.credential);
       try {
-        const res = await api.post('/api/Auth/google', { credential: response.credential })
-        const data = res.data
+        const res = await api.post("/api/Auth/google", { credential: response.credential });
+        const data = res.data;
         setToken(data.token); // store token
 
-        const user = getUser(data.token)
+        const user = getUser(data.token);
         if (user === null) {
-          setError('Something wrong when fetching user')
-          return
+          setError("Something wrong when fetching user");
+          return;
         }
-        setUser(user)
-        
-        const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
-        navigate(path, { replace: true })
+        setUser(user);
 
+        const path = user.role === "Member" ? "/" : user.role === "Staff" ? "/staff" : "/admin";
+        navigate(path, { replace: true });
       } catch (error) {
         console.log("Login error:", error);
         setError("Login failed! Please try again.");
@@ -92,24 +89,20 @@ export default function LoginForm() {
 
     const container = document.getElementById("googleSignInDiv");
     if (!container || !window.google.accounts.id) {
-      console.log("Google SDK not loaded or container not found")
+      console.log("Google SDK not loaded or container not found");
     } else {
       window.google.accounts.id.initialize({
         client_id: clientID,
         callback: handleCredentialResponse,
       });
 
-      window.google.accounts.id.renderButton(
-        container,
-        { theme: "outline", size: "large", width: 400, type: "standard", logo_alignment: "center" }
-      );
+      window.google.accounts.id.renderButton(container, { theme: "outline", size: "large", width: 400, type: "standard", logo_alignment: "center" });
     }
-
   }, [clientID]);
 
   return (
-    <div className="max-w-md mx-auto mt-10 border rounded-lg shadow p-6 space-y-6 bg-white">
-      <h2 className="text-2xl font-semibold text-red-600">Đăng nhập</h2>
+    <div className="max-w-md mx-auto min-sm:mt-10 min-sm:border rounded-lg min-sm:shadow p-6 space-y-6 bg-white max-sm:h-screen max-sm:flex max-sm:flex-col max-sm:justify-center">
+      <h2 className="text-2xl max-sm:text-3xl max-sm:text-center font-semibold text-red-600">Đăng nhập</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
