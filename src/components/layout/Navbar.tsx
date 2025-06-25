@@ -15,8 +15,9 @@ type NavItem = {
   href: string;
 };
 
-const BloodDonationNavbar = () => {
-  const [activeItem, setActiveItem] = useState<string | null>(null);
+export default function BloodDonationNavbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeItem, setActiveItem] = useState("home");
   const [showSearch, setShowSearch] = useState(false);
   const { accessToken } = useAuth()
   const navItems: NavItem[] = [
@@ -37,28 +38,22 @@ const BloodDonationNavbar = () => {
           </div>
         </div>
 
-        {/* Centered navigation group with animations */}
-        <div className="absolute right-1 transform -translate-x-15">
-          <div className="flex items-center space-x-10">
-            {!showSearch && (
-              <>
-                {navItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    to={item.href}
-                    onClick={() => setActiveItem(item.id)}
-                    className={`text-base transition-all duration-500 ${item.id === "su-kien"
-                      ? "bg-[#C14B53] text-white px-4 py-2 rounded-md font-medium shadow-sm scale-100 hover:scale-105"
-                      : activeItem === item.id
-                        ? "text-[#C14B53] border-b-2 border-[#C14B53] pb-1 font-medium scale-100 hover:scale-105"
-                        : "text-[#C14B53] pb-1 font-medium hover:border-b-2 hover:border-[#C14B53] hover:opacity-80 scale-100 hover:scale-105"
-                      }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </>
-            )}
+        <div className="flex items-center md:mr-12">
+          <div className="md:flex hidden space-x-10">
+            {!showSearch &&
+              navItems.map((item) => (
+                <Link
+                  key={item.id}
+                  to={item.href}
+                  onClick={() => setActiveItem(item.id)}
+                  className={`transition font-medium text-base px-4 py-2 rounded-md ${
+                    activeItem === item.id ? "bg-[#C14B53] text-white" : "text-[#C14B53] hover:bg-[#C14B53]/10"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+          </div>
 
             <div className="relative ml-6 ">
               <AnimatePresence mode="wait">
@@ -124,12 +119,34 @@ const BloodDonationNavbar = () => {
             </DropdownMenu>
           </div>
         </div>
-      </div>
-
-      {/* Empty div to balance the flex layout */}
-      <div className="w-10"></div>
-    </nav>
+              {/* Mobile dropdown */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.25 }}
+            className="md:hidden bg-white shadow-md px-2 pb-4 space-y-2"
+          >
+            {navItems.map((item) => (
+              <Link
+                key={item.id}
+                to={item.href}
+                onClick={() => {
+                  setActiveItem(item.id);
+                  setMenuOpen(false);
+                }}
+                className={`block px-4 py-2 rounded transition text-base font-medium ${
+                  activeItem === item.id ? "bg-[#C14B53] text-white" : "hover:bg-[#C14B53]/10 text-black"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </nav>
   );
-};
-
-export default BloodDonationNavbar;
+}

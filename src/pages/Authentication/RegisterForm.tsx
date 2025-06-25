@@ -28,7 +28,7 @@ interface FormErrors {
 }
 
 export default function RegisterForm() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     lastName: "",
     firstName: "",
@@ -81,27 +81,26 @@ export default function RegisterForm() {
       setErrors({});
       // reconstruct the form data
       const copyForm = { ...formData } as Record<string, string | number>;
-      delete copyForm.bloodType
-      delete copyForm.rhFactor
-      delete copyForm.address
-      delete copyForm.district
-      delete copyForm.province
-      delete copyForm.confirmPassword
+      delete copyForm.bloodType;
+      delete copyForm.rhFactor;
+      delete copyForm.address;
+      delete copyForm.district;
+      delete copyForm.province;
+      delete copyForm.confirmPassword;
 
       copyForm.phone = formatPhone(formData.phone)
       copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor)
       const address = formData.address + " " + formData.district + " " + formData.province + " Việt Nam"
       try {
-        const geoCoding = await getLongLat(address)
+        const geoCoding = await getLongLat(address);
         if (geoCoding !== null) {
-          copyForm.longitude = geoCoding.longitude
-          copyForm.latitude = geoCoding.latitude
-        }
-        else {
-          console.log("Address not found")
+          copyForm.longitude = geoCoding.longitude;
+          copyForm.latitude = geoCoding.latitude;
+        } else {
+          console.log("Address not found");
         }
       } catch (error) {
-        console.log("Geocoding register failed ", error)
+        console.log("Geocoding register failed ", error);
       }
 
       try {
@@ -369,15 +368,8 @@ export default function RegisterForm() {
             <Label htmlFor="address" className="text-base">
               Địa chỉ<span className="text-red-500"> *</span>
             </Label>
-            <Input
-              id="address"
-              placeholder="Số nhà, thôn, xã,..."
-              className="py-2 text-base"
-              required
-              value={formData.address}
-              onChange={handleChange}
-            />
-            {errors.address && <p className="text-red-500">{errors.address}</p>}
+            <Input id="district" placeholder="Chọn quận huyện" list="districts" className="py-2 text-base" value={formData.district} onChange={handleChange} />
+            <datalist id="districts"></datalist>
           </div>
 
           {/* Submit Button */}
@@ -397,5 +389,3 @@ export default function RegisterForm() {
     </div>
   );
 }
-
-

@@ -82,23 +82,16 @@ const Events = () => {
           whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          className={`w-10 h-10 rounded-md flex items-center justify-center ${currentPage === 1
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-            }`}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${
+            currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+          }`}
         >
           <FaChevronLeft />
         </motion.button>
 
         {pages.map((page, index) =>
           page === "..." ? (
-            <motion.span
-              key={index}
-              className="px-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
+            <motion.span key={index} className="px-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
               ...
             </motion.span>
           ) : (
@@ -124,10 +117,9 @@ const Events = () => {
           whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className={`w-10 h-10 rounded-md flex items-center justify-center ${currentPage === totalPages
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-            }`}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${
+            currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+          }`}
         >
           <FaChevronRight />
         </motion.button>
@@ -194,18 +186,22 @@ const Events = () => {
             transition={{ duration: 0.3 }}
           >
             {/* Date Picker */}
-            <motion.div
-              className="bg-white rounded-md shadow-sm p-4 mb-8 border border-gray-200"
-            >
+            <motion.div className="bg-white rounded-md shadow-sm p-4 mb-8 border border-gray-200">
               <h2 className="text-lg font-medium mb-4">Bạn muốn đặt lịch vào thời gian nào?</h2>
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex items-center border rounded-md p-2 flex-1">
-                  <FaCalendarAlt className="text-gray-400 mr-2" />
-                  <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
+              <div className="flex flex-col justify-center items-center md:flex-row gap-4">
+                <div className="w-full flex max-sm:gap-5 gap-3 items-center">
+                  <p className="font-semibold">Từ ngày</p>
+                  <div className="flex items-center border rounded-md p-2 flex-1">
+                    <FaCalendarAlt className="text-gray-400 mr-2" />
+                    <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
+                  </div>
                 </div>
-                <div className="flex items-center border rounded-md p-2 flex-1">
-                  <FaCalendarAlt className="text-gray-400 mr-2" />
-                  <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
+                <div className="w-full flex gap-3 items-center">
+                  <p className="font-semibold">đến ngày</p>
+                  <div className="flex items-center border rounded-md p-2 flex-1">
+                    <FaCalendarAlt className="text-gray-400 mr-2" />
+                    <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
+                  </div>
                 </div>
                 <motion.button
                   className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
@@ -266,12 +262,7 @@ const Events = () => {
             </div>
 
             {/* Pagination */}
-            <motion.div
-              className="flex justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
+            <motion.div className="flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
               {renderPagination()}
             </motion.div>
           </motion.div>
