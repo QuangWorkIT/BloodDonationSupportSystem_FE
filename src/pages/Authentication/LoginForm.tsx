@@ -3,14 +3,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { getUser } from "@/utils/permisson";
 import api from '@/lib/instance'
 import type { RecaptchaVerifier } from "firebase/auth";
-
+import { toast } from 'react-toastify';
 
 const formSchema = z.object({
   phone: z.string().min(10, "Số điện thoại không hợp lệ"),
@@ -28,7 +28,6 @@ const clientID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 export default function LoginForm() {
   const { setToken, setUser } = useAuth()
-  const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,7 +45,6 @@ export default function LoginForm() {
       const data = res.data;
 
       if (!data?.isSuccess || !data?.token) {
-        setError("Login failed!");
         console.warn("Login unsuccessful:", data);
         return;
       }
@@ -54,17 +52,16 @@ export default function LoginForm() {
 
       const user = getUser(data.token)
       if (user === null) {
-        setError('Something wrong when fetching user')
         return
       }
       setUser(user)
 
+      toast.success('Đăng nhập thành công!')
       const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
       navigate(path, { replace: true })
-
     } catch (error) {
       console.log("Login error:", error);
-      setError("Login failed! Please try again.");
+      toast.error('Đăng nhập thất bại!')
     }
   };
 
@@ -79,17 +76,17 @@ export default function LoginForm() {
 
         const user = getUser(data.token)
         if (user === null) {
-          setError('Something wrong when fetching user')
           return
         }
         setUser(user)
 
+        toast.success('Đăng nhập thành công!')
         const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
         navigate(path, { replace: true })
 
       } catch (error) {
         console.log("Login error:", error);
-        setError("Login failed! Please try again.");
+        toast.error('Đăng nhập thất bại!')
       }
     };
 
@@ -137,7 +134,7 @@ export default function LoginForm() {
                 <FormItem>
                   <FormLabel>Mật khẩu</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Mật khẩu" {...field}  />
+                    <Input type="password" placeholder="Mật khẩu" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -156,7 +153,6 @@ export default function LoginForm() {
             </div>
           </form>
         </Form>
-        {error && <span className="text-red-500 text-[20px]">{error}</span>}
       </div>
     </div>
   );

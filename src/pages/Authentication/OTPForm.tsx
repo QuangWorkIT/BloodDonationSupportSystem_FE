@@ -11,6 +11,7 @@ import { hiddenPhone } from "@/utils/format";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/instance";
 import { type FormData } from '@/pages/Authentication/RegisterForm'
+import { toast } from "react-toastify";
 
 export default function OTPForm() {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -56,7 +57,7 @@ export default function OTPForm() {
       const temp = localStorage.getItem('tempUser')
 
       if (!temp) {
-        console.log('temp not found')
+        console.log('temp user not found')
         return
       }
       if (!recaptchaVerifier) {
@@ -65,7 +66,7 @@ export default function OTPForm() {
       }
 
       const registerUser = JSON.parse(temp)
-      setRegisterUser(registerUser)
+      setRegisterUser(registerUser) 
       setPhone(registerUser.phone)
       console.log(registerUser)
       try {
@@ -97,12 +98,13 @@ export default function OTPForm() {
       const response = await api.post("/api/register", registerUser)
       if (response.status === 200) {
         localStorage.removeItem('tempUser')
+        toast.success('Đăng ký thành công!')
         navigate('/login', { replace: true })
       }
     } catch (error) {
       console.log('failed to verify otp', error)
+      toast.error('Đăng ký thất bại!')
     }
-
   }
 
   return (

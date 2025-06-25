@@ -28,12 +28,6 @@ const BloodDonationNavbar = () => {
 
   ];
 
-  // const handleLogout = () => {
-  //   setToken(null)
-  //   console.log("Logout success")
-  //   navigate('/', { replace: true })
-  // }
-
   return (
     <nav className="bg-white shadow-md z-1">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between h-20">
@@ -105,7 +99,7 @@ const BloodDonationNavbar = () => {
                 )}
               </AnimatePresence>
             </div>
-            
+
             {/* account dropdown*/}
             <DropdownMenu>
               <DropdownMenuTrigger>
@@ -114,9 +108,11 @@ const BloodDonationNavbar = () => {
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <Link to={'/profile'}>
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                </Link>
+                {accessToken && (
+                  <Link to={'/profile'}>
+                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                  </Link>
+                )}
                 {
                   !accessToken && (
                     <Link to={'/login'}>

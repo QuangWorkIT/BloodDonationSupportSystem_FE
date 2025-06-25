@@ -23,7 +23,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     const [accessToken, setToken] = useState<string | null>(null)
     const [user, setUser] = useState<User | null>(null)
     const refresh = useRefreshToken()
-
     // fetch token
     useEffect(() => {
         const initAuth = async () => {
@@ -39,7 +38,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             if (validToken !== null) {
                 const user = getUser(validToken);
                 setUser(user);
-            }else {
+            } else {
                 console.log("Token is wrong!")
             }
         };

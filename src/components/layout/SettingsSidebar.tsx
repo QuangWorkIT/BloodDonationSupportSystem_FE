@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
+import { useAuth } from "@/hooks/authen/AuthContext";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 // Types for Feedback Modal
 type FeedbackType = "info" | "success" | "error" | "warning";
@@ -14,13 +17,13 @@ interface FeedbackModalProps {
   children?: React.ReactNode;
 }
 
-const FeedbackModal: React.FC<FeedbackModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  message, 
+const FeedbackModal: React.FC<FeedbackModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  message,
   type = "info",
-  children 
+  children
 }) => {
   const typeColors: Record<FeedbackType, string> = {
     info: "bg-blue-500",
@@ -31,7 +34,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
 
   // Portal implementation
   if (typeof document === 'undefined') return null;
-  
+
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -99,6 +102,8 @@ interface SettingsSidebarProps {
 }
 
 const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onClose }) => {
+  const { setToken, setUser } = useAuth()
+  const navigate = useNavigate()
   const [settings, setSettings] = useState<SettingsState>({
     smsNotifications: false,
     showDonationStatus: false,
@@ -126,7 +131,13 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
 
   const confirmLogout = () => {
     setIsLogoutModalOpen(false);
-    setShowLogoutSuccess(true);
+    setToken(null)
+    setUser(null)
+    toast.success('Đăng xuất thành công!')
+
+    setTimeout(() => {
+      navigate('/', { replace: true });
+    }, 0)
   };
 
   const confirmDeleteAccount = () => {
@@ -214,8 +225,8 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
       </div>
 
       <div className="pt-4 border-t">
-        <button 
-          onClick={handleDeleteAccount} 
+        <button
+          onClick={handleDeleteAccount}
           className="text-red-500 hover:underline cursor-pointer"
         >
           Xóa tài khoản
@@ -263,7 +274,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
           </button>
           <button
             onClick={confirmDeleteAccount}
-            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 cursor-pointer"   
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 cursor-pointer"
           >
             Xác nhận xóa
           </button>

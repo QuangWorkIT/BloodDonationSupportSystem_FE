@@ -52,9 +52,11 @@ const routes: RouteObject[] = [
 
     { path: '/events', element: <EventPage /> },
 
-    { path: '/profile', element: <UserProfile /> },
-
     { path: '/compatibility', element: <Compatibility /> },
+
+    { path: '/profile', element: (
+        <ProtectedRoute element={<UserProfile />} allowRole={["Member", "Staff", "Admin"]}/>
+    )},
 
     {
         path: '/staff', element: (

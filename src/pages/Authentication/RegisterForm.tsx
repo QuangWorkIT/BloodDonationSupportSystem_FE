@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getLongLat } from "@/utils/gecoding";
 import { getTypeId } from "@/types/BloodCompatibility";
 import { formatPhone } from "@/utils/format";
+import api from "@/lib/instance";
 export interface FormData {
   lastName: string;
   firstName: string;
@@ -103,8 +104,22 @@ export default function RegisterForm() {
         console.log("Geocoding register failed ", error)
       }
 
-      localStorage.setItem('tempUser', JSON.stringify(copyForm))
-      navigate('/otp', {replace:true})
+      try {
+      // const credential = await confirmationResult?.confirm(enteredOtp)
+      // console.log("otp correct: ", credential)
+        console.log(copyForm)
+      // only proceed if OTP is correct
+      const response = await api.post("/api/register", copyForm)
+      console.log(response)
+      if (response.status === 200) {
+        localStorage.removeItem('tempUser')
+        navigate('/login', { replace: true })
+      }
+    } catch (error) {
+      console.log('failed to verify otp', error)
+    }
+      // localStorage.setItem('tempUser', JSON.stringify(copyForm))
+      // navigate('/otp', {replace:true})
     }
   };
 
