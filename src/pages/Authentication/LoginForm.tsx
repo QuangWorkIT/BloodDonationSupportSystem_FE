@@ -108,50 +108,52 @@ export default function LoginForm() {
   }, [clientID]);
 
   return (
-    <div className="max-w-md mx-auto mt-10 border rounded-lg shadow p-6 space-y-6 bg-white">
-      <h2 className="text-2xl font-semibold text-red-600">Đăng nhập</h2>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Số điện thoại</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nhập số điện thoại" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mật khẩu</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="Mật khẩu" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer">
-            Đăng nhập
-          </Button>
-          <div className="text-center text-sm text-muted-foreground">Hoặc tiếp tục với</div>
-          <div id="googleSignInDiv" className="flex justify-center" />
-          <div className="text-center text-sm">
-            Chưa có tài khoản?{" "}
-            <Link to="/register" className="text-blue-600">
-              Đăng kí
-            </Link>
-          </div>
-        </form>
-      </Form>
-      {error && <span className="text-red-500 text-[20px]">{error}</span>}
+    <div className="w-full h-screen flex items-center justify-center">
+      <div className="max-w-md h-max border rounded-lg shadow p-6 space-y-6 bg-white">
+        <h2 className="text-2xl font-semibold text-red-600">Đăng nhập</h2>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Số điện thoại</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nhập số điện thoại" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mật khẩu</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Mật khẩu" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer">
+              Đăng nhập
+            </Button>
+            <div className="text-center text-sm text-muted-foreground">Hoặc tiếp tục với</div>
+            <div id="googleSignInDiv" className="flex justify-center" />
+            <div className="text-center text-sm">
+              Chưa có tài khoản?{" "}
+              <Link to="/register" className="text-blue-600">
+                Đăng kí
+              </Link>
+            </div>
+          </form>
+        </Form>
+        {error && <span className="text-red-500 text-[20px]">{error}</span>}
+      </div>
     </div>
   );
 }

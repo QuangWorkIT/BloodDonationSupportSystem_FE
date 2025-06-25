@@ -10,8 +10,6 @@ import BloodInfoPage from '@/pages/BloodInfo/BloodInfoPage';
 import BlogPage from '@/pages/Blog/BlogPage';
 import EventPage from '@/pages/DonationEvent/EventPage';
 import NotFoundPage from '@/pages/Error/NotFoundPage';
-import LoginPage from '@/pages/Authentication/LoginPage';
-import RegisterPage from '@/pages/Authentication/RegisterPage';
 import AdminHome from '@/pages/Admin/AdminHome';
 import Forbidden from '@/pages/Error/Forbidden';
 import ProtectedRoute from './ProtectedRoute';
@@ -28,6 +26,9 @@ import RoleBaseRedirect from './RoleBaseRedirect';
 import AnalyticsDashboard from '@/pages/Admin/ManageData/AnalyticsDashboard';
 import AdminSettings from '@/pages/Admin/AdminSetting';
 import AdminHelp from '@/pages/Admin/AdminHelp';
+import LoginForm from '@/pages/Authentication/LoginForm';
+import RegisterForm from '@/pages/Authentication/RegisterForm';
+import UserProfile from '@/components/layout/UserProfile';
 
 
 // define routes
@@ -36,9 +37,9 @@ const routes: RouteObject[] = [
 
     { path: '/home', element: <HomePage /> },
 
-    { path: '/login', element: <LoginPage /> },
+    { path: '/login', element: <LoginForm /> },
 
-    { path: '/register', element: <RegisterPage /> },
+    { path: '/register', element: <RegisterForm /> },
 
     { path: '/bloodinfo', element: <BloodInfoPage /> },
 
@@ -47,6 +48,8 @@ const routes: RouteObject[] = [
     { path: '/blogcontent/:id', element: <BlogContent /> },
 
     { path: '/events', element: <EventPage /> },
+
+    { path: '/profile', element: <UserProfile /> },
 
     { path: '/compatibility', element: <Compatibility /> },
 
