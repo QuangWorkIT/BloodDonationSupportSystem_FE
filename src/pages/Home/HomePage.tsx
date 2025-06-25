@@ -52,7 +52,7 @@ export default function HomePage() {
       title: "Máu của tôi sẽ được xét nghiệm như thế nào?",
       content: [
         "Tất cả những đơn vị máu thu được sẽ được kiểm tra nhóm máu (hệ ABO, hệ Rh), HIV, virus viêm gan B, virus viêm gan C, giang mai, sốt rét.",
-        "Bạn sẽ được thông báo kết quả, được giữ kín và được tư vấn (miễn phí) khi phát hiện ra các bệnh nhiễm trùng nói trên.",
+        "Bạn sẽ được thông báo kết quả, được giữ kín và được hỗ trợ khi phát hiện ra các bệnh nhiễm trùng nói trên.",
       ],
     },
   ];
@@ -123,7 +123,7 @@ export default function HomePage() {
                 <h2 className="text-blue-600 font-semibold sm:text-2xl text-lg">Buổi hiến máu đầu tiên</h2>
                 <p className="max-sm:text-sm">Những gì bạn cần biết cho lần đầu tiên hiến máu</p>
                 <span className="relative inline-block group w-max">
-                  <Link to="#" className="sm:text-xl text-sm text-red-700 font-semibold hover:text-[#a83a42]">
+                  <Link to="/bloodinfo" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </Link>
                   <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
@@ -137,7 +137,7 @@ export default function HomePage() {
                 <h2 className="text-blue-600 font-semibold sm:text-2xl text-lg">Quy trình hiến máu</h2>
                 <p className="max-sm:text-sm">Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả</p>
                 <span className="relative inline-block group w-max">
-                  <Link to="#" className="sm:text-xl text-sm text-red-700 font-semibold hover:text-[#a83a42]">
+                  <Link to="/bloodinfo" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </Link>
                   <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
@@ -206,7 +206,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <Link to="/" className="text-sm text-blue-500 underline">
+          <Link to="/blogs" className="text-sm text-blue-500 underline">
             Xem thêm...
           </Link>
         </section>
