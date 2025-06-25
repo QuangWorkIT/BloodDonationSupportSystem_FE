@@ -16,6 +16,7 @@ import { Doughnut, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import AdminSidebar from "../AdminSidebar";
 
+
 // Register ChartJS components
 ChartJS.register(
   ArcElement,
@@ -271,9 +272,12 @@ const AnalyticsDashboard = () => {
   };
 
   return (
-    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex w-full">
+    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
+      <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
+
 
       {/* Main content */}
+      
       <main className="flex-1 bg-[#EFEFEF]">
         {/* Top bar */}
         <header className="bg-[#EFEFEF] border-b border-gray-200 px-8 py-4">
