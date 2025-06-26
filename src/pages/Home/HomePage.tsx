@@ -248,7 +248,7 @@ export default function HomePage() {
 
         <UrgentEvents/>
         {/* Blood Donation Criteria Section - Responsive Improvements */}
-        <section className="bg-gradient-to-br from-red-600 to-red-800 py-12 sm:py-16 px-6">
+        <section className="bg-[#a83a42] py-12 sm:py-16 px-6">
           <div className="container mx-auto">
             <div className="text-center mb-12 sm:mb-16">
               <h2 className="text-3xl sm:text-5xl font-bold text-white mb-4">
