@@ -80,20 +80,16 @@ export default function HomePage() {
     <div>
       <BloodDonationNavbar />
 
-      <div className="flex flex-col sm:gap-[100px] gap-10">
+      <div className="flex flex-col gap-[100px]">
         {/* Hero Slider */}
-        <section className="h-[160px] sm:h-[450px] bg-red-300 flex sm:justify-center justify-between items-center sm:gap-12 sm:pl-28 pl-6">
-          <div className="sm:w-1/2 w-[280px] flex flex-col justify-around gap-4 sm:mb-24">
-            <div className="flex flex-col sm:gap-4 max-sm:mb-7">
-              <h2 className="text-lg/[1.3] sm:text-[45px]/[1.3] font-bold text-red-800 whitespace-pre-line">{slides[currentSlide].title}</h2>
-              {slides[currentSlide].description && (
-                <p className="text-yellow-300 text-sm sm:text-[25px] font-medium whitespace-pre-line">{slides[currentSlide].description}</p>
-              )}
-              <Button className="bg-red-700 hover:bg-red-800 text-white text-[12px] sm:text-lg max-sm:mt-2 w-fit h-fit cursor-pointer">
-                {slides[currentSlide].buttonText}
-              </Button>
-            </div>
-            <span className="flex gap-3 sm:gap-8 sm:mt-[360px] absolute mt-30">
+        <section className="h-[450px] bg-red-300 flex justify-center items-center gap-12 pl-28">
+          <div className="w-1/2 flex flex-col justify-center gap-4 mb-24">
+            <h2 className="text-[45px]/[1.3] font-bold text-red-800 whitespace-pre-line">{slides[currentSlide].title}</h2>
+            {slides[currentSlide].description && (
+              <p className="text-yellow-300 text-[25px] font-medium whitespace-pre-line">{slides[currentSlide].description}</p>
+            )}
+            <Button className="bg-red-700 hover:bg-red-800 text-white text-lg w-fit h-fit cursor-pointer">{slides[currentSlide].buttonText}</Button>
+            <span className="flex gap-8 mt-[360px] absolute">
               {slides && slides.length
                 ? slides.map((_, index) => (
                     <button
@@ -101,29 +97,29 @@ export default function HomePage() {
                       onClick={() => setCurrentSlide(index)}
                       className={
                         currentSlide === index
-                          ? "bg-white h-[10px] w-[10px] sm:p-[10px] rounded-full cursor-pointer"
-                          : "bg-gray-300 h-[10px] w-[10px] sm:p-[10px] rounded-full cursor-pointer"
+                          ? "bg-white h-[10px] w-[10px] p-[10px] rounded-full cursor-pointer"
+                          : "bg-gray-300 h-[10px] w-[10px] p-[10px] rounded-full cursor-pointer"
                       }
                     ></button>
                   ))
                 : null}
             </span>
           </div>
-          <div className="sm:w-1/2 w-fit">
-            <img src={slides[currentSlide].imageUrl} alt="" className=" h-[160px] w-[160px] sm:h-[450px] sm:w-full object-cover" />
+          <div className="w-1/2">
+            <img src={slides[currentSlide].imageUrl} alt="" className="h-[450px] w-full object-cover" />
           </div>
         </section>
 
         {/* Introduction Section */}
         <section className="text-center px-6 max-w-4xl mx-auto ">
-          <div className="w-full flex max-sm:flex-col items-between sm:gap-7.5 gap-9 justify-between max-sm:max-w-[70%] mx-auto">
-            <div className="flex gap-4 items-center sm:max-w-[45%]">
-              <img src="src/assets/images/Vector1.png" alt="" className="sm:w-[64px] w-8 sm:h-[80px]" />
-              <div className="flex flex-col sm:gap-3 gap-1.5 text-left">
-                <h2 className="text-blue-600 font-semibold sm:text-2xl text-lg">Buổi hiến máu đầu tiên</h2>
-                <p className="max-sm:text-sm">Những gì bạn cần biết cho lần đầu tiên hiến máu</p>
+          <div className="flex gap-7.5 justify-between">
+            <div className="flex gap-4 items-center max-w-[45%]">
+              <img src="src/assets/images/Vector1.png" alt="" className="w-[64px] h-[80px]" />
+              <div className="flex flex-col gap-3 text-left">
+                <h2 className="text-blue-600 font-semibold text-2xl">Buổi hiến máu đầu tiên</h2>
+                <p>Những gì bạn cần biết cho lần đầu tiên hiến máu</p>
                 <span className="relative inline-block group w-max">
-                  <Link to="#" className="sm:text-xl text-sm text-red-700 font-semibold hover:text-[#a83a42]">
+                  <Link to="#" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </Link>
                   <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
@@ -131,13 +127,13 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex gap-4 items-center justify-center sm:max-w-[45%]">
-              <img src="src/assets/images/Vector2.png" alt="" className="sm:w-[64px] w-8 sm:h-[80px] h-10" />
-              <div className="flex flex-col sm:gap-3 gap-1.5 text-left">
-                <h2 className="text-blue-600 font-semibold sm:text-2xl text-lg">Quy trình hiến máu</h2>
-                <p className="max-sm:text-sm">Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả</p>
+            <div className="flex gap-4 items-center max-w-[45%]">
+              <img src="src/assets/images/Vector2.png" alt="" className="w-[64px] h-[80px]" />
+              <div className="flex flex-col gap-3 text-left">
+                <h2 className="text-blue-600 font-semibold text-2xl">Quy trình hiến máu</h2>
+                <p>Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả</p>
                 <span className="relative inline-block group w-max">
-                  <Link to="#" className="sm:text-xl text-sm text-red-700 font-semibold hover:text-[#a83a42]">
+                  <Link to="#" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </Link>
                   <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
@@ -145,10 +141,10 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <h2 className="sm:mt-14 mt-10 sm:text-3xl text-[22px] font-semibold mb-4">
+          <h2 className="mt-14 text-3xl font-semibold mb-4">
             Một giọt <span className="text-red-700">máu</span> ngàn yêu thương
           </h2>
-          <p className="text-gray-600 sm:text-lg text-sm/[2]">
+          <p className="text-gray-600 text-lg">
             Cơ sở Hiến máu Nhân đạo - nơi kết nối những tấm lòng nhân ái vì cộng đồng. Chúng tôi là đơn vị y tế chuyên tiếp nhận, quản lý và điều phối nguồn máu
             từ người hiến tới những bệnh nhân cần truyền máu kịp thời. Với đội ngũ y bác sĩ tận tâm, hệ thống lưu trữ máu hiện đại cùng nền tảng công nghệ hỗ
             trợ hiệu quả, chúng tôi cam kết mang lại quy trình hiến máu an toàn, nhanh chóng và minh bạch.
@@ -157,36 +153,29 @@ export default function HomePage() {
 
         {/* Blood Donation Criteria Section */}
         <section className="bg-red-300 py-8 px-12">
-          <div className="grid sm:grid-cols-3 grid-cols-2 gap-x-16">
-            <div className="flex items-center max-sm:hidden">
-              <h1 className="text-[33px] text-white font-semibold">
-                Mỗi giọt <span className="text-red-800">máu</span> bạn trao đi là một cơ hội sống bạn mang lại cho người khác
-              </h1>
+          <div className="grid grid-cols-3 gap-x-16">
+            <div className="flex items-center">
+              <h1 className="text-[33px] text-white font-semibold">Mỗi giọt máu bạn trao đi là một cơ hội sống bạn mang lại cho người khác</h1>
             </div>
             <div className="col-span-2">
-              <h2 className="sm:text-[40px] text-2xl font-semibold text-center mb-6 text-white">
-                <span className="text-yellow-400">Tiêu chuẩn</span> hiến máu
-              </h2>
-              <div className="grid grid-cols-2 gap-6 max-w-6xl mx-auto">
+              <h2 className="text-[40px] font-semibold text-center mb-6 text-white">Tiêu chuẩn hiến máu</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
                 {criterias.map((item, idx) => (
-                  <div key={idx} className="bg-white max-sm:h-fit rounded-xl shadow-md shadow-gray-500 p-4 flex flex-col gap-2">
-                    <img src={item.image} alt="" className="sm:w-[50px] w-[35px]" />
-                    <div className="sm:text-md text-sm">{item.text}</div>
+                  <div key={idx}  className="bg-white rounded-xl shadow-md shadow-gray-500 p-4 flex flex-col gap-2">
+                    <img src={item.image} alt="" width={50} />
+                    <div className="text-md">
+                      {item.text}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-          <div className="flex items-center mt-10 sm:hidden">
-            <h1 className="sm:text-[33px] text-lg max-sm:text-center text-white font-semibold">
-              Mỗi giọt <span className="text-red-800">máu</span> bạn trao đi là một cơ hội sống bạn mang lại cho người khác
-            </h1>
-          </div>
         </section>
 
         {/* Important Notes Section */}
         <section className="text-center px-6">
-          <h2 className="sm:text-3xl text-2xl font-semibold font-serif mb-8">Lưu ý quan trọng</h2>
+          <h2 className="text-3xl font-semibold font-serif mb-8">Lưu ý quan trọng</h2>
           <div className="max-w-3xl mx-auto space-y-4 mb-8">
             {importantNotes.map((note, index) => (
               <div key={index} className="border border-red-200 rounded-lg">

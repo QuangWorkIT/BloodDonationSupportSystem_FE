@@ -37,7 +37,7 @@ export default function LoginForm() {
   // login by phone number
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const res = await api.post("/api/login", values);
+      const res = await api.post("/api/Auth/login", values);
 
       const data = res.data;
 
@@ -101,8 +101,8 @@ export default function LoginForm() {
   }, [clientID]);
 
   return (
-    <div className="max-w-md mx-auto min-sm:mt-10 min-sm:border rounded-lg min-sm:shadow p-6 space-y-6 bg-white max-sm:h-screen max-sm:flex max-sm:flex-col max-sm:justify-center">
-      <h2 className="text-2xl max-sm:text-3xl max-sm:text-center font-semibold text-red-600">Đăng nhập</h2>
+    <div className="max-w-md mx-auto mt-10 border rounded-lg shadow p-6 space-y-6 bg-white">
+      <h2 className="text-2xl font-semibold text-red-600">Đăng nhập</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField

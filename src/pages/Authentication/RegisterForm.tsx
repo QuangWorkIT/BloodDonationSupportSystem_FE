@@ -80,47 +80,22 @@ export default function RegisterForm() {
     } else {
       setErrors({});
       // reconstruct the form data
-      const copyForm = { ...formData } as Record<string, string | number>;
-      delete copyForm.bloodType;
+      const copyForm = { ...formData } as Record<string, any>;
+      const bloodType = formData.bloodType + formData.rhFactor;
+      copyForm.bloodType = bloodType;
+
       delete copyForm.rhFactor;
-      delete copyForm.address;
-      delete copyForm.district;
-      delete copyForm.province;
-      delete copyForm.confirmPassword;
 
-      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor);
-      const address = formData.address + " " + formData.district + " " + formData.province + " Việt Nam";
-      try {
-        const geoCoding = await getLongLat(address);
-        if (geoCoding !== null) {
-          copyForm.longitude = geoCoding.longitude;
-          copyForm.latitude = geoCoding.latitude;
-        } else {
-          console.log("Address not found");
-        }
-      } catch (error) {
-        console.log("Geocoding register failed ", error);
-      }
-
-      // call register post api after formatting data
-      try {
-        console.log("copy ", copyForm);
-        const response = await api.post("/api/register", copyForm);
-        if (response.status === 200) navigate("/login");
-      } catch (error) {
-        const axiosErr = error as AxiosError;
-
-        if (axiosErr.response) console.log("Error register ", axiosErr.response);
-      }
+      console.log("copy ", copyForm);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-6 min-sm:border rounded-lg min-sm:shadow-lg p-8 space-y-6 bg-white min-h-[750px]">
-      <h1 className="text-3xl font-semibold text-center text-red-600 mb-6">Đăng kí thành viên</h1>
+    <div className="max-w-3xl mx-auto mt-6 border rounded-lg shadow-lg p-8 space-y-6 bg-white min-h-[750px]">
+      <h1 className="text-3xl font-bold text-center text-red-600 mb-6">ĐĂNG KÍ THÀNH VIÊN</h1>
       <form onSubmit={handleSubmit}>
         {/* Name Row */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-6">
           <div className="space-y-3">
             <Label htmlFor="lastName" className="text-base">
               Họ<span className="text-red-500"> *</span>
@@ -139,7 +114,7 @@ export default function RegisterForm() {
         </div>
 
         {/* Contact Info */}
-        <div className="grid min-sm:grid-cols-2 max-sm:grid-cols-1 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-6">
           <div className="space-y-3">
             <Label htmlFor="phone" className="text-base">
               Số điện thoại<span className="text-red-500"> *</span>
@@ -152,12 +127,12 @@ export default function RegisterForm() {
             <Label htmlFor="gmail" className="text-base">
               Gmail
             </Label>
-            <Input id="gmail" type="gmail" placeholder="Nhập gmail" className="py-2 text-base" value={formData.gmail} onChange={handleChange} />
+            <Input id="email" type="email" placeholder="Nhập gmail" className="py-2 text-base" value={formData.email} onChange={handleChange} />
           </div>
         </div>
 
         {/* Password Row */}
-        <div className="grid min-sm:grid-cols-2 max-sm:grid-cols-1 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-6">
           <div className="space-y-3">
             <Label htmlFor="password" className="text-base">
               Mật khẩu<span className="text-red-500"> *</span>
@@ -192,7 +167,7 @@ export default function RegisterForm() {
         </div>
 
         {/* Personal Info */}
-        <div className="grid min-sm:grid-cols-2 max-sm:grid-cols-1 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-6">
           <div className="space-y-3">
             <Label htmlFor="bloodType" className="text-base">
               Nhóm máu<span className="text-red-500"> *</span>
@@ -239,7 +214,7 @@ export default function RegisterForm() {
           <Label className="text-base">
             Giới tính<span className="text-red-500"> *</span>
           </Label>
-          <div className="flex gap-6 mb-4">
+          <div className="flex gap-6">
             <div className="flex items-center gap-2">
               <input
                 id="male"
@@ -275,7 +250,7 @@ export default function RegisterForm() {
         </div>
 
         {/* Address Info */}
-        <div className="grid min-sm:grid-cols-2 max-sm:grid-cols-1 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-6">
           <div className="space-y-3">
             <Label htmlFor="province" className="text-base">
               Tỉnh, thành phố<span className="text-red-500"> *</span>
