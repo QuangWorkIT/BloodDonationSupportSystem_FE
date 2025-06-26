@@ -71,18 +71,18 @@ export default function BlogContent() {
   };
 
   return (
-    <div className="min-w-screen flex flex-col sm:gap-[40px] bg-linear-to-b from-[#F24333] to-[#DEA2A4]">
+    <div className="min-w-screen flex flex-col gap-[40px] bg-linear-to-b from-[#F24333] to-[#DEA2A4]">
       <BloodDonationNavbar />
 
-      <div className="flex justify-center sm:gap-[40px]">
+      <div className="flex justify-center gap-[40px]">
         <motion.div
-          className="sm:w-[970px] w-full p-6 bg-white sm:rounded-xl shadow-md"
+          className="w-[970px] p-6 bg-white rounded-xl shadow-md"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
           {/* Blog Header */}
-          <h1 className="sm:text-3xl text-xl font-bold font-serif text-red-800 text-center mb-6">{contents.title}</h1>
+          <h1 className="text-3xl font-bold font-serif text-red-800 text-center mb-6">{contents.title}</h1>
 
           {/* Image */}
           <img src={contents.imageUrl} alt="Blog visual" className="w-full h-auto mb-6 rounded-lg shadow" />
@@ -91,9 +91,9 @@ export default function BlogContent() {
           <div className="space-y-5 text-gray-800 leading-relaxed px-4">
             {contents.content.map((section, idx) => (
               <div key={idx}>
-                <h2 className="sm:text-xl text-red-700 font-semibold mb-2.5">{section.subtitle}</h2>
+                <h2 className="text-xl text-red-700 font-semibold mb-2.5">{section.subtitle}</h2>
                 {section.text.map((para, pIdx) => (
-                  <p key={pIdx} className="sm:text-lg text-sm mb-2.5">
+                  <p key={pIdx} className="text-lg mb-2.5">
                     {para}
                   </p>
                 ))}
@@ -101,56 +101,36 @@ export default function BlogContent() {
             ))}
           </div>
 
-          {/* Metadata */}
-          <motion.div
-            className="text-gray-500 mb-6 bg-white sm:hidden p-6 rounded-xl shadow-md w-full h-fit flex items-center justify-between gap-3"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <img src="src/assets/images/avatar.png" alt="user-avatar" className="w-[40px]" />
-            <div className="flex flex-col gap-2">
-              <p className="text-sm">
-                Được đăng bởi: <span className="text-red-700 font-medium">{contents.author}</span>
-              </p>
-              <p className="text-sm">Ngày đăng: {contents.date}</p>
-              <p className="text-sm">Chỉnh sửa lần cuối: {contents.lastModify}</p>
-            </div>
-            <button onClick={() => {}} className="bg-red-700 hover:bg-red-800 text-white text-sm px-2 py-2 rounded-lg cursor-pointer">
-              Xem hồ sơ
-            </button>
-          </motion.div>
-
           {/* Comment Section */}
           <div className="mt-10">
-            <h2 className="sm:text-2xl text-lg font-semibold sm:mb-4 mb-2">{comments.length} bình luận</h2>
-            <div className="sm:space-y-4 space-y-2">
+            <h2 className="text-2xl font-semibold mb-4">{comments.length} bình luận</h2>
+            <div className="space-y-4">
               {comments.map((comment, idx) => (
                 <div key={idx} className="flex items-start gap-4 p-2 rounded-md">
-                  <div className="bg-gray-300 rounded-full sm:w-12 sm:h-12 w-10 h-10 flex items-center justify-center font-bold">{comment.name.charAt(0)}</div>
+                  <div className="bg-gray-300 rounded-full w-12 h-12 flex items-center justify-center font-bold">{comment.name.charAt(0)}</div>
                   <div>
-                    <p className="font-medium max-sm:text-sm">{comment.name}</p>
-                    <p className="text-gray-700 max-sm:text-sm">{comment.content}</p>
+                    <p className="font-medium">{comment.name}</p>
+                    <p className="text-gray-700">{comment.content}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="mt-6 space-y-2">
-              <h4 className="sm:text-2xl text-lg font-semibold mb-5">Bình luận</h4>
+              <h4 className="text-2xl font-semibold mb-5">Bình luận</h4>
               <div className="flex gap-4">
-                <img src="src/assets/images/avatar.png" alt="user-avatar" className="sm:size-[60px] size-10" />
+                <img src="src/assets/images/avatar.png" alt="user-avatar" className="size-[60px]" />
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Để lại bình luận của bạn ở đây"
-                  className="w-full min-h-[80px] border border-gray-300 rounded-md p-3 focus:outline-none focus:ring focus:ring-gray-400 max-sm:placeholder-shown:text-sm"
+                  className="w-full min-h-[80px] border border-gray-300 rounded-md p-3 focus:outline-none focus:ring focus:ring-gray-400"
                 />
               </div>
               <div className="flex w-full justify-end">
                 <FaPaperPlane className="mr-4 -mt-8 text-gray-400 hover:text-gray-600 cursor-pointer" onClick={handlePost} />
               </div>
-              <p className="sm:text-lg text-sm text-gray-500 mt-5">
+              <p className="text-lg text-gray-500 mt-5">
                 <Link to="/login" className="text-blue-600">
                   Đăng nhập
                 </Link>{" "}
@@ -162,7 +142,7 @@ export default function BlogContent() {
 
         {/* Metadata */}
         <motion.div
-          className="text-gray-500 mb-6 bg-white max-sm:hidden p-6 rounded-xl shadow-md w-[300px] h-fit flex flex-col items-center gap-4"
+          className="text-gray-500 mb-6 bg-white p-6 rounded-xl shadow-md w-[300px] h-fit flex flex-col items-center gap-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}

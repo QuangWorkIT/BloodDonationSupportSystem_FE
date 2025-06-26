@@ -8,9 +8,9 @@ import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { getUser } from "@/utils/permisson";
-import api from '@/lib/instance'
+import api from "@/lib/instance";
 import type { RecaptchaVerifier } from "firebase/auth";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 const formSchema = z.object({
   phone: z.string().min(10, "Số điện thoại không hợp lệ"),
@@ -27,8 +27,8 @@ declare global {
 const clientID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 export default function LoginForm() {
-  const { setToken, setUser } = useAuth()
-  const navigate = useNavigate()
+  const { setToken, setUser } = useAuth();
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,16 +52,16 @@ export default function LoginForm() {
 
       const user = getUser(data.token);
       if (user === null) {
-        return
+        return;
       }
-      setUser(user)
+      setUser(user);
 
-      toast.success('Đăng nhập thành công!')
-      const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
-      navigate(path, { replace: true })
+      toast.success("Đăng nhập thành công!");
+      const path = user.role === "Member" ? "/" : user.role === "Staff" ? "/staff" : "/admin";
+      navigate(path, { replace: true });
     } catch (error) {
       console.log("Login error:", error);
-      toast.error('Đăng nhập thất bại!')
+      toast.error("Đăng nhập thất bại!");
     }
   };
 
@@ -76,17 +76,16 @@ export default function LoginForm() {
 
         const user = getUser(data.token);
         if (user === null) {
-          return
+          return;
         }
-        setUser(user)
+        setUser(user);
 
-        toast.success('Đăng nhập thành công!')
-        const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
-        navigate(path, { replace: true })
-
+        toast.success("Đăng nhập thành công!");
+        const path = user.role === "Member" ? "/" : user.role === "Staff" ? "/staff" : "/admin";
+        navigate(path, { replace: true });
       } catch (error) {
         console.log("Login error:", error);
-        toast.error('Đăng nhập thất bại!')
+        toast.error("Đăng nhập thất bại!");
       }
     };
 
@@ -97,7 +96,7 @@ export default function LoginForm() {
       window.google.accounts.id.initialize({
         client_id: clientID,
         callback: handleCredentialResponse,
-        auto_select: false
+        auto_select: false,
       });
 
       window.google.accounts.id.renderButton(container, { theme: "outline", size: "large", width: 400, type: "standard", logo_alignment: "center" });
@@ -105,8 +104,8 @@ export default function LoginForm() {
   }, [clientID]);
 
   return (
-    <div className="max-w-md mx-auto min-sm:mt-10 min-sm:border rounded-lg min-sm:shadow p-6 space-y-6 bg-white max-sm:h-screen max-sm:flex max-sm:flex-col max-sm:justify-center">
-      <h2 className="text-2xl max-sm:text-3xl max-sm:text-center font-semibold text-red-600">Đăng nhập</h2>
+    <div className="max-w-md mx-auto mt-10 border rounded-lg shadow p-6 space-y-6 bg-white">
+      <h2 className="text-2xl font-semibold text-red-600">Đăng nhập</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
