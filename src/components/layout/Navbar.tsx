@@ -1,39 +1,37 @@
 import { useState } from "react";
-import { FaSearch, FaTimes, FaUser } from "react-icons/fa";
+import { FaBars, FaSearch, FaTimes, FaUser } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-type NavItem = {
-  id: string;
-  label: string;
-  href: string;
-};
+
+const navItems = [
+  { id: "home", label: "Trang chủ", href: "/" },
+  { id: "info", label: "Thông tin máu", href: "/bloodinfo" },
+  { id: "share", label: "Chia sẻ", href: "/blogs" },
+  { id: "event", label: "Sự kiện hiến máu", href: "/events" },
+];
 
 export default function BloodDonationNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("home");
   const [showSearch, setShowSearch] = useState(false);
-  const { accessToken } = useAuth()
-  const navItems: NavItem[] = [
-    { id: "su-kien", label: "Sự kiện hiến máu", href: "/events" },
-    { id: "trang-chu", label: "Trang chủ", href: "/home" },
+  const { accessToken, setToken } = useAuth();
+  const navigate = useNavigate();
 
-    { id: "thong-tin-mau", label: "Thông tin máu", href: "/bloodinfo" },
-    { id: "chia-se", label: "Chia sẻ", href: "/blogs" },
-
-  ];
+  const handleLogout = () => {
+    setToken(null);
+    navigate("/", { replace: true });
+  };
 
   return (
-    <nav className="bg-white shadow-md z-1">
-      <div className="container mx-auto px-6 py-4 flex items-center justify-between h-20">
-        <div className="flex items-center">
-          <div className="w-10 h-10 bg-[#C14B53] rounded-full flex items-center justify-center mr-3">
+    <nav className="bg-white shadow-sm w-full sticky">
+      <div className="flex items-center justify-between px-6 py-4">
+        <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden cursor-pointer">
+          <FaBars size={24} className="text-[#C14B53]" />
+        </button>
+
+        <div className="flex items-center max-sm:ml-12">
+          <div className="w-10 h-10 bg-[#C14B53] rounded-full flex items-center justify-center">
             <span className="text-white font-bold text-xs">BD</span>
           </div>
         </div>
@@ -46,15 +44,16 @@ export default function BloodDonationNavbar() {
                   key={item.id}
                   to={item.href}
                   onClick={() => setActiveItem(item.id)}
-                  className={`transition font-medium text-base px-4 py-2 rounded-md ${activeItem === item.id ? "bg-[#C14B53] text-white" : "text-[#C14B53] hover:bg-[#C14B53]/10"
-                    }`}
+                  className={`transition font-medium text-base px-4 py-2 rounded-md ${
+                    activeItem === item.id ? "bg-[#C14B53] text-white" : "text-[#C14B53] hover:bg-[#C14B53]/10"
+                  }`}
                 >
                   {item.label}
                 </Link>
               ))}
           </div>
 
-          <div className="relative ml-6 ">
+          <div className="relative ml-6 max-sm:hidden mr-12">
             <AnimatePresence mode="wait">
               {!showSearch ? (
                 <motion.button
@@ -76,17 +75,9 @@ export default function BloodDonationNavbar() {
                   transition={{ duration: 0.25 }}
                   className="flex items-center bg-white px-6 py-2 rounded-md shadow-sm border border-gray-200 origin-right"
                 >
-                  <input
-                    type="text"
-                    placeholder="Tìm kiếm sự kiện..."
-                    className="w-full py-1 px-2 text-base focus:outline-none"
-                    autoFocus
-                  />
+                  <input type="text" placeholder="Tìm kiếm sự kiện..." className="w-full py-1 px-2 text-base focus:outline-none" autoFocus />
                   {/* do not use built in button */}
-                  <button
-                    onClick={() => setShowSearch(false)}
-                    className="text-gray-600 hover:text-[#C14B53] cursor-pointer transition ml-4"
-                  >
+                  <button onClick={() => setShowSearch(false)} className="text-gray-600 hover:text-[#C14B53] cursor-pointer transition ml-4">
                     <FaTimes size={18} />
                   </button>
                 </motion.div>
@@ -94,32 +85,26 @@ export default function BloodDonationNavbar() {
             </AnimatePresence>
           </div>
 
-          {/* account dropdown*/}
-          <div className="ml-10 mt-1">
-            <DropdownMenu >
-              <DropdownMenuTrigger>
-                <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center mb-1 hover:bg-[#8B0B1A] transition duration-200 cursor-pointer">
+          <div className="flex items-center">
+            {accessToken ? (
+              <button onClick={handleLogout} className="flex flex-col items-center gap-1 ml-4">
+                <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center hover:bg-[#8B0B1A]">
                   <FaUser size={18} color="#fff" />
                 </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {accessToken && (
-                  <Link to={'/profile'}>
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
-                  </Link>
-                )}
-                {
-                  !accessToken && (
-                    <Link to={'/login'}>
-                      <DropdownMenuItem>Login</DropdownMenuItem>
-                    </Link>
-                  )
-                }
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <span className="text-[#C14B53] text-sm font-medium">Đăng xuất</span>
+              </button>
+            ) : (
+              <Link to="/login" className="flex flex-col items-center gap-1 ml-4">
+                <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center hover:bg-[#8B0B1A]">
+                  <FaUser size={18} color="#fff" />
+                </div>
+                <span className="text-[#C14B53] text-sm font-medium">Đăng nhập</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>
+
       {/* Mobile dropdown */}
       <AnimatePresence>
         {menuOpen && (
@@ -138,8 +123,9 @@ export default function BloodDonationNavbar() {
                   setActiveItem(item.id);
                   setMenuOpen(false);
                 }}
-                className={`block px-4 py-2 rounded transition text-base font-medium ${activeItem === item.id ? "bg-[#C14B53] text-white" : "hover:bg-[#C14B53]/10 text-black"
-                  }`}
+                className={`block px-4 py-2 rounded transition text-base font-medium ${
+                  activeItem === item.id ? "bg-[#C14B53] text-white" : "hover:bg-[#C14B53]/10 text-black"
+                }`}
               >
                 {item.label}
               </Link>
