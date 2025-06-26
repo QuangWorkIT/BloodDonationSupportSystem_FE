@@ -79,8 +79,10 @@ export default function RegisterForm() {
     } else {
       setErrors({});
       // reconstruct the form data
-      const copyForm = { ...formData } as Record<string, string | number>;
-      delete copyForm.bloodType;
+      const copyForm = { ...formData } as Record<string, any>;
+      const bloodType = formData.bloodType + formData.rhFactor;
+      copyForm.bloodType = bloodType;
+
       delete copyForm.rhFactor;
       delete copyForm.address;
       delete copyForm.district;
@@ -117,14 +119,7 @@ export default function RegisterForm() {
               <Label htmlFor="lastName" className="text-base">
                 Họ<span className="text-red-500"> *</span>
               </Label>
-              <Input
-                id="lastName"
-                placeholder="Nhập họ của bạn"
-                className="py-2 text-base"
-                required
-                value={formData.lastName}
-                onChange={handleChange}
-              />
+              <Input id="lastName" placeholder="Nhập họ của bạn" className="py-2 text-base" required value={formData.lastName} onChange={handleChange} />
               {errors.lastName && <p className="text-red-500">{errors.lastName}</p>}
             </div>
 
@@ -132,14 +127,7 @@ export default function RegisterForm() {
               <Label htmlFor="firstName" className="text-base">
                 Tên<span className="text-red-500"> *</span>
               </Label>
-              <Input
-                id="firstName"
-                placeholder="Nhập tên của bạn"
-                className="py-2 text-base"
-                required
-                value={formData.firstName}
-                onChange={handleChange}
-              />
+              <Input id="firstName" placeholder="Nhập tên của bạn" className="py-2 text-base" required value={formData.firstName} onChange={handleChange} />
               {errors.firstName && <p className="text-red-500">{errors.firstName}</p>}
             </div>
           </div>
@@ -166,14 +154,7 @@ export default function RegisterForm() {
               <Label htmlFor="gmail" className="text-base">
                 Gmail
               </Label>
-              <Input
-                id="gmail"
-                type="gmail"
-                placeholder="Nhập gmail"
-                className="py-2 text-base"
-                value={formData.gmail}
-                onChange={handleChange}
-              />
+              <Input id="gmail" type="gmail" placeholder="Nhập gmail" className="py-2 text-base" value={formData.gmail} onChange={handleChange} />
             </div>
           </div>
 
@@ -257,14 +238,7 @@ export default function RegisterForm() {
               <Label htmlFor="dob" className="text-base">
                 Ngày tháng năm sinh<span className="text-red-500"> *</span>
               </Label>
-              <Input
-                id="dob"
-                type="date"
-                className="py-2 text-base"
-                required
-                value={formData.dob}
-                onChange={handleChange}
-              />
+              <Input id="dob" type="date" className="py-2 text-base" required value={formData.dob} onChange={handleChange} />
               {errors.dob && <p className="text-red-500">{errors.dob}</p>}
             </div>
           </div>
@@ -352,7 +326,8 @@ export default function RegisterForm() {
             <Label htmlFor="address" className="text-base">
               Địa chỉ<span className="text-red-500"> *</span>
             </Label>
-            <Input id="address" placeholder="Nhập địa chỉ" className="py-2 text-base" value={formData.address} onChange={handleChange} />
+            <Input id="address" placeholder="Số nhà, thôn, xã,..." className="py-2 text-base" required value={formData.address} onChange={handleChange} />
+            {errors.address && <p className="text-red-500">{errors.address}</p>}
           </div>
 
           {/* Submit Button */}
