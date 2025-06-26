@@ -2,16 +2,19 @@ import { useState, useEffect } from "react";
 import { FaCalendarAlt, FaHeart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import VolunteerForm from "./VolunteerForm";
 import { motion, AnimatePresence } from "framer-motion";
+import api from "@/lib/instance";
 
 interface Event {
   id: number;
-  name: string;
+  title: string;
   address: string;
-  date: string;
-  time: string;
-  bloodTypes: string;
+  eventTime: string;
+  bloodType: string;
+  bloodComponent: string;
   registered: number;
-  capacity: number;
+  maxOfDonor: number;
+  isUrgent: boolean;
+  estimateVolume: number;
 }
 const Events = () => {
   const [activeTab, setActiveTab] = useState("donation-events");
@@ -21,9 +24,22 @@ const Events = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const response = await fetch("https://6846eafc7dbda7ee7ab0dd85.mockapi.io/event");
-      const data = await response.json();
-      setEvents(data);
+      // const response = await fetch("https://6846eafc7dbda7ee7ab0dd85.mockapi.io/event");
+      // const data = await response.json();
+      // setEvents(data);
+      try {
+        const response = await api.get("/api/events");
+        const data = response.data;
+
+        if (data.isSuccess) {
+          console.log("Receive events ", data.data.items);
+          setEvents(data.data.items);
+        } else {
+          console.log("Event data status is wrong");
+        }
+      } catch (error) {
+        console.log("Failed to fetch event", error);
+      }
     };
 
     fetchEvents();
@@ -67,9 +83,7 @@ const Events = () => {
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
           className={`w-10 h-10 rounded-md flex items-center justify-center ${
-            currentPage === 1
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+            currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
           }`}
         >
           <FaChevronLeft />
@@ -77,13 +91,7 @@ const Events = () => {
 
         {pages.map((page, index) =>
           page === "..." ? (
-            <motion.span
-              key={index}
-              className="px-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
+            <motion.span key={index} className="px-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
               ...
             </motion.span>
           ) : (
@@ -111,9 +119,7 @@ const Events = () => {
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
           className={`w-10 h-10 rounded-md flex items-center justify-center ${
-            currentPage === totalPages
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+            currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
           }`}
         >
           <FaChevronRight />
@@ -183,9 +189,7 @@ const Events = () => {
             transition={{ duration: 0.3 }}
           >
             {/* Date Picker */}
-            <motion.div
-              className="bg-white rounded-md shadow-sm p-4 mb-8 border border-gray-200"
-            >
+            <motion.div className="bg-white rounded-md shadow-sm p-4 mb-8 border border-gray-200">
               <h2 className="text-lg font-medium mb-4">Bạn muốn đặt lịch vào thời gian nào?</h2>
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex items-center border rounded-md p-2 flex-1">
@@ -228,18 +232,18 @@ const Events = () => {
 
                     {/* Event Details */}
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium mb-2">{event.name}</h3>
-                      <p className="text-gray-600 mb-1">{event.address}</p>
-                      <p className="text-gray-600 mb-1">
-                        Thời gian hoạt động: {event.date}, từ {event.time}
+                      <h3 className="text-lg font-medium mb-2">{event.title}</h3>
+                      <p className="text-gray-600 mb-1">Địa chỉ của cơ sở y tế</p>
+                      <p className="text-gray-600 mb-1">Thời gian hoạt động: {event.eventTime}, từ 7:00 đến 17:00</p>
+                      <p className="text-gray-600">
+                        Ưu tiên người hiến có nhóm máu: <span>{event.bloodType ? event.bloodType : "A, B, AB, O"}</span>
                       </p>
-                      <p className="text-gray-600">Ưu tiên người hiến có nhóm máu: {event.bloodTypes}</p>
                     </div>
 
                     {/* Registration */}
                     <div className="flex flex-col items-end mt-4 md:mt-0">
                       <div className="text-sm text-gray-600 mb-2">
-                        Số người đã đăng ký: {event.registered} / {event.capacity}
+                        Số người đã đăng ký: {event.registered ? event.registered : 0} / {event.maxOfDonor}
                       </div>
                       <motion.button
                         className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
@@ -255,12 +259,7 @@ const Events = () => {
             </div>
 
             {/* Pagination */}
-            <motion.div
-              className="flex justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
+            <motion.div className="flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
               {renderPagination()}
             </motion.div>
           </motion.div>

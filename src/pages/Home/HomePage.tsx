@@ -52,7 +52,7 @@ export default function HomePage() {
       title: "Máu của tôi sẽ được xét nghiệm như thế nào?",
       content: [
         "Tất cả những đơn vị máu thu được sẽ được kiểm tra nhóm máu (hệ ABO, hệ Rh), HIV, virus viêm gan B, virus viêm gan C, giang mai, sốt rét.",
-        "Bạn sẽ được thông báo kết quả, được giữ kín và được tư vấn (miễn phí) khi phát hiện ra các bệnh nhiễm trùng nói trên.",
+        "Bạn sẽ được thông báo kết quả, được giữ kín và được hỗ trợ khi phát hiện ra các bệnh nhiễm trùng nói trên.",
       ],
     },
   ];
@@ -119,7 +119,7 @@ export default function HomePage() {
                 <h2 className="text-blue-600 font-semibold text-2xl">Buổi hiến máu đầu tiên</h2>
                 <p>Những gì bạn cần biết cho lần đầu tiên hiến máu</p>
                 <span className="relative inline-block group w-max">
-                  <Link to="#" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
+                  <Link to="/bloodinfo" className="text-lg text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </Link>
                   <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
@@ -133,7 +133,7 @@ export default function HomePage() {
                 <h2 className="text-blue-600 font-semibold text-2xl">Quy trình hiến máu</h2>
                 <p>Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả</p>
                 <span className="relative inline-block group w-max">
-                  <Link to="#" className="text-xl text-red-700 font-semibold hover:text-[#a83a42]">
+                  <Link to="/bloodinfo" className="text-lg text-red-700 font-semibold hover:text-[#a83a42]">
                     Tìm hiểu thêm
                   </Link>
                   <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
@@ -161,11 +161,9 @@ export default function HomePage() {
               <h2 className="text-[40px] font-semibold text-center mb-6 text-white">Tiêu chuẩn hiến máu</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
                 {criterias.map((item, idx) => (
-                  <div key={idx}  className="bg-white rounded-xl shadow-md shadow-gray-500 p-4 flex flex-col gap-2">
+                  <div key={idx} className="bg-white rounded-xl shadow-md shadow-gray-500 p-4 flex flex-col gap-2">
                     <img src={item.image} alt="" width={50} />
-                    <div className="text-md">
-                      {item.text}
-                    </div>
+                    <div className="text-md">{item.text}</div>
                   </div>
                 ))}
               </div>
@@ -195,7 +193,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <Link to="/" className="text-sm text-blue-500 underline">
+          <Link to="/blogs" className="text-sm text-blue-500 underline">
             Xem thêm...
           </Link>
         </section>
