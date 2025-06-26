@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BloodDonationNavbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Link } from "react-router-dom";
+import UrgentEvents from "../DonationEvent/UrgentEvents";
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -15,18 +16,21 @@ export default function HomePage() {
       description: "",
       buttonText: "Xem tại đây",
       imageUrl: "src/assets/images/image7.png",
+      bgGradient: "bg-gradient-to-r from-red-700 to-red-500",
     },
     {
       title: "Tham gia hiến máu KHẨN",
       description: "Để phục vụ cho nhu cầu truyền máu của người bệnh",
       buttonText: "Tham gia ngay",
       imageUrl: "src/assets/images/image6.png",
+      bgGradient: "bg-gradient-to-r from-red-800 to-red-600",
     },
     {
       title: "TP.HCM hiện đang cần\n2000+ ĐƠN VỊ MÁU",
       description: "Để phục vụ cho cấp cứu và điều trị",
       buttonText: "Đăng kí hiến máu tại đây",
       imageUrl: "src/assets/images/image5.png",
+      bgGradient: "bg-gradient-to-r from-red-900 to-red-700",
     },
   ];
 
@@ -58,158 +62,273 @@ export default function HomePage() {
   ];
 
   const criterias = [
-    { text: "Cân nặng: Nam > 45 kg và Nữ > 42 kg", image: "src/assets/images/Frame1.png" },
-    { text: "Không nghiện ma túy, rượu bia và các chất kích thích", image: "src/assets/images/Frame2.png" },
-    { text: "Người khỏe mạnh trong độ tuổi từ 18 đến 60 tuổi", image: "src/assets/images/18+.png" },
-    { text: "Không mắc bệnh mãn tính hoặc cấp tính về tim mạch, huyết áp, hô hấp, dạ dày...", image: "src/assets/images/heart.png" },
-    { text: "Thời gian tối thiểu giữa 2 lần hiến máu là 12 tuần đối với cả Nam và Nữ", image: "src/assets/images/schedule.png" },
+    {
+      text: "Cân nặng: Nam > 45 kg và Nữ > 42 kg",
+      image: "src/assets/images/Frame1.png",
+      iconColor: "text-red-500",
+    },
+    {
+      text: "Không nghiện ma túy, rượu bia và các chất kích thích",
+      image: "src/assets/images/Frame2.png",
+      iconColor: "text-red-600",
+    },
+    {
+      text: "Người khỏe mạnh trong độ tuổi từ 18 đến 60 tuổi",
+      image: "src/assets/images/18+.png",
+      iconColor: "text-red-700",
+    },
+    {
+      text: "Không mắc bệnh mãn tính hoặc cấp tính về tim mạch, huyết áp, hô hấp, dạ dày...",
+      image: "src/assets/images/heart.png",
+      iconColor: "text-red-500",
+    },
+    {
+      text: "Thời gian tối thiểu giữa 2 lần hiến máu là 12 tuần đối với cả Nam và Nữ",
+      image: "src/assets/images/schedule.png",
+      iconColor: "text-red-600",
+    },
     {
       text: "Không mắc hoặc không có các hành vi nguy cơ lây nhiễm HIV, viêm gan B, viêm gan C, và các virus lây qua đường truyền máu",
       image: "src/assets/images/virus.png",
+      iconColor: "text-red-700",
     },
   ];
 
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      nextSlide();
     }, 10000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div>
+    <div className="bg-gray-50">
       <BloodDonationNavbar />
 
       <div className="flex flex-col sm:gap-[100px] gap-10">
-        {/* Hero Slider */}
-        <section className="h-[160px] sm:h-[450px] bg-red-300 flex sm:justify-center justify-between items-center sm:gap-12 sm:pl-28 pl-6">
-          <div className="sm:w-1/2 w-[280px] flex flex-col justify-around gap-4 sm:mb-24">
-            <div className="flex flex-col sm:gap-4 max-sm:mb-7">
-              <h2 className="text-lg/[1.3] sm:text-[45px]/[1.3] font-bold text-red-800 whitespace-pre-line">{slides[currentSlide].title}</h2>
+        {/* Hero Slider - With Red Hover Buttons */}
+        <section
+          className={`relative h-[300px] sm:h-[500px] ${slides[currentSlide].bgGradient} flex items-center overflow-hidden`}
+        >
+          <div className="absolute inset-0 bg-black/30 z-10"></div>
+
+          {/* Carousel Navigation Buttons with Red Hover */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 z-30 p-3 rounded-full bg-white/30 hover:bg-red-700/80 transition-colors cursor-pointer"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-8 h-8 text-white" />
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 z-30 p-3 rounded-full bg-white/30 hover:bg-red-700/80 transition-colors cursor-pointer"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-8 h-8 text-white" />
+          </button>
+
+          <div className="container mx-auto px-6 z-20 flex flex-col sm:flex-row items-center justify-between">
+            <div className="sm:w-1/2 w-full text-white sm:pr-8">
+              <h2 className="text-2xl sm:text-5xl font-bold leading-tight mb-4 drop-shadow-md">
+                {slides[currentSlide].title.split("\n").map((line, i) => (
+                  <span key={i} className="block">
+                    {line}
+                  </span>
+                ))}
+              </h2>
               {slides[currentSlide].description && (
-                <p className="text-yellow-300 text-sm sm:text-[25px] font-medium whitespace-pre-line">{slides[currentSlide].description}</p>
+                <p className="text-yellow-200 text-lg sm:text-xl mb-6">{slides[currentSlide].description}</p>
               )}
-              <Button className="bg-red-700 hover:bg-red-800 text-white text-[12px] sm:text-lg max-sm:mt-2 w-fit h-fit cursor-pointer">
+              <Button className="bg-white text-red-700 hover:bg-gray-100 font-bold py-6 px-8 rounded-full shadow-lg transition-all hover:scale-105">
                 {slides[currentSlide].buttonText}
               </Button>
-            </div>
-            <span className="flex gap-3 sm:gap-8 sm:mt-[360px] absolute mt-30">
-              {slides && slides.length
-                ? slides.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentSlide(index)}
-                      className={
-                        currentSlide === index
-                          ? "bg-white h-[10px] w-[10px] sm:p-[10px] rounded-full cursor-pointer"
-                          : "bg-gray-300 h-[10px] w-[10px] sm:p-[10px] rounded-full cursor-pointer"
-                      }
-                    ></button>
-                  ))
-                : null}
-            </span>
-          </div>
-          <div className="sm:w-1/2 w-fit">
-            <img src={slides[currentSlide].imageUrl} alt="" className=" h-[160px] w-[160px] sm:h-[450px] sm:w-full object-cover" />
-          </div>
-        </section>
 
-        {/* Introduction Section */}
-        <section className="text-center px-6 max-w-4xl mx-auto ">
-          <div className="w-full flex max-sm:flex-col items-between sm:gap-7.5 gap-9 justify-between max-sm:max-w-[70%] mx-auto">
-            <div className="flex gap-4 items-center sm:max-w-[45%]">
-              <img src="src/assets/images/Vector1.png" alt="" className="sm:w-[64px] w-8 sm:h-[80px]" />
-              <div className="flex flex-col sm:gap-3 gap-1.5 text-left">
-                <h2 className="text-blue-600 font-semibold sm:text-2xl text-lg">Buổi hiến máu đầu tiên</h2>
-                <p className="max-sm:text-sm">Những gì bạn cần biết cho lần đầu tiên hiến máu</p>
-                <span className="relative inline-block group w-max">
-                  <Link to="/bloodinfo" className="text-lg text-red-700 font-semibold hover:text-[#a83a42]">
-                    Tìm hiểu thêm
-                  </Link>
-                  <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
-                </span>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-center justify-center sm:max-w-[45%]">
-              <img src="src/assets/images/Vector2.png" alt="" className="sm:w-[64px] w-8 sm:h-[80px] h-10" />
-              <div className="flex flex-col sm:gap-3 gap-1.5 text-left">
-                <h2 className="text-blue-600 font-semibold sm:text-2xl text-lg">Quy trình hiến máu</h2>
-                <p className="max-sm:text-sm">Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả</p>
-                <span className="relative inline-block group w-max">
-                  <Link to="/bloodinfo" className="text-lg text-red-700 font-semibold hover:text-[#a83a42]">
-                    Tìm hiểu thêm
-                  </Link>
-                  <span className="absolute left-0 -bottom-2 h-2 bg-red-700 rounded-full w-[65%] group-hover:w-[100%] transition-all duration-300 ease-in-out"></span>
-                </span>
-              </div>
-            </div>
-          </div>
-          <h2 className="sm:mt-14 mt-10 sm:text-3xl text-[22px] font-semibold mb-4">
-            Một giọt <span className="text-red-700">máu</span> ngàn yêu thương
-          </h2>
-          <p className="text-gray-600 sm:text-lg text-sm/[2]">
-            Cơ sở Hiến máu Nhân đạo - nơi kết nối những tấm lòng nhân ái vì cộng đồng. Chúng tôi là đơn vị y tế chuyên tiếp nhận, quản lý và điều phối nguồn máu
-            từ người hiến tới những bệnh nhân cần truyền máu kịp thời. Với đội ngũ y bác sĩ tận tâm, hệ thống lưu trữ máu hiện đại cùng nền tảng công nghệ hỗ
-            trợ hiệu quả, chúng tôi cam kết mang lại quy trình hiến máu an toàn, nhanh chóng và minh bạch.
-          </p>
-        </section>
-
-        {/* Blood Donation Criteria Section */}
-        <section className="bg-red-300 py-8 px-12">
-          <div className="grid sm:grid-cols-3 grid-cols-2 gap-x-16">
-            <div className="flex items-center max-sm:hidden">
-              <h1 className="text-[33px] text-white font-semibold">
-                Mỗi giọt <span className="text-red-800">máu</span> bạn trao đi là một cơ hội sống bạn mang lại cho người khác
-              </h1>
-            </div>
-            <div className="col-span-2">
-              <h2 className="sm:text-[40px] text-2xl font-semibold text-center mb-6 text-white">
-                <span className="text-yellow-400">Tiêu chuẩn</span> hiến máu
-              </h2>
-              <div className="grid grid-cols-2 gap-6 max-w-6xl mx-auto">
-                {criterias.map((item, idx) => (
-                  <div key={idx} className="bg-white max-sm:h-fit rounded-xl shadow-md shadow-gray-500 p-4 flex flex-col gap-2">
-                    <img src={item.image} alt="" className="sm:w-[50px] w-[35px]" />
-                    <div className="sm:text-md text-sm">{item.text}</div>
-                  </div>
+              <div className="flex gap-3 mt-8">
+                {slides.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`h-2 w-2 sm:h-3 sm:w-3 rounded-full transition-all ${
+                      currentSlide === index ? "bg-white w-6" : "bg-white/50"
+                    }`}
+                  />
                 ))}
               </div>
             </div>
-          </div>
-          <div className="flex items-center mt-10 sm:hidden">
-            <h1 className="sm:text-[33px] text-lg max-sm:text-center text-white font-semibold">
-              Mỗi giọt <span className="text-red-800">máu</span> bạn trao đi là một cơ hội sống bạn mang lại cho người khác
-            </h1>
+
+            {/* Image container - hidden on mobile, visible on desktop */}
+            <div className="hidden sm:block sm:w-1/2">
+              <img
+                src={slides[currentSlide].imageUrl}
+                alt=""
+                className="absolute right-0 bottom-0 h-full sm:h-auto sm:w-1/2 object-cover object-center"
+                style={{ borderRadius: 0 }}
+              />
+            </div>
           </div>
         </section>
 
-        {/* Important Notes Section */}
-        <section className="text-center px-6">
-          <h2 className="sm:text-3xl text-2xl font-semibold font-serif mb-8">Lưu ý quan trọng</h2>
-          <div className="max-w-3xl mx-auto space-y-4 mb-8">
-            {importantNotes.map((note, index) => (
-              <div key={index} className="border border-red-200 rounded-lg">
-                <button
-                  className="w-full flex justify-between items-center px-4 py-3 text-left text-red-600 font-medium"
-                  onClick={() => setExpandedIndex(index === expandedIndex ? null : index)}
-                >
-                  {note.title}
-                  <ChevronDown className={`w-5 h-5 cursor-pointer transition-transform duration-200 ${expandedIndex === index ? "rotate-180" : ""}`} />
-                </button>
-                {expandedIndex === index &&
-                  note.content.map((item, index) => (
-                    <div key={index} className="text-left px-4 pb-4 text-gray-700 text-sm transition-discrete">
-                      {item}
-                    </div>
-                  ))}
+        {/* Introduction Section - Improved Responsiveness */}
+        <section className="container mx-auto px-6 text-center">
+          <div className="grid sm:grid-cols-2 gap-8 max-w-6xl mx-auto mb-16">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow flex flex-col sm:flex-row gap-6 items-start text-left">
+              <div className={`bg-red-100 p-4 rounded-full min-w-[80px] ${expandedIndex === 0 ? "animate-pulse" : ""}`}>
+                <img
+                  src="src/assets/images/Vector1.png"
+                  alt=""
+                  className="w-12 h-12 object-contain" // Fixed aspect ratio
+                  style={{ aspectRatio: "1/1" }}
+                />
               </div>
-            ))}
+              <div>
+                <h2 className="text-xl font-bold text-red-700 mb-2">Buổi hiến máu đầu tiên</h2>
+                <p className="text-gray-600 mb-4 text-sm sm:text-base mt-4">
+                  Những gì bạn cần biết cho lần đầu tiên hiến máu
+                </p>
+                <Link
+                  to="/bloodinfo"
+                  className="inline-flex items-center text-red-600 font-medium hover:text-red-800 group text-sm sm:text-base mt-4"
+                >
+                  Tìm hiểu thêm
+                  <ChevronDown className="ml-1 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow flex flex-col sm:flex-row gap-6 items-start text-left">
+              <div className={`bg-red-100 p-4 rounded-full min-w-[80px] ${expandedIndex === 1 ? "animate-pulse" : ""}`}>
+                <img
+                  src="src/assets/images/Vector2.png"
+                  alt=""
+                  className="w-12 h-12 object-contain" // Fixed aspect ratio
+                  style={{ aspectRatio: "1/1" }}
+                />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-red-700 mb-2">Quy trình hiến máu</h2>
+                <p className="text-gray-600 mb-4 text-sm sm:text-base">
+                  Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả
+                </p>
+                <Link
+                  to="/bloodinfo"
+                  className="inline-flex items-center text-red-600 font-medium hover:text-red-800 group text-sm sm:text-base"
+                >
+                  Tìm hiểu thêm
+                  <ChevronDown className="ml-1 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
           </div>
-          <Link to="/blogs" className="text-sm text-blue-500 underline">
-            Xem thêm...
-          </Link>
+
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-6 relative inline-block">
+              <span className="relative z-10">
+                Một giọt <span className="text-red-600">máu</span> ngàn yêu thương
+              </span>
+              <span className="absolute bottom-0 left-0 w-full h-2 bg-red-100 z-0"></span>
+            </h2>
+            <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
+              Cơ sở Hiến máu Nhân đạo - nơi kết nối những tấm lòng nhân ái vì cộng đồng. Chúng tôi là đơn vị y tế chuyên
+              tiếp nhận, quản lý và điều phối nguồn máu từ người hiến tới những bệnh nhân cần truyền máu kịp thời. Với
+              đội ngũ y bác sĩ tận tâm, hệ thống lưu trữ máu hiện đại cùng nền tảng công nghệ hỗ trợ hiệu quả, chúng tôi
+              cam kết mang lại quy trình hiến máu an toàn, nhanh chóng và minh bạch.
+            </p>
+          </div>
         </section>
+
+        <UrgentEvents/>
+        {/* Blood Donation Criteria Section - Responsive Improvements */}
+        <section className="bg-[#a83a42] py-12 sm:py-16 px-6">
+          <div className="container mx-auto">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-3xl sm:text-5xl font-bold text-white mb-4">
+                <span className="text-yellow-300">Tiêu chuẩn</span> hiến máu
+              </h2>
+              <p className="text-red-100 max-w-2xl mx-auto text-base sm:text-lg">
+                Mỗi giọt máu bạn trao đi là một cơ hội sống bạn mang lại cho người khác
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-3 grid-cols-1 gap-4 sm:gap-6 max-w-6xl mx-auto">
+              {criterias.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-xl shadow-xl p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 hover:transform hover:-translate-y-2 transition-transform duration-300"
+                >
+                  <div
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full ${item.iconColor} bg-opacity-20 flex items-center justify-center`}
+                  >
+                    <img src={item.image} alt="" className="w-6 h-6 sm:w-8 sm:h-8" />
+                  </div>
+                  <div className="font-medium text-gray-800 text-sm sm:text-base">{item.text}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Important Notes Section - Responsive Improvements */}
+        <section className="container mx-auto px-6 py-12 sm:py-16">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-red-700">Lưu ý quan trọng</h2>
+            <p className="text-gray-600 mb-8 sm:mb-12 max-w-2xl mx-auto text-base sm:text-lg">
+              Những điều cần biết trước khi tham gia hiến máu nhân đạo
+            </p>
+
+            <div className="space-y-3 sm:space-y-4">
+              {importantNotes.map((note, index) => (
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <button
+                    className="w-full flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 text-left bg-white hover:bg-red-50 transition-colors"
+                    onClick={() => setExpandedIndex(index === expandedIndex ? null : index)}
+                  >
+                    <h3 className="text-base sm:text-lg font-semibold text-red-700">{note.title}</h3>
+                    <ChevronDown
+                      className={`w-5 h-5 text-red-600 transition-transform duration-200 ${
+                        expandedIndex === index ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {expandedIndex === index && (
+                    <div className="px-4 sm:px-6 pb-4 pt-2 bg-white text-left">
+                      <ul className="space-y-2 sm:space-y-3 text-gray-700 text-sm sm:text-base">
+                        {note.content.map((item, i) => (
+                          <li key={i} className="flex items-start">
+                            <span className="text-red-500 mr-2">•</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <Link
+              to="/blogs"
+              className="inline-block mt-6 sm:mt-8 text-red-600 font-medium hover:text-red-800 group transition-colors text-sm sm:text-base"
+            >
+              Xem thêm thông tin
+              <span className="block h-0.5 bg-red-600 group-hover:bg-red-800 transition-colors w-0 group-hover:w-full duration-300"></span>
+            </Link>
+          </div>
+        </section>
+
         <Footer />
       </div>
     </div>
