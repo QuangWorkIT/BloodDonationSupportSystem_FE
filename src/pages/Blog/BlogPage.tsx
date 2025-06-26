@@ -78,7 +78,9 @@ export default function BlogPage() {
               <div className="p-5 flex flex-col justify-between min-h-[200px]">
                 <p className="text-gray-400 sm:text-lg text-md mb-4 line-clamp-3">{blog.summary}</p>
                 <div className="flex flex-col items-center mt-auto space-y-3">
-                  <Button className="bg-red-700 hover:bg-red-800 text-lg text-white w-[350px] py-6 cursor-pointer">Đọc tiếp...</Button>
+                  <Link to={`/blogcontent/${blog.id}`}>
+                    <Button className="bg-red-700 hover:bg-red-800 text-lg text-white w-[200px] py-6 cursor-pointer">Đọc tiếp...</Button>
+                  </Link>
                   <p className="text-gray-400 place-self-end">Đã đăng ngày {blog.date}</p>
                 </div>
               </div>

@@ -90,9 +90,9 @@ export default function RegisterForm() {
       delete copyForm.province;
       delete copyForm.confirmPassword;
 
-      copyForm.phone = formatPhone(formData.phone)
-      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor)
-      const address = formData.address + " " + formData.district + " " + formData.province + " Việt Nam"
+      copyForm.phone = formatPhone(formData.phone);
+      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor);
+      const address = formData.address + " " + formData.district + " " + formData.province + " Việt Nam";
       try {
         const geoCoding = await getLongLat(address);
         if (geoCoding !== null) {
@@ -106,19 +106,19 @@ export default function RegisterForm() {
       }
 
       try {
-      // const credential = await confirmationResult?.confirm(enteredOtp)
-      // console.log("otp correct: ", credential)
-        console.log(copyForm)
-      // only proceed if OTP is correct
-      const response = await api.post("/api/register", copyForm)
-      console.log(response)
-      if (response.status === 200) {
-        localStorage.removeItem('tempUser')
-        navigate('/login', { replace: true })
+        // const credential = await confirmationResult?.confirm(enteredOtp)
+        // console.log("otp correct: ", credential)
+        console.log(copyForm);
+        // only proceed if OTP is correct
+        const response = await api.post("/api/auth/register", copyForm);
+        console.log(response);
+        if (response.status === 200) {
+          localStorage.removeItem("tempUser");
+          navigate("/login", { replace: true });
+        }
+      } catch (error) {
+        console.log("failed to verify otp", error);
       }
-    } catch (error) {
-      console.log('failed to verify otp', error)
-    }
       // localStorage.setItem('tempUser', JSON.stringify(copyForm))
       // navigate('/otp', {replace:true})
     }
@@ -135,14 +135,7 @@ export default function RegisterForm() {
               <Label htmlFor="lastName" className="text-base">
                 Họ<span className="text-red-500"> *</span>
               </Label>
-              <Input
-                id="lastName"
-                placeholder="Nhập họ của bạn"
-                className="py-2 text-base"
-                required
-                value={formData.lastName}
-                onChange={handleChange}
-              />
+              <Input id="lastName" placeholder="Nhập họ của bạn" className="py-2 text-base" required value={formData.lastName} onChange={handleChange} />
               {errors.lastName && <p className="text-red-500">{errors.lastName}</p>}
             </div>
 
@@ -150,14 +143,7 @@ export default function RegisterForm() {
               <Label htmlFor="firstName" className="text-base">
                 Tên<span className="text-red-500"> *</span>
               </Label>
-              <Input
-                id="firstName"
-                placeholder="Nhập tên của bạn"
-                className="py-2 text-base"
-                required
-                value={formData.firstName}
-                onChange={handleChange}
-              />
+              <Input id="firstName" placeholder="Nhập tên của bạn" className="py-2 text-base" required value={formData.firstName} onChange={handleChange} />
               {errors.firstName && <p className="text-red-500">{errors.firstName}</p>}
             </div>
           </div>
@@ -184,14 +170,7 @@ export default function RegisterForm() {
               <Label htmlFor="gmail" className="text-base">
                 Gmail
               </Label>
-              <Input
-                id="gmail"
-                type="gmail"
-                placeholder="Nhập gmail"
-                className="py-2 text-base"
-                value={formData.gmail}
-                onChange={handleChange}
-              />
+              <Input id="gmail" type="gmail" placeholder="Nhập gmail" className="py-2 text-base" value={formData.gmail} onChange={handleChange} />
             </div>
           </div>
 
@@ -275,14 +254,7 @@ export default function RegisterForm() {
               <Label htmlFor="dob" className="text-base">
                 Ngày tháng năm sinh<span className="text-red-500"> *</span>
               </Label>
-              <Input
-                id="dob"
-                type="date"
-                className="py-2 text-base"
-                required
-                value={formData.dob}
-                onChange={handleChange}
-              />
+              <Input id="dob" type="date" className="py-2 text-base" required value={formData.dob} onChange={handleChange} />
               {errors.dob && <p className="text-red-500">{errors.dob}</p>}
             </div>
           </div>
@@ -370,8 +342,8 @@ export default function RegisterForm() {
             <Label htmlFor="address" className="text-base">
               Địa chỉ<span className="text-red-500"> *</span>
             </Label>
-            <Input id="district" placeholder="Chọn quận huyện" list="districts" className="py-2 text-base" value={formData.district} onChange={handleChange} />
-            <datalist id="districts"></datalist>
+            <Input id="address" placeholder="Số nhà, thôn, xã,..." className="py-2 text-base" required value={formData.address} onChange={handleChange} />
+            {errors.address && <p className="text-red-500">{errors.address}</p>}
           </div>
 
           {/* Submit Button */}
