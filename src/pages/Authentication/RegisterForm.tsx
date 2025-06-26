@@ -5,8 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { getLongLat } from "@/utils/gecoding";
 import { getTypeId } from "@/types/BloodCompatibility";
-import { formatPhone } from "@/utils/format";
-import api from "@/lib/instance";
+import { formatPhoneOtp } from "@/utils/format";
 export interface FormData {
   lastName: string;
   firstName: string;
@@ -90,9 +89,9 @@ export default function RegisterForm() {
       delete copyForm.province;
       delete copyForm.confirmPassword;
 
-      copyForm.phone = formatPhone(formData.phone);
-      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor);
-      const address = formData.address + " " + formData.district + " " + formData.province + " Việt Nam";
+      copyForm.phone = formatPhoneOtp(formData.phone)
+      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor)
+      const address = formData.address + " " + formData.district + " " + formData.province + " Việt Nam"
       try {
         const geoCoding = await getLongLat(address);
         if (geoCoding !== null) {
@@ -104,23 +103,8 @@ export default function RegisterForm() {
       } catch (error) {
         console.log("Geocoding register failed ", error);
       }
-
-      try {
-        // const credential = await confirmationResult?.confirm(enteredOtp)
-        // console.log("otp correct: ", credential)
-        console.log(copyForm);
-        // only proceed if OTP is correct
-        const response = await api.post("/api/auth/register", copyForm);
-        console.log(response);
-        if (response.status === 200) {
-          localStorage.removeItem("tempUser");
-          navigate("/login", { replace: true });
-        }
-      } catch (error) {
-        console.log("failed to verify otp", error);
-      }
-      // localStorage.setItem('tempUser', JSON.stringify(copyForm))
-      // navigate('/otp', {replace:true})
+      localStorage.setItem('tempUser', JSON.stringify(copyForm))
+      navigate('/otp', {replace:true})
     }
   };
 

@@ -7,11 +7,12 @@ import {
   type ConfirmationResult,
 } from 'firebase/auth'
 import { auth } from '@/configs/firsbase'
-import { hiddenPhone } from "@/utils/format";
+import { formatPhoneRegister, hiddenPhone } from "@/utils/format";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/instance";
 import { type FormData } from '@/pages/Authentication/RegisterForm'
 import { toast } from "react-toastify";
+import type { AxiosError } from "axios";
 
 export default function OTPForm() {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -66,7 +67,7 @@ export default function OTPForm() {
       }
 
       const registerUser = JSON.parse(temp)
-      setRegisterUser(registerUser) 
+      setRegisterUser(registerUser)
       setPhone(registerUser.phone)
       console.log(registerUser)
       try {
@@ -92,18 +93,29 @@ export default function OTPForm() {
     try {
       const credential = await confirmationResult?.confirm(enteredOtp)
       console.log("otp correct: ", credential)
+      if (!registerUser) {
+        console.log('Regiter user not found')
+        return
+      }
 
+      registerUser.phone = formatPhoneRegister(registerUser.phone)
       console.log(registerUser)
       // only proceed if OTP is correct
-      const response = await api.post("/api/register", registerUser)
-      if (response.status === 200) {
-        localStorage.removeItem('tempUser')
-        toast.success('Đăng ký thành công!')
-        navigate('/login', { replace: true })
-      }
+      await api.post("/api/auth/register", registerUser)
+      localStorage.removeItem('tempUser')
+      toast.success('Đăng ký thành công!')
+      navigate('/login', { replace: true })
     } catch (error) {
-      console.log('failed to verify otp', error)
-      toast.error('Đăng ký thất bại!')
+      const err = error as AxiosError<{message: string}>
+      const errMsg = err.response?.data?.message
+
+      if(errMsg) {
+        console.log('Register failed', errMsg)
+        toast.error('Tài khoản đã tồn tại!')  
+      }else {
+        console.log('OTP verify failed', error)
+        toast.error('OTP không khớp')
+      }
     }
   }
 
