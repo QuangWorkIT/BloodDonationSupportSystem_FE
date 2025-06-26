@@ -1,15 +1,35 @@
 import { useState } from "react";
-import { FaHeart, FaInfoCircle, FaCheck, FaArrowRight } from "react-icons/fa";
+import { FaCheck } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
+type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+type BloodComponent = "whole-blood" | "red-blood-cells" | "plasma" | "platelets";
+
+interface CompatibilityInfo {
+  donateTo: BloodType[];
+  receiveFrom: BloodType[];
+}
+
+type BloodCompatibility = {
+  [key in BloodType]: {
+    [component in BloodComponent]: CompatibilityInfo;
+  };
+};
+
+interface BloodTypeDistribution {
+  type: BloodType;
+  percentage: string;
+  description: string;
+}
+
 const BloodInformation = () => {
-  const [activeTab, setActiveTab] = useState("blood-types");
-  const [compatibilityType, setCompatibilityType] = useState("whole-blood");
-  const [selectedBloodType, setSelectedBloodType] = useState("A+");
-  const [selectedComponent, setSelectedComponent] = useState("red-blood-cells");
+  const [activeTab, setActiveTab] = useState<"blood-types" | "compatibility" | "donation-process">("blood-types");
+  const [compatibilityType, setCompatibilityType] = useState<"whole-blood" | "blood-component">("whole-blood");
+  const [selectedBloodType, setSelectedBloodType] = useState<BloodType>("A+");
+  const [selectedComponent, setSelectedComponent] = useState<BloodComponent>("red-blood-cells");
 
   // Blood type distribution data
-  const bloodTypeDistribution = [
+  const bloodTypeDistribution: BloodTypeDistribution[] = [
     { type: "O+", percentage: "38%", description: "Phổ biến nhất" },
     { type: "A+", percentage: "34%", description: "Phổ biến thứ hai" },
     { type: "B+", percentage: "9%", description: "Ít phổ biến" },
@@ -20,8 +40,8 @@ const BloodInformation = () => {
     { type: "AB-", percentage: "1%", description: "Cực kỳ hiếm" },
   ];
 
-  // Compatibility data
-  const compatibilityData = {
+  // Complete compatibility data for all blood types
+  const compatibilityData: BloodCompatibility = {
     "A+": {
       "whole-blood": {
         donateTo: ["A+", "AB+"],
@@ -40,11 +60,145 @@ const BloodInformation = () => {
         receiveFrom: ["A+", "A-", "O+", "O-", "B+", "B-", "AB+", "AB-"],
       },
     },
-    // Add other blood types similarly...
+    "A-": {
+      "whole-blood": {
+        donateTo: ["A+", "A-", "AB+", "AB-"],
+        receiveFrom: ["A-", "O-"],
+      },
+      "red-blood-cells": {
+        donateTo: ["A+", "A-", "AB+", "AB-"],
+        receiveFrom: ["A-", "O-"],
+      },
+      plasma: {
+        donateTo: ["A-", "O-"],
+        receiveFrom: ["A+", "A-", "AB+", "AB-"],
+      },
+      platelets: {
+        donateTo: ["A+", "A-", "AB+", "AB-"],
+        receiveFrom: ["A-", "O-"],
+      },
+    },
+    "B+": {
+      "whole-blood": {
+        donateTo: ["B+", "AB+"],
+        receiveFrom: ["B+", "B-", "O+", "O-"],
+      },
+      "red-blood-cells": {
+        donateTo: ["B+", "AB+"],
+        receiveFrom: ["B+", "B-", "O+", "O-"],
+      },
+      plasma: {
+        donateTo: ["B+", "B-", "O+", "O-"],
+        receiveFrom: ["B+", "AB+"],
+      },
+      platelets: {
+        donateTo: ["B+", "AB+"],
+        receiveFrom: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
+      },
+    },
+    "B-": {
+      "whole-blood": {
+        donateTo: ["B+", "B-", "AB+", "AB-"],
+        receiveFrom: ["B-", "O-"],
+      },
+      "red-blood-cells": {
+        donateTo: ["B+", "B-", "AB+", "AB-"],
+        receiveFrom: ["B-", "O-"],
+      },
+      plasma: {
+        donateTo: ["B-", "O-"],
+        receiveFrom: ["B+", "B-", "AB+", "AB-"],
+      },
+      platelets: {
+        donateTo: ["B+", "B-", "AB+", "AB-"],
+        receiveFrom: ["B-", "O-"],
+      },
+    },
+    "AB+": {
+      "whole-blood": {
+        donateTo: ["AB+"],
+        receiveFrom: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      },
+      "red-blood-cells": {
+        donateTo: ["AB+"],
+        receiveFrom: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      },
+      plasma: {
+        donateTo: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+        receiveFrom: ["AB+"],
+      },
+      platelets: {
+        donateTo: ["AB+"],
+        receiveFrom: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      },
+    },
+    "AB-": {
+      "whole-blood": {
+        donateTo: ["AB+", "AB-"],
+        receiveFrom: ["A-", "B-", "AB-", "O-"],
+      },
+      "red-blood-cells": {
+        donateTo: ["AB+", "AB-"],
+        receiveFrom: ["A-", "B-", "AB-", "O-"],
+      },
+      plasma: {
+        donateTo: ["A-", "B-", "AB-", "O-"],
+        receiveFrom: ["AB+", "AB-"],
+      },
+      platelets: {
+        donateTo: ["AB+", "AB-"],
+        receiveFrom: ["A-", "B-", "AB-", "O-"],
+      },
+    },
+    "O+": {
+      "whole-blood": {
+        donateTo: ["A+", "B+", "AB+", "O+"],
+        receiveFrom: ["O+", "O-"],
+      },
+      "red-blood-cells": {
+        donateTo: ["A+", "B+", "AB+", "O+"],
+        receiveFrom: ["O+", "O-"],
+      },
+      plasma: {
+        donateTo: ["O+", "O-"],
+        receiveFrom: ["A+", "B+", "AB+", "O+"],
+      },
+      platelets: {
+        donateTo: ["A+", "B+", "AB+", "O+"],
+        receiveFrom: ["O+", "O-"],
+      },
+    },
+    "O-": {
+      "whole-blood": {
+        donateTo: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+        receiveFrom: ["O-"],
+      },
+      "red-blood-cells": {
+        donateTo: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+        receiveFrom: ["O-"],
+      },
+      plasma: {
+        donateTo: ["O-"],
+        receiveFrom: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      },
+      platelets: {
+        donateTo: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+        receiveFrom: ["O-"],
+      },
+    },
   };
 
-  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-  const bloodComponents = ["Hồng cầu", "Huyết tương", "Tiểu cầu"];
+  const bloodTypes: BloodType[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+  const bloodComponents = [
+    { name: "Máu Toàn Phần", value: "whole-blood" },
+    { name: "Hồng Cầu", value: "red-blood-cells" },
+    { name: "Huyết Tương", value: "plasma" },
+    { name: "Tiểu Cầu", value: "platelets" },
+  ];
+
+
+  const currentCompatibilityInfo =
+    compatibilityData[selectedBloodType][compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -161,7 +315,7 @@ const BloodInformation = () => {
             </div>
 
             <h3 className="text-xl font-semibold mb-6 text-[#C14B53]">Phân Bố Nhóm Máu</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {bloodTypeDistribution.map((item) => (
                 <motion.div
                   key={item.type}
@@ -246,7 +400,7 @@ const BloodInformation = () => {
                     <select
                       id="blood-type"
                       value={selectedBloodType}
-                      onChange={(e) => setSelectedBloodType(e.target.value)}
+                      onChange={(e) => setSelectedBloodType(e.target.value as BloodType)}
                       className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
                     >
                       {bloodTypes.map((type) => (
@@ -257,16 +411,13 @@ const BloodInformation = () => {
                     </select>
                   </div>
 
-                  {/* Compatibility results in flex row */}
-                  {/* Compatibility results in single row */}
+                  {/* Compatibility results */}
                   <div className="flex flex-col md:flex-row gap-6 justify-center">
                     {/* Can Donate To */}
                     <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
                       <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Hiến Cho</h4>
                       <div className="flex flex-wrap gap-2">
-                        {compatibilityData[selectedBloodType][
-                          compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent
-                        ].donateTo.map((type) => (
+                        {currentCompatibilityInfo.donateTo.map((type: string) => (
                           <span
                             key={`donate-${type}`}
                             className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
@@ -282,9 +433,7 @@ const BloodInformation = () => {
                     <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
                       <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Nhận Từ</h4>
                       <div className="flex flex-wrap gap-2">
-                        {compatibilityData[selectedBloodType][
-                          compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent
-                        ].receiveFrom.map((type) => (
+                        {currentCompatibilityInfo.receiveFrom.map((type: string) => (
                           <span
                             key={`receive-${type}`}
                             className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
@@ -299,89 +448,91 @@ const BloodInformation = () => {
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-xl font-semibold mb-4 text-[#C14B53]">Tương Thích Thành Phần Máu</h3>
-                  <p className="text-gray-700 mb-6">
-                    Tìm hiểu nhóm máu nào tương thích để truyền các thành phần máu cụ thể.
-                  </p>
-
-                  {/* Blood type and component dropdowns */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  {compatibilityType === "blood-component" && (
                     <div>
-                      <label htmlFor="component-blood-type" className="block text-sm font-medium text-gray-700 mb-2">
-                        Chọn Nhóm Máu
-                      </label>
-                      <select
-                        id="component-blood-type"
-                        value={selectedBloodType}
-                        onChange={(e) => setSelectedBloodType(e.target.value)}
-                        className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
-                      >
-                        {bloodTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                      <h3 className="text-xl font-semibold mb-4 text-[#C14B53]">Tương Thích Thành Phần Máu</h3>
+                      <p className="text-gray-700 mb-6">
+                        Tìm hiểu nhóm máu nào tương thích để truyền các thành phần máu cụ thể.
+                      </p>
 
-                    <div>
-                      <label htmlFor="blood-component" className="block text-sm font-medium text-gray-700 mb-2">
-                        Chọn Thành Phần
-                      </label>
-                      <select
-                        id="blood-component"
-                        value={selectedComponent}
-                        onChange={(e) => setSelectedComponent(e.target.value)}
-                        className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
-                      >
-                        {bloodComponents.map((component) => (
-                          <option key={component} value={component.toLowerCase().replace(" ", "-")}>
-                            {component}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Compatibility results in flex row */}
-                  {/* Compatibility results in single row */}
-                  <div className="flex flex-col md:flex-row gap-6 justify-center">
-                    {/* Can Donate To */}
-                    <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
-                      <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Hiến Cho</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {compatibilityData[selectedBloodType][
-                          compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent
-                        ].donateTo.map((type) => (
-                          <span
-                            key={`donate-${type}`}
-                            className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                      {/* Blood type and component dropdowns */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                          <label
+                            htmlFor="component-blood-type"
+                            className="block text-sm font-medium text-gray-700 mb-2"
                           >
-                            <FaCheck className="text-green-500 mr-2" />
-                            <span className="font-medium">{type}</span>
-                          </span>
-                        ))}
+                            Chọn Nhóm Máu
+                          </label>
+                          <select
+                            id="component-blood-type"
+                            value={selectedBloodType}
+                            onChange={(e) => setSelectedBloodType(e.target.value as BloodType)}
+                            className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
+                          >
+                            {bloodTypes.map((type) => (
+                              <option key={type} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label htmlFor="blood-component" className="block text-sm font-medium text-gray-700 mb-2">
+                            Chọn Thành Phần
+                          </label>
+                          <select
+                            id="blood-component"
+                            value={selectedComponent}
+                            onChange={(e) => setSelectedComponent(e.target.value as BloodComponent)}
+                            className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#C14B53] focus:border-[#C14B53]"
+                          >
+                            {bloodComponents.map((component) => (
+                              <option key={component.value} value={component.value}>
+                                {component.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Compatibility results */}
+                      <div className="flex flex-col md:flex-row gap-6 justify-center">
+                        {/* Can Donate To */}
+                        <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
+                          <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Hiến Cho</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {currentCompatibilityInfo.donateTo.map((type: string) => (
+                              <span
+                                key={`donate-${type}`}
+                                className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                              >
+                                <FaCheck className="text-green-500 mr-2" />
+                                <span className="font-medium">{type}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Can Receive From */}
+                        <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
+                          <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Nhận Từ</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {currentCompatibilityInfo.receiveFrom.map((type: string) => (
+                              <span
+                                key={`receive-${type}`}
+                                className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
+                              >
+                                <FaCheck className="text-green-500 mr-2" />
+                                <span className="font-medium">{type}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Can Receive From */}
-                    <div className="flex-1 bg-white p-6 rounded-md shadow-sm border border-gray-100">
-                      <h4 className="text-lg font-medium mb-4 text-[#C14B53]">Có Thể Nhận Từ</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {compatibilityData[selectedBloodType][
-                          compatibilityType === "whole-blood" ? "whole-blood" : selectedComponent
-                        ].receiveFrom.map((type) => (
-                          <span
-                            key={`receive-${type}`}
-                            className="inline-flex items-center bg-gray-50 px-3 py-1 rounded"
-                          >
-                            <FaCheck className="text-green-500 mr-2" />
-                            <span className="font-medium">{type}</span>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -488,7 +639,6 @@ const BloodInformation = () => {
                 </ul>
               </div>
             </div>
-
             {/* Second Row - Donation Process and Types */}
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-1 bg-gray-50 p-6 rounded-lg border border-gray-200">

@@ -10,47 +10,86 @@ import BloodInfoPage from '@/pages/BloodInfo/BloodInfoPage';
 import BlogPage from '@/pages/Blog/BlogPage';
 import EventPage from '@/pages/DonationEvent/EventPage';
 import NotFoundPage from '@/pages/Error/NotFoundPage';
-import LoginPage from '@/pages/Authentication/LoginPage';
-import RegisterPage from '@/pages/Authentication/RegisterPage';
 import AdminHome from '@/pages/Admin/AdminHome';
 import Forbidden from '@/pages/Error/Forbidden';
 import ProtectedRoute from './ProtectedRoute';
 import Compatibility from '@/pages/BloodCompatibility/BloodCompatibilityPage'
-import AccountDashboard from '@/pages/Admin/AccountDashboard';
+import AccountDashboard from '@/pages/Admin/ManageAccount/AccountDashboard';
+import Staffhome from '@/pages/Staff';
+import BloodAnalysisEventList from '@/pages/Staff/BloodAnalysis/BloodAnalysisEventList';
+import BloodCollectEventList from '@/pages/Staff/BloodCollection/BloodCollectEventList';
+import ReceiptEventList from '@/pages/Staff/ManageReceipt/ReceiptEventList';
+import DonorLookup from '@/pages/Staff/DonorLookup/DonorLookup';
+import BlogContent from '@/pages/Blog/BlogContent';
+import Inventory from '@/pages/Staff/BloodInventory/Inventory';
+import RoleBaseRedirect from './RoleBaseRedirect';
+import AnalyticsDashboard from '@/pages/Admin/ManageData/AnalyticsDashboard';
+import AdminSettings from '@/pages/Admin/AdminSetting';
+import AdminHelp from '@/pages/Admin/AdminHelp';
+import LoginForm from '@/pages/Authentication/LoginForm';
+import RegisterForm from '@/pages/Authentication/RegisterForm';
+import UserProfile from '@/components/layout/UserProfile';
+import OTPForm from '@/pages/Authentication/OTPForm';
 
 
 // define routes
 const routes: RouteObject[] = [
-    { path: '/', element: <HomePage /> },
+    { path: '/', element: <RoleBaseRedirect />},
 
-    { path: '/home', element: <Navigate to={'/'} replace /> },
+    { path: '/home', element: <HomePage /> },
 
-    { path: '/login', element: <LoginPage /> },
+    { path: '/login', element: <LoginForm /> },
 
-    { path: '/register', element: <RegisterPage /> },
+    { path: '/otp', element: <OTPForm /> },
+
+    { path: '/register', element: <RegisterForm /> },
 
     { path: '/bloodinfo', element: <BloodInfoPage /> },
 
     { path: '/blogs', element: <BlogPage /> },
 
+    { path: '/blogcontent/:id', element: <BlogContent /> },
+
     { path: '/events', element: <EventPage /> },
 
     { path: '/compatibility', element: <Compatibility /> },
 
+    { path: '/profile', element: (
+        <ProtectedRoute element={<UserProfile />} allowRole={["Member", "Staff", "Admin"]}/>
+    )},
+
     {
-        path: '/staff', element: <div>Staff home</div>
+        path: '/staff', element: (
+            <ProtectedRoute element={<Staffhome />} allowRole={["Staff"]} />
+        ),
+        children: [
+            { index: true, element: <Inventory /> },
+
+            { path: 'receipt', element: <ReceiptEventList /> },
+
+            { path: 'bloodcollect', element: <BloodCollectEventList /> },
+
+            { path: 'bloodanalysis', element: <BloodAnalysisEventList /> },
+
+            { path: 'donorsearch', element: <DonorLookup /> }
+        ]
     },
 
     {
         path: '/admin', element: (
-            <ProtectedRoute element={<AdminHome />} allowRole={["admin"]} />
-        )
-    },
+            <ProtectedRoute element={<AdminHome />} allowRole={["Admin"]} />
+        ), 
+        children: [
+            {index: true, element: <AccountDashboard/>},
 
-    {
-        path: '/admin/accounts', element: (
-            <ProtectedRoute element={<AccountDashboard />} allowRole={["admin"]} />
-        )
+            {path: 'accounts', element: <Navigate to={'/admin'} replace/>},
+
+            {path: 'analytics', element: <AnalyticsDashboard/>},
+
+            {path: 'settings', element: <AdminSettings/>},
+
+            {path: 'help', element: <AdminHelp/>},
+        ]
     },
 
     { path: '/unauthorized', element: <Forbidden /> },
@@ -61,10 +100,10 @@ const routes: RouteObject[] = [
 // create router object
 const router = createBrowserRouter(routes)
 
-function AppRounter() {
+function AppRouter() {
     return (
         <RouterProvider router={router}></RouterProvider>
     )
 }
 
-export default AppRounter
+export default AppRouter

@@ -1,10 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { isTokenExpired } from "@/utils/jwt"
 import useRefreshToken from "./useRefreshToken";
+import type { User } from "@/types/User";
+import { getUser } from "@/utils/permisson";
 
 interface AuthContextType {
     accessToken: string | null,
-    setToken: (token: string | null) => void
+    setToken: (token: string | null) => void,
+    user: User | null
+    setUser: (user: User | null) => void
 }
 
 interface AuthProviderProps {
@@ -17,23 +21,29 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // no user and access token when no login as default
     const [accessToken, setToken] = useState<string | null>(null)
+    const [user, setUser] = useState<User | null>(null)
     const refresh = useRefreshToken()
-
+    // fetch token
     useEffect(() => {
-
-        // load access token from local storage
         const initAuth = async () => {
             const storedToken = localStorage.getItem("token");
+            if (!storedToken) return;
 
-            if (storedToken && isTokenExpired(storedToken)) {
-                const newToken = await refresh()
-                setToken(newToken)
-            } else if (storedToken) {
-                setToken(storedToken) // valid token
+            const validToken = isTokenExpired(storedToken)
+                ? await refresh()
+                : storedToken;
+
+            setToken(validToken);
+
+            if (validToken !== null) {
+                const user = getUser(validToken);
+                setUser(user);
+            } else {
+                console.log("Token is wrong!")
             }
-        }
-        
-        initAuth()
+        };
+
+        initAuth();
     }, []);
 
     // store token
@@ -44,7 +54,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
 
     return (
-        <AuthContext.Provider value={{ accessToken, setToken }} >
+        <AuthContext.Provider value={{ accessToken, setToken, user, setUser }} >
             {children}
         </AuthContext.Provider>
     )
