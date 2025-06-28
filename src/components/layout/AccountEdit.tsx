@@ -35,7 +35,7 @@ const AccountEdit = () => {
       try {
         const response = await authenApi.get('/api/users/profile')
         const data = response.data
-
+                
         if (!user)
           return
 
@@ -60,7 +60,7 @@ const AccountEdit = () => {
     }
 
     getUser()
-  }, [user])
+  }, [])
 
   // sync form data
   useEffect(() => {

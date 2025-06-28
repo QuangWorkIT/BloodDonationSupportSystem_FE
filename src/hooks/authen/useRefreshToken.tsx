@@ -1,14 +1,10 @@
-import type { User } from "@/types/User"
-import api from "@/lib/instance"
-interface DataResponse {
-    user: User,
-    token: string
-}
+import authenApi from "@/lib/instance"
+
 function useRefreshToken(): () => Promise<string | null> {
 
     const refresh = async (): Promise<string | null> => {
         try {
-            const res = await api.post('/api/refresh-token');
+            const res = await authenApi.post('/api/refresh-token');
             if(res.data)
                 return res.data.token;
             else

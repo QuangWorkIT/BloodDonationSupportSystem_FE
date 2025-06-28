@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 const LoadingSpinner = () => {
     return (
-        <div className="container">
+        <div className="container flex items-center justify-center p-[40px] rounded-[8px]">
             <motion.div
                 className='spinner'
                 animate={{ rotate: 360 }}
@@ -22,14 +22,6 @@ function StyleSheet() {
     return (
         <style>
             {`
-            .container {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 40px;
-                border-radius: 8px;
-            }
-
             .spinner {
                 width: 50px;
                 height: 50px;

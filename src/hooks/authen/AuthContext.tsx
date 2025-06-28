@@ -30,14 +30,15 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     useEffect(() => {
         const initAuth = async () => {
             const storedToken = localStorage.getItem("token");
-            if (!storedToken) return;
+            if (!storedToken) {
+                return
+            };
 
             const validToken = isTokenExpired(storedToken)
                 ? await refresh()
                 : storedToken;
 
             setToken(validToken);
-
             if (validToken !== null) {
                 const user = getUser(validToken);
                 setUser(user);
@@ -45,7 +46,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
                 console.log("Token is wrong!")
             }
 
-            setIsLoading(false)
+            setIsLoading(false)  
         };
 
         initAuth();
