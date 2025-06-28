@@ -9,6 +9,17 @@ const bloodTypeMapping = new Map<string, number>([
   ["O-", 8]
 ]);
 
+export interface bloodType {
+  bloodType: string,
+  rh: string
+}
 export const getTypeId = (bloodType: string): number => {
-    return bloodTypeMapping.get(bloodType) ?? 0
+  return bloodTypeMapping.get(bloodType) ?? 0
+}
+
+export const getBloodTypeRh = (type: string):bloodType => {
+  return {
+    bloodType: type.substring(0, 1),
+    rh: type.substring(1)
+  }
 }

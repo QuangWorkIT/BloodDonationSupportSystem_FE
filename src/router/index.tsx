@@ -30,11 +30,12 @@ import LoginForm from '@/pages/Authentication/LoginForm';
 import RegisterForm from '@/pages/Authentication/RegisterForm';
 import UserProfile from '@/components/layout/UserProfile';
 import OTPForm from '@/pages/Authentication/OTPForm';
+import DonorReceiptList from '@/pages/Staff/ManageReceipt/DonorReceiptList';
 
 
 // define routes
 const routes: RouteObject[] = [
-    { path: '/', element: <RoleBaseRedirect />},
+    { path: '/', element: <RoleBaseRedirect /> },
 
     { path: '/home', element: <HomePage /> },
 
@@ -54,9 +55,11 @@ const routes: RouteObject[] = [
 
     { path: '/compatibility', element: <Compatibility /> },
 
-    { path: '/profile', element: (
-        <ProtectedRoute element={<UserProfile />} allowRole={["Member", "Staff", "Admin"]}/>
-    )},
+    {
+        path: '/profile', element: (
+            <ProtectedRoute element={<UserProfile />} allowRole={["Member", "Staff", "Admin"]} />
+        )
+    },
 
     {
         path: '/staff', element: (
@@ -65,7 +68,16 @@ const routes: RouteObject[] = [
         children: [
             { index: true, element: <Inventory /> },
 
-            { path: 'receipt', element: <ReceiptEventList /> },
+            {
+                path: "receipt",
+                children: [
+                    { index: true, element: <ReceiptEventList /> },
+                    {
+                        path: "list/:eventId",
+                        element: <DonorReceiptList />,
+                    }
+                ]
+            },
 
             { path: 'bloodcollect', element: <BloodCollectEventList /> },
 
@@ -78,17 +90,17 @@ const routes: RouteObject[] = [
     {
         path: '/admin', element: (
             <ProtectedRoute element={<AdminHome />} allowRole={["Admin"]} />
-        ), 
+        ),
         children: [
-            {index: true, element: <AccountDashboard/>},
+            { index: true, element: <AccountDashboard /> },
 
-            {path: 'accounts', element: <Navigate to={'/admin'} replace/>},
+            { path: 'accounts', element: <Navigate to={'/admin'} replace /> },
 
-            {path: 'analytics', element: <AnalyticsDashboard/>},
+            { path: 'analytics', element: <AnalyticsDashboard /> },
 
-            {path: 'settings', element: <AdminSettings/>},
+            { path: 'settings', element: <AdminSettings /> },
 
-            {path: 'help', element: <AdminHelp/>},
+            { path: 'help', element: <AdminHelp /> },
         ]
     },
 
