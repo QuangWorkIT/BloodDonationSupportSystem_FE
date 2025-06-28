@@ -1,67 +1,45 @@
 import Footer from "@/components/layout/Footer";
 import BloodDonationNavbar from "@/components/layout/Navbar";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaPaperPlane } from "react-icons/fa";
-import{ blogs} from './BlogPage'
+import api from "@/lib/instance";
+
+interface Blog {
+  id: number;
+  title: string;
+  content: string;
+  createAt: string;
+  lastUpdate: string;
+  author: string;
+}
+
 interface Comment {
   name: string;
   content: string;
 }
 
 export default function BlogContent() {
-  // const {id} = useParams()
-  // const blog = blogs.find((b) => b.id === Number(id))
-  //Demo content
-  const contents = {
-    title: "MỘT SỐ CÂU HỎI THƯỜNG GẶP",
-    imageUrl: "src/assets/images/event2.png",
-    author: "admin",
-    date: "4/5/2025",
-    lastModify: "14/5/2025",
-    content: [
-      {
-        subtitle: "1. Ai có thể tham gia hiến máu?",
-        text: [
-          "- Tất cả mọi người từ 18 - 60 tuổi, thực sự tình nguyện hiến máu của mình để cứu chữa người bệnh.",
-          "- Cân nặng ít nhất là 45kg đối với phụ nữ, nam giới. Lượng máu hiến mỗi lần không quá 9ml/kg cân nặng và không quá 500ml mỗi lần.",
-          "- Không bị nhiễm hoặc không có các hành vi lây nhiễm HIV và các bệnh lây nhiễm qua đường truyền máu khác.",
-          "- Thời gian giữa 2 lần hiến máu là 12 tuần đối với cả Nam và Nữ.",
-        ],
-      },
-      {
-        subtitle: "2. Máu của tôi sẽ được làm những xét nghiệm gì?",
-        text: [
-          "- Tất cả những đơn vị máu thu được sẽ được kiểm tra nhóm máu (hệ ABO, hệ Rh), HIV, virus viêm gan B, virus viêm gan C, giang mai, sốt rét. ",
-          "- Bạn sẽ được thông báo kết quả, được giữ kín và được tư vấn (miễn phí) khi phát hiện ra các bệnh nhiễm trùng nói trên.",
-        ],
-      },
-      {
-        subtitle: "3. Máu gồm những thành phần và chức năng gì?",
-        text: [
-          "Máu là một chất lỏng lưu thông trong các mạch máu của cơ thể, gồm nhiều thành phần, mỗi thành phần làm nhiệm vụ khác nhau:",
-          "- Hồng cầu làm nhiệm vụ chính là vận chuyển oxy.",
-          "- Bạch cầu làm nhiệm vụ bảo vệ cơ thể.",
-          "- Tiểu cầu tham gia quá trình đông cầm máu.",
-          "- Huyết tương: gồm nhiều thành phần (kháng thể, các yếu tố đông máu, các chất dinh dưỡng...)",
-        ],
-      },
-    ],
-    initialComments: [
-      {
-        name: "Nguyễn Văn A",
-        content: "(Any comment content here...)",
-      },
-      {
-        name: "Nguyễn Văn B",
-        content: "(Any comment content here...)",
-      },
-    ],
-  };
+  const { id } = useParams();
+  const [blog, setBlog] = useState<Blog | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
 
-  const [comments, setComments] = useState<Comment[]>(contents.initialComments || []);
-  const [newComment, setNewComment] = useState<string>("");
+  useEffect(() => {
+    const fetchBlog = async () => {
+      try {
+        const response = await api.get(`api/blogs/${id}`);
+        setBlog(response.data);
+      } catch (e) {
+        console.error("Error fetching blog:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBlog();
+  }, [id]);
 
   const handlePost = () => {
     if (newComment.trim()) {
@@ -69,6 +47,70 @@ export default function BlogContent() {
       setNewComment("");
     }
   };
+
+  if (loading)
+    return (
+      <div className="min-w-screen h-screen flex flex-col justify-center items-center sm:gap-[40px] bg-linear-to-b from-indigo-900 to-indigo-950">
+        <div className="text-white font-semibold text-4xl">Đang tải...</div>
+      </div>
+    );
+
+  if (!blog)
+    return (
+      <div className="min-w-screen h-screen flex flex-col justify-center items-center sm:gap-[40px] bg-linear-to-b from-indigo-900 to-indigo-950">
+        <div className="text-white font-semibold text-4xl">Bài viết không tồn tại hoặc đã bị xóa.</div>
+        <Link to="/blogs" className="p-4 bg-black rounded-md text-white cursor-pointer">
+          Quay lại trang blog
+        </Link>
+      </div>
+    );
+
+  //Demo content
+  // const blog = {
+  //   title: "MỘT SỐ CÂU HỎI THƯỜNG GẶP",
+  //   imageUrl: "src/assets/images/event2.png",
+  //   author: "admin",
+  //   createAt: "4/5/2025",
+  //   lastUpdate: "14/5/2025",
+  //   content: [
+  //     {
+  //       subtitle: "1. Ai có thể tham gia hiến máu?",
+  //       text: [
+  //         "- Tất cả mọi người từ 18 - 60 tuổi, thực sự tình nguyện hiến máu của mình để cứu chữa người bệnh.",
+  //         "- Cân nặng ít nhất là 45kg đối với phụ nữ, nam giới. Lượng máu hiến mỗi lần không quá 9ml/kg cân nặng và không quá 500ml mỗi lần.",
+  //         "- Không bị nhiễm hoặc không có các hành vi lây nhiễm HIV và các bệnh lây nhiễm qua đường truyền máu khác.",
+  //         "- Thời gian giữa 2 lần hiến máu là 12 tuần đối với cả Nam và Nữ.",
+  //       ],
+  //     },
+  //     {
+  //       subtitle: "2. Máu của tôi sẽ được làm những xét nghiệm gì?",
+  //       text: [
+  //         "- Tất cả những đơn vị máu thu được sẽ được kiểm tra nhóm máu (hệ ABO, hệ Rh), HIV, virus viêm gan B, virus viêm gan C, giang mai, sốt rét. ",
+  //         "- Bạn sẽ được thông báo kết quả, được giữ kín và được tư vấn (miễn phí) khi phát hiện ra các bệnh nhiễm trùng nói trên.",
+  //       ],
+  //     },
+  //     {
+  //       subtitle: "3. Máu gồm những thành phần và chức năng gì?",
+  //       text: [
+  //         "Máu là một chất lỏng lưu thông trong các mạch máu của cơ thể, gồm nhiều thành phần, mỗi thành phần làm nhiệm vụ khác nhau:",
+  //         "- Hồng cầu làm nhiệm vụ chính là vận chuyển oxy.",
+  //         "- Bạch cầu làm nhiệm vụ bảo vệ cơ thể.",
+  //         "- Tiểu cầu tham gia quá trình đông cầm máu.",
+  //         "- Huyết tương: gồm nhiều thành phần (kháng thể, các yếu tố đông máu, các chất dinh dưỡng...)",
+  //       ],
+  //     },
+  //   ],
+  //   initialComments: [
+  //     {
+  //       name: "Nguyễn Văn A",
+  //       content: "(Any comment content here...)",
+  //     },
+  //     {
+  //       name: "Nguyễn Văn B",
+  //       content: "(Any comment content here...)",
+  //     },
+  //   ],
+  // };
 
   return (
     <div className="min-w-screen flex flex-col sm:gap-[40px] bg-linear-to-b from-[#F24333] to-[#DEA2A4]">
@@ -82,14 +124,14 @@ export default function BlogContent() {
           transition={{ duration: 0.4 }}
         >
           {/* Blog Header */}
-          <h1 className="sm:text-3xl text-xl font-bold font-serif text-red-800 text-center mb-6">{contents.title}</h1>
+          <h1 className="sm:text-3xl text-xl font-bold font-serif text-red-800 text-center mb-6">{blog.title}</h1>
 
           {/* Image */}
-          <img src={contents.imageUrl} alt="Blog visual" className="w-full h-auto mb-6 rounded-lg shadow" />
+          <img src={new URL("@/assets/images/event2.png", import.meta.url).href} alt="Blog visual" className="w-full h-auto mb-6 rounded-lg shadow" />
 
           {/* Content */}
           <div className="space-y-5 text-gray-800 leading-relaxed px-4">
-            {contents.content.map((section, idx) => (
+            {/* {contents.content.map((section, idx) => (
               <div key={idx}>
                 <h2 className="sm:text-xl text-red-700 font-semibold mb-2.5">{section.subtitle}</h2>
                 {section.text.map((para, pIdx) => (
@@ -98,7 +140,8 @@ export default function BlogContent() {
                   </p>
                 ))}
               </div>
-            ))}
+            ))} */}
+            <p className="sm:text-lg text-sm">{blog.content}</p>
           </div>
 
           {/* Metadata */}
@@ -108,13 +151,13 @@ export default function BlogContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <img src="src/assets/images/avatar.png" alt="user-avatar" className="w-[40px]" />
+            <img src={new URL("@/assets/images/avatar.png", import.meta.url).href} alt="user-avatar" className="w-[40px]" />
             <div className="flex flex-col gap-2">
               <p className="text-sm">
-                Được đăng bởi: <span className="text-red-700 font-medium">{contents.author}</span>
+                Được đăng bởi: <span className="text-red-700 font-medium">{blog.author}</span>
               </p>
-              <p className="text-sm">Ngày đăng: {contents.date}</p>
-              <p className="text-sm">Chỉnh sửa lần cuối: {contents.lastModify}</p>
+              <p className="text-sm">Ngày đăng: {blog.createAt}</p>
+              <p className="text-sm">Chỉnh sửa lần cuối: {blog.lastUpdate}</p>
             </div>
             <button onClick={() => {}} className="bg-red-700 hover:bg-red-800 text-white text-sm px-2 py-2 rounded-lg cursor-pointer">
               Xem hồ sơ
@@ -139,7 +182,7 @@ export default function BlogContent() {
             <div className="mt-6 space-y-2">
               <h4 className="sm:text-2xl text-lg font-semibold mb-5">Bình luận</h4>
               <div className="flex gap-4">
-                <img src="src/assets/images/avatar.png" alt="user-avatar" className="sm:size-[60px] size-10" />
+                <img src={new URL("@/assets/images/avatar.png", import.meta.url).href} alt="user-avatar" className="sm:size-[60px] size-10" />
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
@@ -167,12 +210,12 @@ export default function BlogContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <img src="src/assets/images/avatar.png" alt="user-avatar" className="w-[180px]" />
+          <img src={new URL("@/assets/images/avatar.png", import.meta.url).href} alt="user-avatar" className="w-[180px]" />
           <p>
-            Được đăng bởi: <span className="text-red-700 text-lg font-medium">{contents.author}</span>
+            Được đăng bởi: <span className="text-red-700 text-lg font-medium">{blog.author}</span>
           </p>
-          <p>Ngày đăng: {contents.date}</p>
-          <p>Chỉnh sửa lần cuối: {contents.lastModify}</p>
+          <p>Ngày đăng: {blog.createAt}</p>
+          <p>Chỉnh sửa lần cuối: {blog.lastUpdate}</p>
           <button onClick={() => {}} className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg cursor-pointer">
             Xem hồ sơ
           </button>
