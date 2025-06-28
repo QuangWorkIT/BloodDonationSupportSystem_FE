@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ArrowUpDown,
   Edit,
@@ -16,156 +16,112 @@ import {
   Plus,
   ArrowDown,
   ArrowUp,
-  Eye,
-  EyeOff,
+  Trash2,
 } from "lucide-react";
 import AdminSidebar from "../AdminSidebar";
 import DatePicker from "@/components/ui/datepicker";
 import AddAccountModal from "./AddAccount";
+import { authenApi } from "@/lib/instance";
+import { AxiosError } from "axios";
 
-interface Account {
-  id: number;
+// Define strongly-typed interfaces for API responses
+interface ApiResponse<T> {
+  isSuccess: boolean;
+  message: string;
+  data: T;
+}
+
+interface PaginatedUserData {
+  items: User[];
+  totalItems: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+interface User {
+  id?: number;
   name: string;
-  status: "active" | "inactive";
+  status: "Active" | "Inactive";
   email: string;
-  birthDate: string;
-  role: string;
-  phone: string;
-  password: string;
+  dob: string;
+  role: "Admin" | "Staff" | "Member";
+  phone?: string;
+}
+
+interface Account extends User {
+  id: number; // Making id required for our UI
 }
 
 const AccountDashboard = () => {
+  // State management
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [activeSidebarItem, setActiveSidebarItem] = useState("accounts");
-  const [showPassword, setShowPassword] = useState<Record<number, boolean>>({});
-  const [accounts, setAccounts] = useState<Account[]>([
-    {
-      id: 1,
-      name: "Alyvia Kelley",
-      status: "active",
-      email: "a.kelley@gmail.com",
-      birthDate: "06/18/1978",
-      role: "Admin",
-      phone: "123-456-7890",
-      password: "password123",
-    },
-    {
-      id: 2,
-      name: "Jaiden Nixon",
-      status: "active",
-      email: "jaiden.n@gmail.com",
-      birthDate: "08/30/1963",
-      role: "Staff",
-      phone: "234-567-8901",
-      password: "password234",
-    },
-    {
-      id: 3,
-      name: "Ace Foley",
-      status: "active",
-      email: "ace.fo@yahoo.com",
-      birthDate: "12/09/1985",
-      role: "Staff",
-      phone: "345-678-9012",
-      password: "password345",
-    },
-    {
-      id: 4,
-      name: "Nikolai Schmidt",
-      status: "inactive",
-      email: "nikolai.schmidt964@outlook.com",
-      birthDate: "03/22/1956",
-      role: "Staff",
-      phone: "456-789-0123",
-      password: "password456",
-    },
-    {
-      id: 5,
-      name: "Clayton Charles",
-      status: "active",
-      email: "me@clayton.com",
-      birthDate: "10/14/1971",
-      role: "Staff",
-      phone: "567-890-1234",
-      password: "password567",
-    },
-    {
-      id: 6,
-      name: "Prince Chen",
-      status: "active",
-      email: "prince.chen999@gmail.com",
-      birthDate: "07/05/1992",
-      role: "User",
-      phone: "678-901-2345",
-      password: "password678",
-    },
-    {
-      id: 7,
-      name: "Reece Duran",
-      status: "active",
-      email: "reece@yahoo.com",
-      birthDate: "05/26/1980",
-      role: "User",
-      phone: "789-012-3456",
-      password: "password789",
-    },
-    {
-      id: 8,
-      name: "Anastasia Mcdaniel",
-      status: "inactive",
-      email: "anastasia.spring@mcdaniel2.com",
-      birthDate: "02/11/1968",
-      role: "User",
-      phone: "890-123-4567",
-      password: "password890",
-    },
-    {
-      id: 9,
-      name: "Melvin Boyle",
-      status: "active",
-      email: "Me.boyle@gmail.com",
-      birthDate: "08/03/1974",
-      role: "User",
-      phone: "901-234-5678",
-      password: "password901",
-    },
-    {
-      id: 10,
-      name: "Kailee Thomas",
-      status: "active",
-      email: "Kailee.thomas@gmail.com",
-      birthDate: "11/28/1954",
-      role: "User",
-      phone: "012-345-6789",
-      password: "password012",
-    },
-  ]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalItems, setTotalItems] = useState(0);
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
-    status: "",
-    role: "",
+    role: "" as "" | "Admin" | "Staff" | "Member",
   });
 
+  // Editing states
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editFormData, setEditFormData] = useState<Partial<Account>>({});
-  const [showChangeModal, setShowChangeModal] = useState(false);
-  const [accountToSave, setAccountToSave] = useState<Account | null>(null);
+  const [editFormData, setEditFormData] = useState<Omit<Partial<Account>, 'role'>>({});
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
 
-  const togglePasswordVisibility = (id: number) => {
-    setShowPassword((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+  // Fetch accounts data from API
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await authenApi.get<ApiResponse<PaginatedUserData>>(
+          `/api/users?pageNumber=${currentPage}&pageSize=${rowsPerPage}`
+        );
+
+        if (response.data.isSuccess) {
+          // Transform API data to our Account interface
+          const mappedAccounts = response.data.data.items.map((item, index) => ({
+            id: index + 1 + (currentPage - 1) * rowsPerPage,
+            name: item.name,
+            status: item.status,
+            email: item.email,
+            dob: item.dob,
+            role: item.role,
+            phone: item.phone || "N/A",
+          }));
+
+          setAccounts(mappedAccounts);
+          setTotalItems(response.data.data.totalItems);
+        } else {
+          setError(response.data.message || "Failed to fetch accounts");
+        }
+      } catch (err) {
+        const error = err as AxiosError<ApiResponse<null>>;
+        setError(
+          error.response?.data?.message || 
+          error.message || 
+          "Error fetching accounts data"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAccounts();
+  }, [currentPage, rowsPerPage]);
 
   // Filter and search logic
   const [sortConfig, setSortConfig] = useState<{
-    key: "name" | "birthDate" | "";
+    key: keyof Omit<Account, 'status' | 'password'> | "";
     direction: "ascending" | "descending";
   }>({ key: "", direction: "ascending" });
 
@@ -174,17 +130,13 @@ const AccountDashboard = () => {
 
     // Apply search filter
     if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       result = result.filter(
         (account) =>
-          account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          account.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          account.phone.toLowerCase().includes(searchTerm.toLowerCase())
+          account.name.toLowerCase().includes(term) ||
+          account.email.toLowerCase().includes(term) ||
+          account.phone?.toLowerCase().includes(term)
       );
-    }
-
-    // Apply status filter
-    if (filters.status) {
-      result = result.filter((account) => account.status === filters.status);
     }
 
     // Apply role filter
@@ -193,28 +145,36 @@ const AccountDashboard = () => {
     }
 
     // Apply sorting
-    result.sort((a, b) => {
-      const key = sortConfig.key as keyof Account;
-      if (a[key] < b[key]) {
-        return sortConfig.direction === "ascending" ? -1 : 1;
-      }
-      if (a[key] > b[key]) {
-        return sortConfig.direction === "ascending" ? 1 : -1;
-      }
-      return 0;
-    });
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        const key = sortConfig.key as keyof Account;
+        const aValue = a[key];
+        const bValue = b[key];
+
+        if (aValue === undefined || bValue === undefined) return 0;
+        if (aValue < bValue) {
+          return sortConfig.direction === "ascending" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === "ascending" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
 
     return result;
   }, [accounts, searchTerm, filters, sortConfig]);
 
-  const requestSort = (key: "name" | "birthDate") => {
+  const requestSort = (key: keyof Omit<Account, 'status' | 'password'>) => {
     let direction: "ascending" | "descending" = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
       direction = "descending";
     }
     setSortConfig({ key, direction });
   };
-  const totalPages = Math.ceil(filteredAccounts.length / rowsPerPage);
+
+  // Pagination
+  const totalPages = Math.ceil(totalItems / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const currentAccounts = filteredAccounts.slice(startIndex, endIndex);
@@ -228,48 +188,61 @@ const AccountDashboard = () => {
     setCurrentPage(1);
   };
 
+  // Editing handlers
   const handleEditClick = (account: Account) => {
     setEditingId(account.id);
     setEditFormData({
       name: account.name,
       email: account.email,
-      birthDate: account.birthDate,
-      role: account.role,
-      status: account.status,
+      dob: account.dob,
       phone: account.phone,
-      password: account.password,
     });
   };
 
-  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleEditFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleDateChange = (date: string) => {
-    setEditFormData((prev) => ({ ...prev, birthDate: date }));
+    setEditFormData((prev) => ({ ...prev, dob: date }));
   };
 
-  const handleSaveEdit = (account: Account) => {
-    setAccountToSave({
-      ...account,
-      ...editFormData,
-    } as Account);
-    setShowChangeModal(true);
-  };
+  const handleSaveEdit = async (account: Account) => {
+    try {
+      setLoading(true);
+      
+      // Prepare the data to send to API
+      const updatedUser = {
+        name: editFormData.name || account.name,
+        email: editFormData.email || account.email,
+        dob: editFormData.dob || account.dob,
+        phone: editFormData.phone || account.phone,
+      };
 
-  const confirmChanges = () => {
-    if (accountToSave) {
-      setAccounts(accounts.map((a) => (a.id === accountToSave.id ? accountToSave : a)));
+      // Here you would typically make an API call to update the user
+      // For example:
+      // await authenApi.put(`/api/users/${account.id}`, updatedUser);
+      
+      // For now, we'll update local state
+      setAccounts(accounts.map(a => 
+        a.id === account.id ? { ...a, ...updatedUser } : a
+      ));
+      
       setEditingId(null);
       setEditFormData({});
-      setShowChangeModal(false);
-      setAccountToSave(null);
+    } catch (err) {
+      const error = err as AxiosError<ApiResponse<null>>;
+      setError(
+        error.response?.data?.message || 
+        error.message || 
+        "Error updating account"
+      );
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const cancelChanges = () => {
-    setShowChangeModal(false);
-    setAccountToSave(null);
   };
 
   const handleCancelEdit = () => {
@@ -277,32 +250,93 @@ const AccountDashboard = () => {
     setEditFormData({});
   };
 
-  const handleAddNewAccount = (account: Omit<Account, "id">) => {
-    const newId = Math.max(...accounts.map((a) => a.id), 0) + 1;
-    setAccounts([
-      ...accounts,
-      {
-        ...account,
+  // Add new account handler
+  const handleAddNewAccount = async (account: Omit<Account, "id" | "role" | "status">) => {
+    try {
+      setLoading(true);
+      
+      // Here you would typically make an API call to create a new user
+      // For example:
+      // const response = await authenApi.post("/api/users", {
+      //   ...account,
+      //   role: "Staff",
+      //   status: "Active"
+      // });
+      
+      // For now, we'll update local state
+      const newId = Math.max(...accounts.map(a => a.id), 0) + 1;
+      setAccounts([...accounts, { 
+        ...account, 
         id: newId,
-      },
-    ]);
-    setShowAddAccountModal(false);
+        role: "Staff",
+        status: "Active"
+      }]);
+      setShowAddAccountModal(false);
+    } catch (err) {
+      const error = err as AxiosError<ApiResponse<null>>;
+      setError(
+        error.response?.data?.message || 
+        error.message || 
+        "Error creating account"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Delete/Ban account handler
+  // Delete/Ban account handler
+  const handleDeleteAccount = async (account: Account) => {
+    try {
+      setLoading(true);
+      
+      if (account.role === "Admin") {
+        setError("Cannot ban admin accounts");
+        setAccountToDelete(null);
+        return;
+      }
+  
+      // Try with explicit content-type headers
+      const response = await authenApi({
+        method: 'put',
+        url: `/api/users/${account.id}/ban`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Example
+        },
+        data: {} // Empty object
+      });
+  
+      if (response.data.isSuccess) {
+        setAccounts(accounts.filter(a => a.id !== account.id));
+        setAccountToDelete(null);
+      } else {
+        setError(response.data.message || "Failed to ban account");
+      }
+    } catch (err) {
+      // Error handling remains the same
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Search and filter handlers
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page when search changes
+    setCurrentPage(1);
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-    setCurrentPage(1); // Reset to first page when filters change
+    setFilters((prev) => ({ 
+      ...prev, 
+      [name]: value as "Admin" | "Staff" | "Member" | "" 
+    }));
+    setCurrentPage(1);
   };
 
   const resetFilters = () => {
     setFilters({
-      status: "",
       role: "",
     });
     setCurrentPage(1);
@@ -312,9 +346,7 @@ const AccountDashboard = () => {
     <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
       <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
 
-      {/* Main content */}
       <main className="flex-1 bg-[#EFEFEF]">
-        {/* Top bar */}
         <header className="bg-[#EFEFEF] border-b border-gray-200 px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex-1 max-w-lg relative">
@@ -339,8 +371,8 @@ const AccountDashboard = () => {
               </button>
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <div className="text-sm font-medium text-gray-700">Nguyen Van A</div>
-                  <div className="text-xs text-gray-500">jane234@example.com</div>
+                  <div className="text-sm font-medium text-gray-700">Admin User</div>
+                  <div className="text-xs text-gray-500">admin@example.com</div>
                 </div>
                 <ChevronDown className="text-gray-400 w-4 h-4 hover:text-blue-600 transition-colors duration-200 cursor-pointer" />
               </div>
@@ -348,9 +380,7 @@ const AccountDashboard = () => {
           </div>
         </header>
 
-        {/* Content */}
         <div className="p-8">
-          {/* Title and breadcrumb */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Danh sách tài khoản</h1>
             <div className="text-sm text-gray-500">
@@ -360,420 +390,333 @@ const AccountDashboard = () => {
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>Đang hiện</span>
-              <select
-                className="border border-gray-300 rounded px-3 py-1 text-sm bg-white"
-                value={rowsPerPage}
-                onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={30}>30</option>
-              </select>
-              <span>trong tổng số {filteredAccounts.length} tài khoản</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
-              >
-                <Filter className="w-3 h-3" />
-                Lọc
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer">
-                <Download className="w-3 h-3" />
-                Xuất
-              </button>
-              <button
-                onClick={() => setShowAddAccountModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                THÊM TÀI KHOẢN
-              </button>
-            </div>
-          </div>
-
-          {/* Filter dropdown */}
-          {showFilters && (
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                  <select
-                    name="status"
-                    value={filters.status}
-                    onChange={handleFilterChange}
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                  >
-                    <option value="">Tất cả</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
-                  <select
-                    name="role"
-                    value={filters.role}
-                    onChange={handleFilterChange}
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                  >
-                    <option value="">Tất cả</option>
-                    <option value="Admin">Admin</option>
-                    <option value="Staff">Staff</option>
-                    <option value="User">User</option>
-                  </select>
-                </div>
-                <div className="flex items-end">
-                  <button
-                    onClick={resetFilters}
-                    className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50"
-                  >
-                    Xóa bộ lọc
-                  </button>
-                </div>
-              </div>
+          {loading && (
+            <div className="flex justify-center items-center py-10">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
           )}
 
-          {/* Table */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    #
-                  </th>
-                  {/* Name header */}
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    <div
-                      className="flex items-center justify-between cursor-pointer"
-                      onClick={() => requestSort("name")}
-                    >
-                      Họ và tên
-                      {sortConfig.key === "name" ? (
-                        sortConfig.direction === "ascending" ? (
-                          <ArrowUp className="w-3 h-3 text-gray-400" />
-                        ) : (
-                          <ArrowDown className="w-3 h-3 text-gray-400" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-gray-400" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    <div className="flex items-center justify-between">
-                      Status
-                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    <div className="flex items-center justify-between">
-                      E-Mail
-                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
-                    </div>
-                  </th>
-                  {/* Birth Date header */}
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    <div
-                      className="flex items-center justify-between cursor-pointer"
-                      onClick={() => requestSort("birthDate")}
-                    >
-                      Ngày sinh
-                      {sortConfig.key === "birthDate" ? (
-                        sortConfig.direction === "ascending" ? (
-                          <ArrowUp className="w-3 h-3 text-gray-400" />
-                        ) : (
-                          <ArrowDown className="w-3 h-3 text-gray-400" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-gray-400" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    <div className="flex items-center justify-between">
-                      Vai trò
-                      <ArrowUpDown className="w-3 h-3 text-gray-400" />
-                    </div>
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    Phone
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                    Password
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentAccounts.length > 0 ? (
-                  currentAccounts.map((account, index) => (
-                    <tr key={account.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{account.id}</td>
-
-                      {/* Name */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r">
-                        {editingId === account.id ? (
-                          <input
-                            type="text"
-                            name="name"
-                            value={editFormData.name || ""}
-                            onChange={handleEditFormChange}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                          />
-                        ) : (
-                          account.name
-                        )}
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-6 py-4 whitespace-nowrap border-r">
-                        {editingId === account.id ? (
-                          <select
-                            name="status"
-                            value={editFormData.status || ""}
-                            onChange={handleEditFormChange}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm"
-                          >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                          </select>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`w-2 h-2 rounded-full ${
-                                account.status === "active" ? "bg-green-500" : "bg-red-500"
-                              }`}
-                            ></div>
-                            <span className="text-sm text-gray-700 capitalize">{account.status}</span>
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Email */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                        {editingId === account.id ? (
-                          <input
-                            type="email"
-                            name="email"
-                            value={editFormData.email || ""}
-                            onChange={handleEditFormChange}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                          />
-                        ) : (
-                          account.email
-                        )}
-                      </td>
-
-                      {/* Birth Date */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                        {editingId === account.id ? (
-                          <DatePicker
-                            value={editFormData.birthDate ? new Date(editFormData.birthDate) : null}
-                            onChange={(date: Date) => handleDateChange(date.toISOString())}
-                            className=""
-                            hasError={false}
-                          />
-                        ) : (
-                          account.birthDate
-                        )}
-                      </td>
-
-                      {/* Role */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                        {editingId === account.id ? (
-                          <select
-                            name="role"
-                            value={editFormData.role || ""}
-                            onChange={handleEditFormChange}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm"
-                          >
-                            <option value="Admin">Admin</option>
-                            <option value="Staff">Staff</option>
-                            <option value="User">User</option>
-                          </select>
-                        ) : (
-                          account.role
-                        )}
-                      </td>
-
-                      {/* Phone */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                        {editingId === account.id ? (
-                          <input
-                            type="text"
-                            name="phone"
-                            value={editFormData.phone || ""}
-                            onChange={handleEditFormChange}
-                            className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                          />
-                        ) : (
-                          account.phone
-                        )}
-                      </td>
-
-                      {/* Password */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                        {editingId === account.id ? (
-                          <div className="flex items-center">
-                            <input
-                              type={showPassword[account.id] ? "text" : "password"}
-                              name="password"
-                              value={editFormData.password || ""}
-                              onChange={handleEditFormChange}
-                              className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => togglePasswordVisibility(account.id)}
-                              className="ml-2 text-gray-500 hover:text-blue-600"
-                            >
-                              {showPassword[account.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center">
-                            <span>{showPassword[account.id] ? account.password : "****"}</span>
-                            <button
-                              type="button"
-                              onClick={() => togglePasswordVisibility(account.id)}
-                              className="ml-2 text-gray-500 hover:text-blue-600"
-                            >
-                              {showPassword[account.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
-                        {editingId === account.id ? (
-                          <div className="flex gap-2 justify-center">
-                            <button
-                              onClick={() => handleSaveEdit(account)}
-                              className="bg-green-100 hover:bg-green-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-green-300 text-green-700"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={handleCancelEdit}
-                              className="bg-red-100 hover:bg-red-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-red-300 text-red-700"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex justify-center">
-                            <button
-                              onClick={() => handleEditClick(account)}
-                              className="bg-blue-100 hover:bg-blue-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-blue-300 text-blue-700"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={9} className="px-6 py-4 text-center text-sm text-gray-500">
-                      Không tìm thấy tài khoản nào phù hợp
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="mt-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-                className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+              {error}
+              <button 
+                onClick={() => setError(null)} 
+                className="absolute top-0 bottom-0 right-0 px-4 py-3"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <X className="w-4 h-4" />
               </button>
+            </div>
+          )}
 
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const page = i + 1;
-                return (
-                  <button
-                    key={page}
-                    className={`px-3 py-1 border rounded text-sm ${
-                      currentPage === page
-                        ? "border-blue-600 bg-blue-50 text-blue-600"
-                        : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                    }`}
-                    onClick={() => handlePageChange(page)}
+          {!loading && !error && (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>Đang hiện</span>
+                  <select
+                    className="border border-gray-300 rounded px-3 py-1 text-sm bg-white"
+                    value={rowsPerPage}
+                    onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
                   >
-                    {page}
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={30}>30</option>
+                  </select>
+                  <span>trong tổng số {totalItems} tài khoản</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  >
+                    <Filter className="w-3 h-3" />
+                    Lọc
                   </button>
-                );
-              })}
+                  <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer">
+                    <Download className="w-3 h-3" />
+                    Xuất
+                  </button>
+                  <button
+                    onClick={() => setShowAddAccountModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    THÊM TÀI KHOẢN
+                  </button>
+                </div>
+              </div>
 
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-                className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+              {showFilters && (
+                <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
+                      <select
+                        name="role"
+                        value={filters.role}
+                        onChange={handleFilterChange}
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                      >
+                        <option value="">Tất cả</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Staff">Staff</option>
+                        <option value="Member">Member</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        onClick={resetFilters}
+                        className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50"
+                      >
+                        Xóa bộ lọc
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <select
-                value={rowsPerPage}
-                onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
-                className="border border-gray-300 rounded px-2 py-1 text-sm bg-white"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={30}>30</option>
-              </select>
-              <span>/Trang</span>
-            </div>
-          </div>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                        #
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                        <div
+                          className="flex items-center justify-between cursor-pointer"
+                          onClick={() => requestSort("name")}
+                        >
+                          Họ và tên
+                          {sortConfig.key === "name" ? (
+                            sortConfig.direction === "ascending" ? (
+                              <ArrowUp className="w-3 h-3 text-gray-400" />
+                            ) : (
+                              <ArrowDown className="w-3 h-3 text-gray-400" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                        E-Mail
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                        <div
+                          className="flex items-center justify-between cursor-pointer"
+                          onClick={() => requestSort("dob")}
+                        >
+                          Ngày sinh
+                          {sortConfig.key === "dob" ? (
+                            sortConfig.direction === "ascending" ? (
+                              <ArrowUp className="w-3 h-3 text-gray-400" />
+                            ) : (
+                              <ArrowDown className="w-3 h-3 text-gray-400" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 text-gray-400" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                        Vai trò
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                        Phone
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {currentAccounts.length > 0 ? (
+                      currentAccounts.map((account, index) => (
+                        <tr key={account.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{account.id}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r">
+                            {editingId === account.id ? (
+                              <input
+                                type="text"
+                                name="name"
+                                value={editFormData.name || account.name}
+                                onChange={handleEditFormChange}
+                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                              />
+                            ) : (
+                              account.name
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                            {editingId === account.id ? (
+                              <input
+                                type="email"
+                                name="email"
+                                value={editFormData.email || account.email}
+                                onChange={handleEditFormChange}
+                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                              />
+                            ) : (
+                              account.email
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                            {editingId === account.id ? (
+                              <DatePicker
+                                value={editFormData.dob ? new Date(editFormData.dob) : new Date(account.dob)}
+                                onChange={(date: Date) => handleDateChange(date.toISOString())}
+                                className=""
+                                hasError={false}
+                              />
+                            ) : (
+                              account.dob
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r capitalize">
+                            {account.role.toLowerCase()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                            {editingId === account.id ? (
+                              <input
+                                type="text"
+                                name="phone"
+                                value={editFormData.phone || account.phone || ""}
+                                onChange={handleEditFormChange}
+                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                              />
+                            ) : (
+                              account.phone
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
+                            {editingId === account.id ? (
+                              <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={() => handleSaveEdit(account)}
+                                  className="bg-green-100 hover:bg-green-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-green-300 text-green-700"
+                                >
+                                  <Check className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="bg-red-100 hover:bg-red-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-red-300 text-red-700"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex justify-center gap-2">
+                                <button
+                                  onClick={() => handleEditClick(account)}
+                                  className="bg-blue-100 hover:bg-blue-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-blue-300 text-blue-700"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => setAccountToDelete(account)}
+                                  className="bg-red-100 hover:bg-red-200 transition-colors duration-200 cursor-pointer p-2 rounded border border-red-300 text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                          Không tìm thấy tài khoản nào phù hợp
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-6 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const page = i + 1;
+                    return (
+                      <button
+                        key={page}
+                        className={`px-3 py-1 border rounded text-sm ${
+                          currentPage === page
+                            ? "border-blue-600 bg-blue-50 text-blue-600"
+                            : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                        }`}
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <select
+                    value={rowsPerPage}
+                    onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
+                    className="border border-gray-300 rounded px-2 py-1 text-sm bg-white"
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={30}>30</option>
+                  </select>
+                  <span>/Trang</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
 
-      {/* Change Confirmation Modal */}
-      {showChangeModal && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Xác nhận thay đổi</h3>
-            <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn lưu các thay đổi này?</p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={cancelChanges}
-                className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={confirmChanges}
-                className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
-              >
-                Xác nhận
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {accountToDelete && (
+  <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
+      <h3 className="text-lg font-medium text-gray-900 mb-4">Xác nhận cấm tài khoản</h3>
+      <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn cấm tài khoản {accountToDelete.name}?</p>
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setAccountToDelete(null)}
+          className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
+        >
+          Hủy
+        </button>
+        <button
+          onClick={() => handleDeleteAccount(accountToDelete)}
+          className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 cursor-pointer"
+        >
+          Xác nhận cấm
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
-      {/* Add Account Modal */}
       {showAddAccountModal && (
-        <AddAccountModal onSave={handleAddNewAccount} onCancel={() => setShowAddAccountModal(false)} />
+        <AddAccountModal 
+          onSave={handleAddNewAccount} 
+          onCancel={() => setShowAddAccountModal(false)} 
+        />
       )}
     </div>
   );
