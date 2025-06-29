@@ -115,7 +115,7 @@ const UserProfile: React.FC = () => {
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex flex-col md:flex-row gap-8 md:min-w-[1000px]">
         {/* Left Side - Settings Sidebar */}
         {!isMobile ? (
           <div className="w-full md:w-1/3 lg:w-1/4">

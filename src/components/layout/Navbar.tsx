@@ -1,27 +1,30 @@
 import { useState } from "react";
 import { FaBars, FaSearch, FaTimes, FaUser } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 const navItems = [
+  { id: "event", label: "Sự kiện hiến máu", href: "/events" },
   { id: "home", label: "Trang chủ", href: "/" },
   { id: "info", label: "Thông tin máu", href: "/bloodinfo" },
   { id: "share", label: "Chia sẻ", href: "/blogs" },
-  { id: "event", label: "Sự kiện hiến máu", href: "/events" },
+
 ];
 
 export default function BloodDonationNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState("home");
+  const [activeItem, setActiveItem] = useState("event");
   const [showSearch, setShowSearch] = useState(false);
-  const { accessToken, setToken } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    setToken(null);
-    navigate("/", { replace: true });
-  };
+  const { accessToken } = useAuth();
 
   return (
     <nav className="bg-white shadow-sm w-full sticky">
@@ -36,7 +39,7 @@ export default function BloodDonationNavbar() {
           </div>
         </div>
 
-        <div className="flex items-center md:mr-12">
+        <div className="flex items-center md:mr-0">
           <div className="md:flex hidden space-x-10">
             {!showSearch &&
               navItems.map((item) => (
@@ -44,9 +47,8 @@ export default function BloodDonationNavbar() {
                   key={item.id}
                   to={item.href}
                   onClick={() => setActiveItem(item.id)}
-                  className={`transition font-medium text-base px-4 py-2 rounded-md ${
-                    activeItem === item.id ? "bg-[#C14B53] text-white" : "text-[#C14B53] hover:bg-[#C14B53]/10"
-                  }`}
+                  className={`transition font-medium text-base px-4 py-2 rounded-md ${activeItem === item.id ? "bg-[#C14B53] text-white" : "text-[#C14B53] hover:bg-[#C14B53]/10"
+                    }`}
                 >
                   {item.label}
                 </Link>
@@ -86,21 +88,31 @@ export default function BloodDonationNavbar() {
           </div>
 
           <div className="flex items-center">
-            {accessToken ? (
-              <button onClick={handleLogout} className="flex flex-col items-center gap-1 ml-4">
-                <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center hover:bg-[#8B0B1A]">
+            <DropdownMenu><DropdownMenuTrigger asChild>
+                <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center hover:bg-[#8B0B1A] hover:cursor-pointer">
                   <FaUser size={18} color="#fff" />
                 </div>
-                <span className="text-[#C14B53] text-sm font-medium">Đăng xuất</span>
-              </button>
-            ) : (
-              <Link to="/login" className="flex flex-col items-center gap-1 ml-4">
-                <div className="w-8 h-8 bg-[#C14B53] rounded-full flex items-center justify-center hover:bg-[#8B0B1A]">
-                  <FaUser size={18} color="#fff" />
-                </div>
-                <span className="text-[#C14B53] text-sm font-medium">Đăng nhập</span>
-              </Link>
-            )}
+            </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-30">
+                <DropdownMenuRadioGroup>
+                  {
+                    accessToken ? (
+                      <DropdownMenuRadioItem value="profile">
+                        <Link to={'/profile'}>
+                          Profile
+                        </Link>
+                      </DropdownMenuRadioItem>
+                    ) : (
+                      <DropdownMenuRadioItem value="login">
+                        <Link to={'/login'}>
+                          Login
+                        </Link>
+                      </DropdownMenuRadioItem>
+                    )
+                  }
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
@@ -123,9 +135,8 @@ export default function BloodDonationNavbar() {
                   setActiveItem(item.id);
                   setMenuOpen(false);
                 }}
-                className={`block px-4 py-2 rounded transition text-base font-medium ${
-                  activeItem === item.id ? "bg-[#C14B53] text-white" : "hover:bg-[#C14B53]/10 text-black"
-                }`}
+                className={`block px-4 py-2 rounded transition text-base font-medium ${activeItem === item.id ? "bg-[#C14B53] text-white" : "hover:bg-[#C14B53]/10 text-black"
+                  }`}
               >
                 {item.label}
               </Link>

@@ -102,7 +102,7 @@ interface SettingsSidebarProps {
 }
 
 const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onClose }) => {
-  const { setToken, setUser } = useAuth()
+  const { user, setToken, setUser } = useAuth()
   const navigate = useNavigate()
   const [settings, setSettings] = useState<SettingsState>({
     smsNotifications: false,
@@ -152,7 +152,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 0}}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={`bg-white rounded-md shadow-md p-6 ${isMobile ? 'fixed inset-0 z-40 overflow-y-auto' : 'sticky top-8'}`}
@@ -172,7 +172,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
         <div className="w-24 h-24 bg-[#C14B53] rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
           NVA
         </div>
-        <h1 className="text-xl font-bold">Nguyễn Văn A</h1>
+        <h1 className="text-xl font-bold">{user?.name}</h1>
       </div>
 
       <div className="mb-6">

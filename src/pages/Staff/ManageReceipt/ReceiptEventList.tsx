@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Users2, CalendarDays } from "lucide-react";
 import StandardReceiptForm from "../StandardReceiptRequest/StandardReceiptForm";
 import api from "@/lib/instance";
+import { Link } from "react-router-dom";
 
 interface Event {
   id: number;
@@ -38,9 +39,6 @@ const ReceiptEventList = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      // const response = await fetch("https://6846eafc7dbda7ee7ab0dd85.mockapi.io/event");
-      // const data = await response.json();
-      // setEvents(data);
       try {
         const response = await api.get('/api/events')
         const data = response.data
@@ -111,14 +109,17 @@ const ReceiptEventList = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1, duration: 0.3 }}
-                whileHover={{ y: -5 }}
               >
                 <div className="flex flex-col items-center md:flex-row p-6">
                   <div className="w-16 h-16 bg-[#C14B53] rounded-full flex items-center justify-center mr-6 mb-4 md:mb-0 shadow-sm">
                     <FaHeart className="text-white text-xl" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl text-red-700 font-semibold mb-5">{event.title}</h3>
+                    <h3 className="text-2xl text-red-700 font-semibold mb-5 hover:underline">
+                      <Link to = {`/staff/receipt/list/${event.id}`}>
+                        {event.title}
+                      </Link>
+                    </h3>
                     <p className="text-xl text-gray-600 mb-5">
                       Địa chỉ: <span className="font-semibold text-black">{event.address}</span>
                     </p>

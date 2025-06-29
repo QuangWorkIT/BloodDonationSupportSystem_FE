@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import DatePicker from "../ui/datepicker";
-import { authenApi } from "@/lib/instance";
 import { useAuth } from "@/hooks/authen/AuthContext";
+import { authenApi } from "@/lib/instance";
+
 
 type FormData = {
   name: string;
@@ -25,13 +26,16 @@ type FormErrors = {
 type FormField = keyof FormData;
 
 const AccountEdit = () => {
-  const { user, setUser } = useAuth()
+  const { user, setUser} = useAuth()
+  const [hasNotChanged, setHasNotChanged] = useState(true)
+
+  //fetch user 
   useEffect(() => {
     const getUser = async () => {
       try {
         const response = await authenApi.get('/api/users/profile')
         const data = response.data
-
+                
         if (!user)
           return
 
@@ -58,13 +62,30 @@ const AccountEdit = () => {
     getUser()
   }, [])
 
+  // sync form data
+  useEffect(() => {
+    setFormData({
+      name: user?.name || "",
+      gender: user?.gender ? "male" : "female",
+      birthDate: user?.dob || null,
+      phone: user?.phone || "",
+      gmail: user?.gmail || "",
+      bloodType: user?.bloodType || ""
+    })
+    setDefautlFormData(formData)
+  }, [user])
+
+  // default form data to compare changes
+  const [defaultFormData, setDefautlFormData] = useState<FormData | null>(null)
+
+
   const [formData, setFormData] = useState<FormData>({
-    name: user?.name || "",
-    gender: user?.gender ? "male" : "female",
-    birthDate: user?.dob || null,
-    phone: user?.phone || "",
-    gmail: user?.gmail || "",
-    bloodType: user?.bloodType || "",
+    name: "",
+    gender: "",
+    birthDate: null,
+    phone: "",
+    gmail: "",
+    bloodType: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({
@@ -75,6 +96,20 @@ const AccountEdit = () => {
     gmail: "",
     bloodType: "",
   });
+
+  // compare form data 
+  useEffect(() => {
+    if (!defaultFormData) return
+
+    const isEqual = formData.name === defaultFormData.name &&
+      formData.gender === defaultFormData.gender &&
+      String(formData.birthDate) === String(defaultFormData.birthDate) &&
+      formData.phone === defaultFormData.phone &&
+      formData.bloodType === defaultFormData.bloodType &&
+      formData.gmail === defaultFormData.gmail
+
+    setHasNotChanged(isEqual)
+  }, [formData, defaultFormData])
 
   const FeedbackModal = ({
     isOpen,
@@ -212,7 +247,6 @@ const AccountEdit = () => {
 
   const handleChange = (name: FormField, value: string | Date) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
-
     // Validate on change
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
@@ -248,7 +282,6 @@ const AccountEdit = () => {
       className="bg-white rounded-md shadow-md p-6"
     >
       <h2 className="text-xl font-bold mb-6 text-[#C14B53]">Chỉnh sửa thông tin</h2>
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-gray-700 mb-1">
@@ -364,9 +397,13 @@ const AccountEdit = () => {
         <div className="pt-4">
           <motion.button
             type="submit"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
+            whileHover={!hasNotChanged ? { scale: 1.02 } : undefined}
+            whileTap={!hasNotChanged ? { scale: 0.98 } : undefined}
+            className={`px-6 py-2 rounded-md transition cursor-pointer ${hasNotChanged
+              ? 'bg-gray-300 text-white cursor-not-allowed'
+              : 'bg-[#C14B53] text-white hover:bg-[#a83a42]'
+              }`}
+            disabled={hasNotChanged}
           >
             Lưu thay đổi
           </motion.button>

@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
@@ -28,6 +28,7 @@ const clientID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 export default function LoginForm() {
   const { setToken, setUser } = useAuth()
+  const [isLogin, setIsLogin] = useState(false)
   const navigate = useNavigate()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,6 +41,7 @@ export default function LoginForm() {
   // login by phone number
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      setIsLogin(true)
       const res = await api.post("/api/login", values);
 
       const data = res.data;
@@ -62,6 +64,8 @@ export default function LoginForm() {
     } catch (error) {
       console.log("Login error:", error);
       toast.error('Đăng nhập thất bại!')
+    } finally {
+      setIsLogin(false)
     }
   };
 
@@ -135,7 +139,7 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer">
+          <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer" disabled={isLogin}>
             Đăng nhập
           </Button>
           <div className="text-center text-sm text-muted-foreground">Hoặc tiếp tục với</div>
