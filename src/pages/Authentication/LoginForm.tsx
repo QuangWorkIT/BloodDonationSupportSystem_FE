@@ -133,7 +133,7 @@ export default function LoginForm() {
               <FormItem>
                 <FormLabel>Mật khẩu</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Mật khẩu" {...field} />
+                  <Input type="password"  data-testid="phone-input" placeholder="Mật khẩu" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
