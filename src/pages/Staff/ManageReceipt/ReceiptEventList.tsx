@@ -13,7 +13,7 @@ interface Event {
   eventTime: string;
   time: string;
   bloodType: string;
-  registered: number;
+  bloodRegisCount: number;
   maxOfDonor: number;
   isUrgent: boolean;
   estimateVolume: number
@@ -137,7 +137,7 @@ const ReceiptEventList = () => {
                       Người đăng ký
                     </div>
                     <span className="text-red-700 font-medium text-2xl mb-[64px]">
-                      {event.registered ? event.registered : 0} / {event.maxOfDonor}
+                      {event.bloodRegisCount ? event.bloodRegisCount : 0} / {event.maxOfDonor}
                     </span>
                     <motion.button
                       className="bg-[#C14B53] text-white text-xl font-semibold px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"

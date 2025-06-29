@@ -120,7 +120,7 @@ export default function OTPForm() {
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-[#F5F5F5]">
+    <div className="flex items-center justify-center h-screen bg-[#F0EFF4]">
       {confirmationResult ? (
         <div className="max-w-sm mx-auto mb-10 p-6 rounded-md border bg-white shadow">
           <h2 className="text-2xl font-bold text-center mb-2">Nhập mã OTP</h2>

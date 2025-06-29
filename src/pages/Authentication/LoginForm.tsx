@@ -69,89 +69,127 @@ export default function LoginForm() {
     }
   };
 
+  // handle google response
+  const handleCredentialResponse = async (response: google.accounts.id.CredentialResponse) => {
+    console.log("Google JWT Token:", response.credential);
+    try {
+      const res = await api.post("/api/google", { credential: response.credential });
+      const data = res.data;
+      setToken(data.token); // store token
+
+      const user = getUser(data.token);
+      if (user === null) {
+        return
+      }
+      setUser(user)
+
+      toast.success('Đăng nhập thành công!')
+      const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
+      navigate(path, { replace: true })
+
+    } catch (error) {
+      console.log("Login error:", error);
+      toast.error('Đăng nhập thất bại!')
+    }
+  };
+
+  const loadSDK = () => {
+    window.google.accounts.id.initialize({
+      client_id: clientID,
+      callback: handleCredentialResponse,
+      auto_select: false
+    })
+  }
+
+  const rendeSignInButton = () => {
+    const container = document.getElementById('googleSignInDiv')
+    if (!container) {
+      console.log('Sign in div not found')
+      return
+    }
+
+    window.google.accounts.id.renderButton(
+      container, {
+      theme: 'outline',
+      size: 'large',
+      width: 400,
+      type: 'standard',
+      logo_alignment: 'center'
+    })
+  }
   // login by google
   useEffect(() => {
-    const handleCredentialResponse = async (response: google.accounts.id.CredentialResponse) => {
-      console.log("Google JWT Token:", response.credential);
-      try {
-        const res = await api.post("/api/google", { credential: response.credential });
-        const data = res.data;
-        setToken(data.token); // store token
-
-        const user = getUser(data.token);
-        if (user === null) {
-          return
-        }
-        setUser(user)
-
-        toast.success('Đăng nhập thành công!')
-        const path = user.role === 'Member' ? '/' : user.role === 'Staff' ? '/staff' : '/admin'
-        navigate(path, { replace: true })
-
-      } catch (error) {
-        console.log("Login error:", error);
-        toast.error('Đăng nhập thất bại!')
+    const loadGoogleSDK = async () => {
+      if (!window.google?.accounts) {
+        // Wait for the script to load
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+        if (window.google?.accounts) {
+            loadSDK()
+            rendeSignInButton()
+          }
+        };
+        script.onerror = () => console.error('Failed to load Google SDK');
+        document.head.appendChild(script);
+      } else {
+        // SDK is already loaded
+        loadSDK()
+        rendeSignInButton()
       }
     };
 
-    const container = document.getElementById("googleSignInDiv");
-    if (!container || !window.google.accounts.id) {
-      console.log("Google SDK not loaded or container not found");
-    } else {
-      window.google.accounts.id.initialize({
-        client_id: clientID,
-        callback: handleCredentialResponse,
-        auto_select: false
-      });
-
-      window.google.accounts.id.renderButton(container, { theme: "outline", size: "large", width: 400, type: "standard", logo_alignment: "center" });
-    }
+    loadGoogleSDK();
   }, [clientID]);
 
   return (
-    <div className="max-w-md mx-auto min-sm:mt-10 min-sm:border rounded-lg min-sm:shadow p-6 space-y-6 bg-white max-sm:h-screen max-sm:flex max-sm:flex-col max-sm:justify-center">
-      <h2 className="text-2xl max-sm:text-3xl max-sm:text-center font-semibold text-red-600">Đăng nhập</h2>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Số điện thoại</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nhập số điện thoại" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mật khẩu</FormLabel>
-                <FormControl>
-                  <Input type="password"  data-testid="phone-input" placeholder="Mật khẩu" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer" disabled={isLogin}>
-            Đăng nhập
-          </Button>
-          <div className="text-center text-sm text-muted-foreground">Hoặc tiếp tục với</div>
-          <div id="googleSignInDiv" className="flex justify-center" />
-          <div className="text-center text-sm">
-            Chưa có tài khoản?{" "}
-            <Link to="/register" className="text-blue-600">
-              Đăng kí
-            </Link>
-          </div>
-        </form>
-      </Form>
+    <div className="h-screen flex items-center bg-[#F0EFF4]">
+      <div className="max-w-md h-max w-200 mx-auto min-sm:mt-0 min-sm:border rounded-lg min-sm:shadow p-6 space-y-6 bg-white max-sm:h-screen max-sm:flex max-sm:flex-col max-sm:justify-center">
+        <h2 className="text-2xl max-sm:text-3xl max-sm:text-center font-semibold text-red-600">Đăng nhập</h2>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Số điện thoại</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nhập số điện thoại" {...field} className="bg-[#F0EFF4]" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mật khẩu</FormLabel>
+                  <FormControl>
+                    <Input type="password" data-testid="phone-input" placeholder="Mật khẩu" {...field} className="bg-[#F0EFF4]" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer" disabled={isLogin}>
+              Đăng nhập
+            </Button>
+            <div className="text-center text-sm text-muted-foreground">Hoặc tiếp tục với</div>
+            <div id="googleSignInDiv" className="flex justify-center" />
+            <div className="text-center text-sm">
+              Chưa có tài khoản?{" "}
+              <Link to="/register" className="text-blue-600">
+                Đăng kí
+              </Link>
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }

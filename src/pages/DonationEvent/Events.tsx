@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { FaCalendarAlt, FaHeart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaHeart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import VolunteerForm from "./VolunteerForm";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/instance";
-import DonationRegisterForm  from './DonationRegisterForm'
+import DonationRegisterForm from './DonationRegisterForm'
 interface Event {
   id: number;
   title: string;
@@ -11,7 +11,7 @@ interface Event {
   eventTime: string;
   bloodType: string;
   bloodComponent: string;
-  registered: number;
+  bloodRegisCount: number;
   maxOfDonor: number;
   isUrgent: boolean;
   estimateVolume: number;
@@ -20,10 +20,11 @@ const Events = () => {
   const [activeTab, setActiveTab] = useState("donation-events");
   const [currentPage, setCurrentPage] = useState(1);
   const eventsPerPage = 3;
-  const [events, setEvents] = useState([]);
-  const [currentEventId, setCurrentEventId] = useState(0)  
+  const [events, setEvents] = useState<Event[]>([]);
+  const [currentEventId, setCurrentEventId] = useState(0)
   const [currentEventTime, setCurrentEventTime] = useState('')
-
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [isRegistrationFormOpen, setRegistraionFormOpen] = useState(false)
   useEffect(() => {
     const fetchEvents = async () => {
@@ -44,6 +45,21 @@ const Events = () => {
 
     fetchEvents();
   }, []);
+
+
+  // handle search event
+  const handleSearchEventClick = () => {
+    const dateFromDate = new Date(dateFrom)
+    const dateToDate = new Date(dateTo)
+
+    const searchEvents: Event[] = events.filter((event: Event) => {
+      const currentEventDate = new Date(event.eventTime)
+      return dateFromDate <= currentEventDate && currentEventDate <= dateToDate
+    })
+
+    console.log(searchEvents)
+    setEvents(searchEvents)
+  }
 
   // Pagination logic
   const indexOfLastEvent = currentPage * eventsPerPage;
@@ -175,7 +191,7 @@ const Events = () => {
 
       {/* Conditional Rendering of Events List or Volunteer Form */}
       {isRegistrationFormOpen ? (
-        <DonationRegisterForm eventId={currentEventId} eventTime = {currentEventTime} setRegistraionFormOpen={setRegistraionFormOpen}/>
+        <DonationRegisterForm eventId={currentEventId} eventTime={currentEventTime} setRegistraionFormOpen={setRegistraionFormOpen} />
       ) : (
         <AnimatePresence mode="wait">
           {activeTab === "donation-events" ? (
@@ -192,22 +208,29 @@ const Events = () => {
                 <div className="flex flex-col justify-center items-center md:flex-row gap-4">
                   <div className="w-full flex max-sm:gap-5 gap-3 items-center">
                     <p className="font-semibold">Từ ngày</p>
-                    <div className="flex items-center border rounded-md p-2 flex-1">
-                      <FaCalendarAlt className="text-gray-400 mr-2" />
-                      <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
+                    <div className="relative flex items-center border rounded-md p-2 flex-1">
+                      <input
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                        className="w-full focus:outline-none" />
                     </div>
                   </div>
                   <div className="w-full flex gap-3 items-center">
                     <p className="font-semibold">đến ngày</p>
                     <div className="flex items-center border rounded-md p-2 flex-1">
-                      <FaCalendarAlt className="text-gray-400 mr-2" />
-                      <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
+                      <input
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                        className="w-full focus:outline-none" />
                     </div>
                   </div>
                   <motion.button
                     className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => handleSearchEventClick()}
                   >
                     Tìm kiếm
                   </motion.button>
@@ -216,59 +239,62 @@ const Events = () => {
 
               {/* Events List with shadow boxing */}
               <div className="space-y-6 mb-8">
-                {currentEvents.map((event: Event, index) => (
-                  <motion.div
-                    key={event.id}
-                    className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                    whileHover={{ y: -5 }}
-                  >
-                    <div className="flex flex-col md:flex-row p-6">
-                      {/* Logo */}
-                      <motion.div
-                        className="w-16 h-16 bg-[#C14B53] rounded-full flex items-center justify-center mr-6 mb-4 md:mb-0 shadow-sm"
-                        whileHover={{ rotate: 10 }}
-                      >
-                        <FaHeart className="text-white text-xl" />
-                      </motion.div>
+                <>{currentEvents.length}</>
+                {
+                currentEvents.map((event: Event, index) => (
+                <motion.div
+                  data-testid="event-item"
+                  key={event.id}
+                  className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.3 }}
+                  whileHover={{ y: -5 }}
+                >
+                  <div className="flex flex-col md:flex-row p-6">
+                    {/* Logo */}
+                    <motion.div
+                      className="w-16 h-16 bg-[#C14B53] rounded-full flex items-center justify-center mr-6 mb-4 md:mb-0 shadow-sm"
+                      whileHover={{ rotate: 10 }}
+                    >
+                      <FaHeart className="text-white text-xl" />
+                    </motion.div>
 
-                      {/* Event Details */}
-                      <div className="flex-1">
-                        <h3 className="text-red-700 text-lg font-medium mb-2">{event.title}</h3>
-                        <p className="text-gray-600 mb-1">Địa chỉ của cơ sở y tế</p>
-                        <p className="text-gray-600 mb-1">
-                          Thời gian hoạt động: <span className="font-semibold text-black">{event.eventTime}</span>, từ 7:00 đến 17:00
-                        </p>
-                        <p className="text-gray-600">
-                          Ưu tiên người hiến có nhóm máu: <span className="font-semibold text-black">{event.bloodType ? event.bloodType : "A, B, AB, O"}</span>
-                        </p>
-                      </div>
-
-                      {/* Registration */}
-                      <div className="flex flex-col items-end mt-4 md:mt-0">
-                        <div className="text-sm font-semibold mb-2">
-                          Số người đã đăng ký:{" "}
-                          <span className="text-red-700 text-[16px]">
-                            {event.registered ? event.registered : 0} / {event.maxOfDonor}
-                          </span>
-                        </div>
-                        <motion.button
-                          className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => {
-                            setCurrentEventTime(event.eventTime)
-                            setCurrentEventId(event.id)
-                            setRegistraionFormOpen(true)
-                          }}
-                        >
-                          Đăng ký
-                        </motion.button>
-                      </div>
+                    {/* Event Details */}
+                    <div className="flex-1">
+                      <h3 className="text-red-700 text-lg font-medium mb-2">{event.title}</h3>
+                      <p className="text-gray-600 mb-1">Địa chỉ của cơ sở y tế</p>
+                      <p className="text-gray-600 mb-1">
+                        Thời gian hoạt động: <span className="font-semibold text-black">{event.eventTime}</span>, từ 7:00 đến 17:00
+                      </p>
+                      <p className="text-gray-600">
+                        Ưu tiên người hiến có nhóm máu: <span className="font-semibold text-black">{event.bloodType ? event.bloodType : "A, B, AB, O"}</span>
+                      </p>
                     </div>
-                  </motion.div>
+
+                    {/* Registration */}
+                    <div className="flex flex-col items-end mt-4 md:mt-0">
+                      <div className="text-sm font-semibold mb-2">
+                        Số người đã đăng ký:{" "}
+                        <span className="text-red-700 text-[16px]">
+                          {event.bloodRegisCount ? event.bloodRegisCount : 0} / {event.maxOfDonor}
+                        </span>
+                      </div>
+                      <motion.button
+                        className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          setCurrentEventTime(event.eventTime)
+                          setCurrentEventId(event.id)
+                          setRegistraionFormOpen(true)
+                        }}
+                      >
+                        Đăng ký
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
                 ))}
               </div>
 
