@@ -11,6 +11,10 @@ interface DatePickerProps {
   hasError?: boolean;
   dateFormat?: "MM/dd/yyyy" | "dd/MM/yyyy" | "yyyy-MM-dd";
   showYearDropdown?: boolean;
+  id?: string;
+  disabled?: boolean;
+  ariaInvalid?: boolean;
+  ariaDescribedby?: string;
 }
 
 const DatePicker: React.FC<DatePickerProps> = ({ 
