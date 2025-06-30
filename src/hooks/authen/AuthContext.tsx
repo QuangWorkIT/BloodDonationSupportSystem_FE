@@ -31,6 +31,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         const initAuth = async () => {
             const storedToken = localStorage.getItem("token");
             if (!storedToken) {
+                console.log('No token found', storedToken)
+                setIsLoading(false)
                 return
             };
 

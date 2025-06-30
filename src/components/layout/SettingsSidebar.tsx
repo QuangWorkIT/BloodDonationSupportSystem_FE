@@ -135,9 +135,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
     setUser(null)
     toast.success('Đăng xuất thành công!')
 
-    setTimeout(() => {
-      navigate('/', { replace: true });
-    }, 0)
+    user?.role === 'Admin' || user?.role === 'Staff' ? navigate('/login', { replace: true }) : navigate('/', { replace: true });
   };
 
   const confirmDeleteAccount = () => {

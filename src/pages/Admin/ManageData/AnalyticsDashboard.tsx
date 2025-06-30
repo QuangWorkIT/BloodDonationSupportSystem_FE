@@ -272,9 +272,7 @@ const AnalyticsDashboard = () => {
   };
 
   return (
-    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
-      <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
-
+    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen">
 
       {/* Main content */}
       

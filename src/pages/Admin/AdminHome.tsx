@@ -4,8 +4,12 @@ import AdminSidebar from "./AdminSidebar"
 function AdminHome() {
   return (
     <div className="flex">
-      <AdminSidebar activeItem="" setActiveItem={() => {}}/>
-      <Outlet />
+      <div className="w-[250px] min-h-screen">
+        <AdminSidebar activeItem="" setActiveItem={() => { }} />
+      </div>
+      <div className="w-full">
+        <Outlet />
+      </div>
     </div>
   )
 }
