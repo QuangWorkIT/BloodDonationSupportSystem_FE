@@ -5,7 +5,32 @@ import { test } from '../zeroTest'
 //   await page.goto('http://localhost:5173');
 // });
 
-test.describe('Pages', () => {
+test.describe('Tests', () => {
+
+  // API testing
+  test('api test - get events', async ({ page, ai, request }) => {
+    const response = await request.get('/api/events')
+    expect(response.status()).toBe(200)
+
+    const body = await response.json()
+    expect(body.data.items[0]).toHaveProperty('id')
+    expect(body.data.items[0]).toHaveProperty('title')
+  })
+
+  test('api test zerostep - get events', async ({ page, ai, request }) => {
+    const response = await request.get('/api/events');
+    const json = await response.json();
+
+    const firstItem = await ai(`Get the first "item" object from the "items" array in the "data" object of this response: ${JSON.stringify(json)}`);
+    const result = await ai(
+      `Does the following object have both "id" and "title" properties? ${JSON.stringify(firstItem)}`
+    );
+
+    expect(result).toBeTruthy();
+  });
+
+
+  // UI testing
   test('should show login successful', async ({ page, ai }) => {
     await page.goto('http://localhost:5173/login');
 
@@ -15,6 +40,17 @@ test.describe('Pages', () => {
     await ai('Click the "Đăng nhập" button ')
 
     await expect(page.getByText('Đăng nhập thành công!')).toBeVisible()
+  });
+
+  test('should show login fail', async ({ page, ai }) => {
+    await page.goto('http://localhost:5173/login');
+
+    const phone = '0965035221'
+    const password = 'string12345678'
+    await ai(`Fill out the form with ${phone} for phone number and  ${password} for password`)
+    await ai('Click the "Đăng nhập" button ')
+
+    await expect(page.getByText('Đăng nhập thất bại!')).toBeVisible()
   });
 
   test('should show list of 3 events found', async ({ page, ai }) => {
