@@ -157,7 +157,7 @@ function DonationRegisterForm({ eventId, eventTime, setRegistraionFormOpen }: Do
         try {
             setIsRegister(true)
             const response = await authenApi.post(`/api/events/${eventId}/blood-registrations`,{
-                "lastDonation": values.lastDonation
+                "lastDonation": values.lastDonation.toISOString().split('T')[0]
             })
 
             const data = response.data

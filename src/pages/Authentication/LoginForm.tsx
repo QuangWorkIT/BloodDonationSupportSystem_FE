@@ -179,7 +179,7 @@ export default function LoginForm() {
             <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer" disabled={isLogin}>
               Đăng nhập
             </Button>
-            <div className="text-center text-sm text-muted-foreground">Hoặc tiếp tục với</div>
+            <div className="text-center text-black text-sm ">Hoặc tiếp tục với</div>
             <div id="googleSignInDiv" className="flex justify-center" />
             <div className="text-center text-sm">
               Chưa có tài khoản?{" "}
