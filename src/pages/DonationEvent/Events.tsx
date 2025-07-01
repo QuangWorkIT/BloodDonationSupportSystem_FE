@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { FaCalendarAlt, FaHeart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaHeart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import VolunteerForm from "./VolunteerForm";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/instance";
-
+import DonationRegisterForm from './DonationRegisterForm'
 interface Event {
   id: number;
   title: string;
@@ -11,7 +11,7 @@ interface Event {
   eventTime: string;
   bloodType: string;
   bloodComponent: string;
-  registered: number;
+  bloodRegisCount: number;
   maxOfDonor: number;
   isUrgent: boolean;
   estimateVolume: number;
@@ -20,13 +20,14 @@ const Events = () => {
   const [activeTab, setActiveTab] = useState("donation-events");
   const [currentPage, setCurrentPage] = useState(1);
   const eventsPerPage = 3;
-  const [events, setEvents] = useState([]);
-
+  const [events, setEvents] = useState<Event[]>([]);
+  const [currentEventId, setCurrentEventId] = useState(0)
+  const [currentEventTime, setCurrentEventTime] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [isRegistrationFormOpen, setRegistraionFormOpen] = useState(false)
   useEffect(() => {
     const fetchEvents = async () => {
-      // const response = await fetch("https://6846eafc7dbda7ee7ab0dd85.mockapi.io/event");
-      // const data = await response.json();
-      // setEvents(data);
       try {
         const response = await api.get("/api/events");
         const data = response.data;
@@ -44,6 +45,21 @@ const Events = () => {
 
     fetchEvents();
   }, []);
+
+
+  // handle search event
+  const handleSearchEventClick = () => {
+    const dateFromDate = new Date(dateFrom)
+    const dateToDate = new Date(dateTo)
+
+    const searchEvents: Event[] = events.filter((event: Event) => {
+      const currentEventDate = new Date(event.eventTime)
+      return dateFromDate <= currentEventDate && currentEventDate <= dateToDate
+    })
+
+    console.log(searchEvents)
+    setEvents(searchEvents)
+  }
 
   // Pagination logic
   const indexOfLastEvent = currentPage * eventsPerPage;
@@ -82,9 +98,8 @@ const Events = () => {
           whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          className={`w-10 h-10 rounded-md flex items-center justify-center ${
-            currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-          }`}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+            }`}
         >
           <FaChevronLeft />
         </motion.button>
@@ -100,11 +115,10 @@ const Events = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentPage(parseInt(page.toString()))}
-              className={`w-10 h-10 rounded-md ${
-                currentPage === parseInt(page.toString())
-                  ? "bg-[#C14B53] text-white cursor-pointer"
-                  : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-              }`}
+              className={`w-10 h-10 rounded-md ${currentPage === parseInt(page.toString())
+                ? "bg-[#C14B53] text-white cursor-pointer"
+                : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+                }`}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
@@ -118,9 +132,8 @@ const Events = () => {
           whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className={`w-10 h-10 rounded-md flex items-center justify-center ${
-            currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-          }`}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+            }`}
         >
           <FaChevronRight />
         </motion.button>
@@ -142,9 +155,8 @@ const Events = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("donation-events")}
-            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
-              activeTab === "donation-events" ? "text-white" : "text-gray-700 hover:bg-gray-50"
-            }`}
+            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${activeTab === "donation-events" ? "text-white" : "text-gray-700 hover:bg-gray-50"
+              }`}
           >
             {activeTab === "donation-events" && (
               <motion.div
@@ -161,9 +173,8 @@ const Events = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("register-volunteer")}
-            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
-              activeTab === "register-volunteer" ? "text-white" : "text-gray-700 hover:bg-gray-50"
-            }`}
+            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${activeTab === "register-volunteer" ? "text-white" : "text-gray-700 hover:bg-gray-50"
+              }`}
           >
             {activeTab === "register-volunteer" && (
               <motion.div
@@ -179,47 +190,60 @@ const Events = () => {
       </div>
 
       {/* Conditional Rendering of Events List or Volunteer Form */}
-      <AnimatePresence mode="wait">
-        {activeTab === "donation-events" ? (
-          <motion.div
-            key="donation-events"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            {/* Date Picker */}
-            <motion.div className="bg-white rounded-md shadow-sm p-4 mb-8 border border-gray-200">
-              <h2 className="text-lg font-medium mb-4">Bạn muốn đặt lịch vào thời gian nào?</h2>
-              <div className="flex flex-col justify-center items-center md:flex-row gap-4">
-                <div className="w-full flex max-sm:gap-5 gap-3 items-center">
-                  <p className="font-semibold">Từ ngày</p>
-                  <div className="flex items-center border rounded-md p-2 flex-1">
-                    <FaCalendarAlt className="text-gray-400 mr-2" />
-                    <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
+      {isRegistrationFormOpen ? (
+        <DonationRegisterForm eventId={currentEventId} eventTime={currentEventTime} setRegistraionFormOpen={setRegistraionFormOpen} />
+      ) : (
+        <AnimatePresence mode="wait">
+          {activeTab === "donation-events" ? (
+            <motion.div
+              key="donation-events"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Date Picker */}
+              <motion.div className="bg-white rounded-md shadow-sm p-4 mb-8 border border-gray-200">
+                <h2 className="text-lg font-medium mb-4">Bạn muốn đặt lịch vào thời gian nào?</h2>
+                <div className="flex flex-col justify-center items-center md:flex-row gap-4">
+                  <div className="w-full flex max-sm:gap-5 gap-3 items-center">
+                    <p className="font-semibold">Từ ngày</p>
+                    <div className="relative flex items-center border rounded-md p-2 flex-1">
+                      <input
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                        className="w-full focus:outline-none" />
+                    </div>
                   </div>
-                </div>
-                <div className="w-full flex gap-3 items-center">
-                  <p className="font-semibold">đến ngày</p>
-                  <div className="flex items-center border rounded-md p-2 flex-1">
-                    <FaCalendarAlt className="text-gray-400 mr-2" />
-                    <input type="text" placeholder="dd / MM / yyyy" className="w-full focus:outline-none" />
+                  <div className="w-full flex gap-3 items-center">
+                    <p className="font-semibold">đến ngày</p>
+                    <div className="flex items-center border rounded-md p-2 flex-1">
+                      <input
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                        className="w-full focus:outline-none" />
+                    </div>
                   </div>
+                  <motion.button
+                    className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleSearchEventClick()}
+                  >
+                    Tìm kiếm
+                  </motion.button>
                 </div>
-                <motion.button
-                  className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Tìm kiếm
-                </motion.button>
-              </div>
-            </motion.div>
+              </motion.div>
 
-            {/* Events List with shadow boxing */}
-            <div className="space-y-6 mb-8">
-              {currentEvents.map((event: Event, index) => (
+              {/* Events List with shadow boxing */}
+              <div className="space-y-6 mb-8">
+                <>{currentEvents.length}</>
+                {
+                currentEvents.map((event: Event, index) => (
                 <motion.div
+                  data-testid="event-item"
                   key={event.id}
                   className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
                   initial={{ opacity: 0, y: 20 }}
@@ -253,40 +277,46 @@ const Events = () => {
                       <div className="text-sm font-semibold mb-2">
                         Số người đã đăng ký:{" "}
                         <span className="text-red-700 text-[16px]">
-                          {event.registered ? event.registered : 0} / {event.maxOfDonor}
+                          {event.bloodRegisCount ? event.bloodRegisCount : 0} / {event.maxOfDonor}
                         </span>
                       </div>
                       <motion.button
                         className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          setCurrentEventTime(event.eventTime)
+                          setCurrentEventId(event.id)
+                          setRegistraionFormOpen(true)
+                        }}
                       >
                         Đăng ký
                       </motion.button>
                     </div>
                   </div>
                 </motion.div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            {/* Pagination */}
-            <motion.div className="flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-              {renderPagination()}
+              {/* Pagination */}
+              <motion.div className="flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+                {renderPagination()}
+              </motion.div>
             </motion.div>
-          </motion.div>
-        ) : (
-          // Render the VolunteerForm when the volunteer tab is active
-          <motion.div
-            key="register-volunteer"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <VolunteerForm />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          ) : (
+            // Render the VolunteerForm when the volunteer tab is active
+            <motion.div
+              key="register-volunteer"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <VolunteerForm />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </div>
   );
 };

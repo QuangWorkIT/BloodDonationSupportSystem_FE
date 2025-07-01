@@ -29,7 +29,7 @@ export function BloodComponentSelect({ onValueChange, defaultVal }: SelectProps)
 
 export function BloodTypeSelectRh({ onValueChange, defaultVal }: SelectProps) {
     return (
-        <Select onValueChange={onValueChange} defaultValue={defaultVal}>
+        <Select onValueChange={onValueChange} value={defaultVal}>
             <SelectTrigger className="w-full">
                 <SelectValue placeholder="Chọn Rh" />
             </SelectTrigger>
@@ -43,7 +43,7 @@ export function BloodTypeSelectRh({ onValueChange, defaultVal }: SelectProps) {
 
 function BloodTypeSelect({ onValueChange, defaultVal }: SelectProps) {
     return (
-        <Select onValueChange={onValueChange} defaultValue={defaultVal}>
+        <Select onValueChange={onValueChange} value={defaultVal}>
             <SelectTrigger className="w-full">
                 <SelectValue placeholder="Chọn ABO" />
             </SelectTrigger>

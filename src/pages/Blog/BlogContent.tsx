@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaPaperPlane } from "react-icons/fa";
 import api from "@/lib/instance";
+import LoadingSpinner from "@/components/layout/Spinner";
+import { useAuth } from "@/hooks/authen/AuthContext";
+import { toast } from "react-toastify";
 
 interface Blog {
   id: number;
@@ -16,12 +19,16 @@ interface Blog {
 }
 
 interface Comment {
-  name: string;
-  content: string;
+  userId: number;
+  text: string;
+  createdAt: string;
+  member: string;
 }
 
 export default function BlogContent() {
   const { id } = useParams();
+  const blogId = Number(id);
+  const { user, accessToken } = useAuth();
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -41,19 +48,71 @@ export default function BlogContent() {
     fetchBlog();
   }, [id]);
 
-  const handlePost = () => {
-    if (newComment.trim()) {
-      setComments([...comments, { name: "Tên người dùng", content: newComment }]);
+  const fetchComments = async (blogId: number) => {
+    try {
+      const res = await api.get(`/api/${blogId}/comments`);
+      setComments(res.data.data);
+    } catch (e) {
+      console.error("Failed to fetch comments", e);
+    }
+    console.log(comments);
+  };
+
+  const postComment = async (blogId: number, text: string) => {
+    if (!user || !accessToken) {
+      toast.error("Bạn cần đăng nhập để bình luận.");
+      return;
+    }
+
+    try {
+      const res = await api.post(
+        `/api/${blogId}/comments`,
+        {
+          text,
+          userId: user?.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      setComments((prev) => [...prev, res.data.data]);
       setNewComment("");
+    } catch (err) {
+      console.error("Failed to post comment", err);
     }
   };
 
-  if (loading)
-    return (
-      <div className="min-w-screen h-screen flex flex-col justify-center items-center sm:gap-[40px] bg-linear-to-b from-indigo-900 to-indigo-950">
-        <div className="text-white font-semibold text-4xl">Đang tải...</div>
-      </div>
-    );
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchData = async () => {
+      try {
+        const blogRes = await api.get(`/api/blogs/${id}`);
+        setBlog(blogRes.data);
+
+        const commentsRes = await api.get(`/api/${blogId}/comments`);
+        setComments(commentsRes.data.data);
+      } catch (err) {
+        console.error("Error fetching blog or comments:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  const handlePost = async (blogId: number) => {
+    if (newComment.trim()) {
+      await postComment(blogId, newComment);
+      await fetchComments(blogId);
+    }
+  };
+
+  if (loading) return <LoadingSpinner />;
 
   if (!blog)
     return (
@@ -64,53 +123,6 @@ export default function BlogContent() {
         </Link>
       </div>
     );
-
-  //Demo content
-  // const blog = {
-  //   title: "MỘT SỐ CÂU HỎI THƯỜNG GẶP",
-  //   imageUrl: "src/assets/images/event2.png",
-  //   author: "admin",
-  //   createAt: "4/5/2025",
-  //   lastUpdate: "14/5/2025",
-  //   content: [
-  //     {
-  //       subtitle: "1. Ai có thể tham gia hiến máu?",
-  //       text: [
-  //         "- Tất cả mọi người từ 18 - 60 tuổi, thực sự tình nguyện hiến máu của mình để cứu chữa người bệnh.",
-  //         "- Cân nặng ít nhất là 45kg đối với phụ nữ, nam giới. Lượng máu hiến mỗi lần không quá 9ml/kg cân nặng và không quá 500ml mỗi lần.",
-  //         "- Không bị nhiễm hoặc không có các hành vi lây nhiễm HIV và các bệnh lây nhiễm qua đường truyền máu khác.",
-  //         "- Thời gian giữa 2 lần hiến máu là 12 tuần đối với cả Nam và Nữ.",
-  //       ],
-  //     },
-  //     {
-  //       subtitle: "2. Máu của tôi sẽ được làm những xét nghiệm gì?",
-  //       text: [
-  //         "- Tất cả những đơn vị máu thu được sẽ được kiểm tra nhóm máu (hệ ABO, hệ Rh), HIV, virus viêm gan B, virus viêm gan C, giang mai, sốt rét. ",
-  //         "- Bạn sẽ được thông báo kết quả, được giữ kín và được tư vấn (miễn phí) khi phát hiện ra các bệnh nhiễm trùng nói trên.",
-  //       ],
-  //     },
-  //     {
-  //       subtitle: "3. Máu gồm những thành phần và chức năng gì?",
-  //       text: [
-  //         "Máu là một chất lỏng lưu thông trong các mạch máu của cơ thể, gồm nhiều thành phần, mỗi thành phần làm nhiệm vụ khác nhau:",
-  //         "- Hồng cầu làm nhiệm vụ chính là vận chuyển oxy.",
-  //         "- Bạch cầu làm nhiệm vụ bảo vệ cơ thể.",
-  //         "- Tiểu cầu tham gia quá trình đông cầm máu.",
-  //         "- Huyết tương: gồm nhiều thành phần (kháng thể, các yếu tố đông máu, các chất dinh dưỡng...)",
-  //       ],
-  //     },
-  //   ],
-  //   initialComments: [
-  //     {
-  //       name: "Nguyễn Văn A",
-  //       content: "(Any comment content here...)",
-  //     },
-  //     {
-  //       name: "Nguyễn Văn B",
-  //       content: "(Any comment content here...)",
-  //     },
-  //   ],
-  // };
 
   return (
     <div className="min-w-screen flex flex-col sm:gap-[40px] bg-linear-to-b from-[#F24333] to-[#DEA2A4]">
@@ -131,16 +143,6 @@ export default function BlogContent() {
 
           {/* Content */}
           <div className="space-y-5 text-gray-800 leading-relaxed px-4">
-            {/* {contents.content.map((section, idx) => (
-              <div key={idx}>
-                <h2 className="sm:text-xl text-red-700 font-semibold mb-2.5">{section.subtitle}</h2>
-                {section.text.map((para, pIdx) => (
-                  <p key={pIdx} className="sm:text-lg text-sm mb-2.5">
-                    {para}
-                  </p>
-                ))}
-              </div>
-            ))} */}
             <p className="sm:text-lg text-sm">{blog.content}</p>
           </div>
 
@@ -170,10 +172,10 @@ export default function BlogContent() {
             <div className="sm:space-y-4 space-y-2">
               {comments.map((comment, idx) => (
                 <div key={idx} className="flex items-start gap-4 p-2 rounded-md">
-                  <div className="bg-gray-300 rounded-full sm:w-12 sm:h-12 w-10 h-10 flex items-center justify-center font-bold">{comment.name.charAt(0)}</div>
+                  <img src={new URL("@/assets/images/avatar.png", import.meta.url).href} alt="user-avatar" className="size-10 sm:size-12" />
                   <div>
-                    <p className="font-medium max-sm:text-sm">{comment.name}</p>
-                    <p className="text-gray-700 max-sm:text-sm">{comment.content}</p>
+                    <p className="font-medium max-sm:text-sm">{comment.member}</p>
+                    <p className="text-gray-700 max-sm:text-sm">{comment.text}</p>
                   </div>
                 </div>
               ))}
@@ -191,7 +193,12 @@ export default function BlogContent() {
                 />
               </div>
               <div className="flex w-full justify-end">
-                <FaPaperPlane className="mr-4 -mt-8 text-gray-400 hover:text-gray-600 cursor-pointer" onClick={handlePost} />
+                <FaPaperPlane
+                  className="mr-4 -mt-8 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  onClick={() => {
+                    handlePost(blogId);
+                  }}
+                />
               </div>
               <p className="sm:text-lg text-sm text-gray-500 mt-5">
                 <Link to="/login" className="text-blue-600">
