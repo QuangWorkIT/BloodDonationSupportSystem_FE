@@ -68,12 +68,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Format date as MM/DD/YYYY
+  // Format date as MM/DD/YYYY using UTC to avoid timezone issues
   const formatDate = (date: Date | null) => {
     if (!date) return "";
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    const year = date.getFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+    const day = date.getUTCDate().toString().padStart(2, "0");
+    const year = date.getUTCFullYear();
     return `${month}/${day}/${year}`;
   };
 
@@ -82,9 +82,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
   const handleDateSelect = (day: number) => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    // Create the date in UTC mode to avoid timezone issues
+    const newDate = new Date(Date.UTC(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    ));
+    
     setSelectedDate(newDate);
-    onChange(newDate); // Pass Date object directly
+    onChange(newDate);
     setIsOpen(false);
   };
 

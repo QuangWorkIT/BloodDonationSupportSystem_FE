@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
 import {
-  ArrowUpDown,
   Edit,
   Filter,
   Download,
@@ -14,9 +13,10 @@ import {
   Check,
   X,
   Plus,
-  ArrowDown,
-  ArrowUp,
   Trash2,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from "lucide-react";
 import AdminSidebar from "../AdminSidebar";
 import DatePicker from "@/components/ui/datepicker";
@@ -24,11 +24,39 @@ import AddAccountModal from "./AddAccount";
 import { authenApi } from "@/lib/instance";
 import { AxiosError } from "axios";
 
-// Define strongly-typed interfaces for API responses
-interface ApiResponse<T> {
-  isSuccess: boolean;
-  message: string;
-  data: T;
+// Type Definitions
+type AccountStatus = "Active" | "Inactive";
+type AccountRole = "Admin" | "Staff" | "Member";
+
+interface User {
+  userId: string;
+  name: string;
+  status: AccountStatus;
+  email: string;
+  dob: string;
+  role: AccountRole;
+  phone?: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface Account extends User {
+  // No need for tableId since we'll calculate it dynamically
+}
+
+interface NewAccountData {
+  name: string;
+  email: string;
+  dob: string;
+  phone?: string;
+  role: AccountRole;
+  status: AccountStatus;
+}
+
+interface EditFormData {
+  name?: string;
+  email?: string;
+  dob?: string;
+  phone?: string;
 }
 
 interface PaginatedUserData {
@@ -39,67 +67,66 @@ interface PaginatedUserData {
   totalPages: number;
 }
 
-interface User {
-  id?: number;
-  name: string;
-  status: "Active" | "Inactive";
-  email: string;
-  dob: string;
-  role: "Admin" | "Staff" | "Member";
-  phone?: string;
+interface ApiResponse<T> {
+  isSuccess: boolean;
+  message: string;
+  data: T;
 }
 
-interface Account extends User {
-  id: number; // Making id required for our UI
+type SortDirection = "ascending" | "descending";
+type SortableField = keyof Omit<Account, "userId">;
+
+interface SortConfig {
+  key: SortableField | "";
+  direction: SortDirection;
+}
+
+interface FilterState {
+  role: AccountRole | "";
 }
 
 const AccountDashboard = () => {
-  // State management
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [activeSidebarItem, setActiveSidebarItem] = useState("accounts");
+  // State Management
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [activeSidebarItem, setActiveSidebarItem] = useState<string>("accounts");
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalItems, setTotalItems] = useState(0);
+  const [totalItems, setTotalItems] = useState<number>(0);
 
-  // Search and filter states
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    role: "" as "" | "Admin" | "Staff" | "Member",
+  // Search and Filter States
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [filters, setFilters] = useState<FilterState>({
+    role: "",
   });
 
-  // Editing states
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editFormData, setEditFormData] = useState<Omit<Partial<Account>, 'role'>>({});
-  const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  // Sorting State
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: "",
+    direction: "ascending",
+  });
+
+  // Editing States
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<EditFormData>({});
+  const [showAddAccountModal, setShowAddAccountModal] = useState<boolean>(false);
   const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
 
-  // Fetch accounts data from API
+  // Data Fetching
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         const response = await authenApi.get<ApiResponse<PaginatedUserData>>(
           `/api/users?pageNumber=${currentPage}&pageSize=${rowsPerPage}`
         );
 
         if (response.data.isSuccess) {
-          // Transform API data to our Account interface
-          const mappedAccounts = response.data.data.items.map((item, index) => ({
-            id: index + 1 + (currentPage - 1) * rowsPerPage,
-            name: item.name,
-            status: item.status,
-            email: item.email,
-            dob: item.dob,
-            role: item.role,
-            phone: item.phone || "N/A",
-          }));
-
-          setAccounts(mappedAccounts);
+          setAccounts(response.data.data.items);
           setTotalItems(response.data.data.totalItems);
         } else {
           setError(response.data.message || "Failed to fetch accounts");
@@ -119,12 +146,7 @@ const AccountDashboard = () => {
     fetchAccounts();
   }, [currentPage, rowsPerPage]);
 
-  // Filter and search logic
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof Omit<Account, 'status' | 'password'> | "";
-    direction: "ascending" | "descending";
-  }>({ key: "", direction: "ascending" });
-
+  // Sorting and Filtering Logic
   const filteredAccounts = useMemo(() => {
     let result = [...accounts];
 
@@ -135,7 +157,7 @@ const AccountDashboard = () => {
         (account) =>
           account.name.toLowerCase().includes(term) ||
           account.email.toLowerCase().includes(term) ||
-          account.phone?.toLowerCase().includes(term)
+          (account.phone && account.phone.toLowerCase().includes(term))
       );
     }
 
@@ -165,22 +187,23 @@ const AccountDashboard = () => {
     return result;
   }, [accounts, searchTerm, filters, sortConfig]);
 
-  const requestSort = (key: keyof Omit<Account, 'status' | 'password'>) => {
-    let direction: "ascending" | "descending" = "ascending";
+  const requestSort = (key: SortableField) => {
+    let direction: SortDirection = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
       direction = "descending";
     }
     setSortConfig({ key, direction });
   };
 
-  // Pagination
+  // Pagination Logic
   const totalPages = Math.ceil(totalItems / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const currentAccounts = filteredAccounts.slice(startIndex, endIndex);
+  const currentAccounts = filteredAccounts.slice(startIndex, startIndex + rowsPerPage);
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   const handleRowsPerPageChange = (value: number) => {
@@ -188,9 +211,9 @@ const AccountDashboard = () => {
     setCurrentPage(1);
   };
 
-  // Editing handlers
+  // CRUD Operations
   const handleEditClick = (account: Account) => {
-    setEditingId(account.id);
+    setEditingId(account.userId);
     setEditFormData({
       name: account.name,
       email: account.email,
@@ -206,15 +229,15 @@ const AccountDashboard = () => {
     setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleDateChange = (date: string) => {
-    setEditFormData((prev) => ({ ...prev, dob: date }));
+  const handleDateChange = (date: Date | null) => {
+    if (!date) return;
+    const formattedDate = date.toISOString().split('T')[0];
+    setEditFormData((prev) => ({ ...prev, dob: formattedDate }));
   };
 
   const handleSaveEdit = async (account: Account) => {
     try {
       setLoading(true);
-      
-      // Prepare the data to send to API
       const updatedUser = {
         name: editFormData.name || account.name,
         email: editFormData.email || account.email,
@@ -222,15 +245,10 @@ const AccountDashboard = () => {
         phone: editFormData.phone || account.phone,
       };
 
-      // Here you would typically make an API call to update the user
-      // For example:
-      // await authenApi.put(`/api/users/${account.id}`, updatedUser);
-      
-      // For now, we'll update local state
-      setAccounts(accounts.map(a => 
-        a.id === account.id ? { ...a, ...updatedUser } : a
+      // API call would go here in a real implementation
+      setAccounts(accounts.map((a) => 
+        a.userId === account.userId ? { ...a, ...updatedUser } : a
       ));
-      
       setEditingId(null);
       setEditFormData({});
     } catch (err) {
@@ -250,27 +268,16 @@ const AccountDashboard = () => {
     setEditFormData({});
   };
 
-  // Add new account handler
-  const handleAddNewAccount = async (account: Omit<Account, "id" | "role" | "status">) => {
+  const handleAddNewAccount = async (accountData: NewAccountData) => {
     try {
       setLoading(true);
-      
-      // Here you would typically make an API call to create a new user
-      // For example:
-      // const response = await authenApi.post("/api/users", {
-      //   ...account,
-      //   role: "Staff",
-      //   status: "Active"
-      // });
-      
-      // For now, we'll update local state
-      const newId = Math.max(...accounts.map(a => a.id), 0) + 1;
-      setAccounts([...accounts, { 
-        ...account, 
-        id: newId,
-        role: "Staff",
-        status: "Active"
-      }]);
+      const newAccount: Account = {
+        ...accountData,
+        userId: crypto.randomUUID(),
+      };
+
+      // API call would go here in a real implementation
+      setAccounts([...accounts, newAccount]);
       setShowAddAccountModal(false);
     } catch (err) {
       const error = err as AxiosError<ApiResponse<null>>;
@@ -284,43 +291,47 @@ const AccountDashboard = () => {
     }
   };
 
-  // Delete/Ban account handler
-  // Delete/Ban account handler
   const handleDeleteAccount = async (account: Account) => {
     try {
       setLoading(true);
-      
+
       if (account.role === "Admin") {
         setError("Cannot ban admin accounts");
         setAccountToDelete(null);
         return;
       }
-  
-      // Try with explicit content-type headers
-      const response = await authenApi({
-        method: 'put',
-        url: `/api/users/${account.id}/ban`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Example
-        },
-        data: {} // Empty object
-      });
-  
+
+      // Simulate API call
+      const response = await authenApi.put<ApiResponse<null>>(
+        `/api/users/${account.userId}/ban`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
       if (response.data.isSuccess) {
-        setAccounts(accounts.filter(a => a.id !== account.id));
+        setAccounts(accounts.filter((a) => a.userId !== account.userId));
         setAccountToDelete(null);
       } else {
         setError(response.data.message || "Failed to ban account");
       }
     } catch (err) {
-      // Error handling remains the same
+      const error = err as AxiosError<ApiResponse<null>>;
+      setError(
+        error.response?.data?.message || 
+        error.message || 
+        "Error banning account"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Search and filter handlers
+  // Search and Filter Handlers
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
@@ -330,20 +341,28 @@ const AccountDashboard = () => {
     const { name, value } = e.target;
     setFilters((prev) => ({ 
       ...prev, 
-      [name]: value as "Admin" | "Staff" | "Member" | "" 
+      [name]: value as AccountRole | "" 
     }));
     setCurrentPage(1);
   };
 
   const resetFilters = () => {
-    setFilters({
-      role: "",
-    });
+    setFilters({ role: "" });
     setCurrentPage(1);
   };
 
+  // Render Functions
+  const renderSortIcon = (key: SortableField) => {
+    if (sortConfig.key !== key) return <ArrowUpDown className="w-3 h-3 text-gray-400" />;
+    return sortConfig.direction === "ascending" ? (
+      <ArrowUp className="w-3 h-3 text-gray-400" />
+    ) : (
+      <ArrowDown className="w-3 h-3 text-gray-400" />
+    );
+  };
+
   return (
-    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex">
+    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex h-screen w-screen">
       <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
 
       <main className="flex-1 bg-[#EFEFEF]">
@@ -441,7 +460,7 @@ const AccountDashboard = () => {
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
-                    THÊM TÀI KHOẢN
+                    THÊM TÀI KHOẢN NHÂN SỰ
                   </button>
                 </div>
               </div>
@@ -482,48 +501,44 @@ const AccountDashboard = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                         #
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                        <div
-                          className="flex items-center justify-between cursor-pointer"
-                          onClick={() => requestSort("name")}
-                        >
+                      <th 
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r cursor-pointer hover:bg-gray-100"
+                        onClick={() => requestSort("name")}
+                      >
+                        <div className="flex items-center justify-between">
                           Họ và tên
-                          {sortConfig.key === "name" ? (
-                            sortConfig.direction === "ascending" ? (
-                              <ArrowUp className="w-3 h-3 text-gray-400" />
-                            ) : (
-                              <ArrowDown className="w-3 h-3 text-gray-400" />
-                            )
-                          ) : (
-                            <ArrowUpDown className="w-3 h-3 text-gray-400" />
-                          )}
+                          {renderSortIcon("name")}
                         </div>
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                        E-Mail
+                      <th 
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r cursor-pointer hover:bg-gray-100"
+                        onClick={() => requestSort("email")}
+                      >
+                        <div className="flex items-center justify-between">
+                          E-Mail
+                          {renderSortIcon("email")}
+                        </div>
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                        <div
-                          className="flex items-center justify-between cursor-pointer"
-                          onClick={() => requestSort("dob")}
-                        >
+                      <th 
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r cursor-pointer hover:bg-gray-100"
+                        onClick={() => requestSort("dob")}
+                      >
+                        <div className="flex items-center justify-between">
                           Ngày sinh
-                          {sortConfig.key === "dob" ? (
-                            sortConfig.direction === "ascending" ? (
-                              <ArrowUp className="w-3 h-3 text-gray-400" />
-                            ) : (
-                              <ArrowDown className="w-3 h-3 text-gray-400" />
-                            )
-                          ) : (
-                            <ArrowUpDown className="w-3 h-3 text-gray-400" />
-                          )}
+                          {renderSortIcon("dob")}
                         </div>
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                         Vai trò
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                        Phone
+                      <th 
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r cursor-pointer hover:bg-gray-100"
+                        onClick={() => requestSort("phone")}
+                      >
+                        <div className="flex items-center justify-between">
+                          Phone
+                          {renderSortIcon("phone")}
+                        </div>
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -533,10 +548,15 @@ const AccountDashboard = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentAccounts.length > 0 ? (
                       currentAccounts.map((account, index) => (
-                        <tr key={account.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{account.id}</td>
+                        <tr
+                          key={account.userId}
+                          className={`hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                            {index + 1 + (currentPage - 1) * rowsPerPage}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r">
-                            {editingId === account.id ? (
+                            {editingId === account.userId ? (
                               <input
                                 type="text"
                                 name="name"
@@ -549,7 +569,7 @@ const AccountDashboard = () => {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                            {editingId === account.id ? (
+                            {editingId === account.userId ? (
                               <input
                                 type="email"
                                 name="email"
@@ -562,10 +582,10 @@ const AccountDashboard = () => {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                            {editingId === account.id ? (
+                            {editingId === account.userId ? (
                               <DatePicker
                                 value={editFormData.dob ? new Date(editFormData.dob) : new Date(account.dob)}
-                                onChange={(date: Date) => handleDateChange(date.toISOString())}
+                                onChange={handleDateChange}
                                 className=""
                                 hasError={false}
                               />
@@ -577,7 +597,7 @@ const AccountDashboard = () => {
                             {account.role.toLowerCase()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                            {editingId === account.id ? (
+                            {editingId === account.userId ? (
                               <input
                                 type="text"
                                 name="phone"
@@ -586,11 +606,11 @@ const AccountDashboard = () => {
                                 className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
                               />
                             ) : (
-                              account.phone
+                              account.phone || "N/A"
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
-                            {editingId === account.id ? (
+                            {editingId === account.userId ? (
                               <div className="flex gap-2 justify-center">
                                 <button
                                   onClick={() => handleSaveEdit(account)}
@@ -690,29 +710,30 @@ const AccountDashboard = () => {
       </main>
 
       {accountToDelete && (
-  <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">Xác nhận cấm tài khoản</h3>
-      <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn cấm tài khoản {accountToDelete.name}?</p>
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={() => setAccountToDelete(null)}
-          className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
-        >
-          Hủy
-        </button>
-        <button
-          onClick={() => handleDeleteAccount(accountToDelete)}
-          className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 cursor-pointer"
-        >
-          Xác nhận cấm
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Xác nhận cấm tài khoản</h3>
+            <p className="text-sm text-gray-500 mb-6">Bạn có chắc chắn muốn cấm tài khoản {accountToDelete.name}?</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setAccountToDelete(null)}
+                className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => handleDeleteAccount(accountToDelete)}
+                className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 cursor-pointer"
+              >
+                Xác nhận cấm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddAccountModal && (
+        
         <AddAccountModal 
           onSave={handleAddNewAccount} 
           onCancel={() => setShowAddAccountModal(false)} 

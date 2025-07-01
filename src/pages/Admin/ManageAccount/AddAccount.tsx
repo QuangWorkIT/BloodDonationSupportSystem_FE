@@ -5,18 +5,19 @@ import { authenApi } from "@/lib/instance";
 import { AxiosError } from "axios";
 
 // Type definitions
-type UserStatus = "Active" | "Inactive";
-type UserRole = "Admin" | "Staff" | "Member";
+type BloodTypeId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; // Assuming standard blood types (A+, A-, B+, B-, AB+, AB-, O+, O-)
 
-interface Account {
-  id?: number;
-  name: string;
-  status: UserStatus;
-  email: string;
-  dob: string; // ISO date string (YYYY-MM-DD)
-  role: UserRole;
+interface StaffAccount {
+  firstName: string;
+  lastName: string;
   phone: string;
+  gmail: string;
   password: string;
+  longitude: number;
+  latitude: number;
+  bloodTypeId: BloodTypeId;
+  dob: string; // ISO date string (YYYY-MM-DD)
+  gender: boolean; // true for male, false for female
 }
 
 interface ApiResponse<T> {
@@ -26,29 +27,34 @@ interface ApiResponse<T> {
 }
 
 interface FormErrors {
-  name?: string;
-  email?: string;
-  dob?: string;
+  firstName?: string;
+  lastName?: string;
+  gmail?: string;
   phone?: string;
   password?: string;
+  bloodTypeId?: string;
+  dob?: string;
   [key: string]: string | undefined;
 }
 
 interface AddAccountModalProps {
-  onSave: (account: Omit<Account, "id">) => Promise<void>;
+  onSave: (account: StaffAccount) => Promise<void>;
   onCancel: () => void;
 }
 
 const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
-  // Form state - role is fixed as "Staff"
-  const [formData, setFormData] = useState<Omit<Account, "id">>({
-    name: "",
-    status: "Active",
-    email: "",
-    dob: "",
-    role: "Staff", // Fixed role
+  // Form state with default values
+  const [formData, setFormData] = useState<StaffAccount>({
+    firstName: "",
+    lastName: "",
     phone: "",
+    gmail: "",
     password: "",
+    longitude: 0,
+    latitude: 0,
+    bloodTypeId: 1, // Default to first blood type
+    dob: "",
+    gender: true, // Default to male
   });
 
   // UI state
@@ -57,25 +63,40 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Blood type options
+  const bloodTypeOptions = [
+    { id: 1, label: "A+" },
+    { id: 2, label: "A-" },
+    { id: 3, label: "B+" },
+    { id: 4, label: "B-" },
+    { id: 5, label: "AB+" },
+    { id: 6, label: "AB-" },
+    { id: 7, label: "O+" },
+    { id: 8, label: "O-" },
+  ];
+
   // Validation
-  const validateField = (name: keyof Omit<Account, "id">, value: string): string | undefined => {
+  const validateField = (name: keyof StaffAccount, value: string | number | boolean): string | undefined => {
     switch (name) {
-      case "name":
-        return value.trim() ? undefined : "Name is required";
-      case "email":
-        if (!value.trim()) return "Email is required";
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Invalid email format";
+      case "firstName":
+      case "lastName":
+        return value.toString().trim() ? undefined : `${name} is required`;
+      case "gmail":
+        if (!value.toString().trim()) return "Email is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toString())) return "Invalid email format";
         return undefined;
       case "dob":
-        return value ? undefined : "Date of birth is required";
+        return value.toString() ? undefined : "Date of birth is required";
       case "phone":
-        if (!value.trim()) return "Phone is required";
-        if (!/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/.test(value)) return "Invalid phone number";
+        if (!value.toString().trim()) return "Phone is required";
+        if (!/^(0|\+84|84)(3|5|7|8|9)[0-9]{8}$/.test(value.toString())) return "Invalid phone number";
         return undefined;
       case "password":
-        if (!value.trim()) return "Password is required";
-        if (value.length < 6) return "Password must be at least 6 characters";
+        if (!value.toString().trim()) return "Password is required";
+        if (value.toString().length < 6) return "Password must be at least 6 characters";
         return undefined;
+      case "bloodTypeId":
+        return value ? undefined : "Blood type is required";
       default:
         return undefined;
     }
@@ -85,9 +106,10 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
     const newErrors: FormErrors = {};
     let isValid = true;
 
-    (Object.keys(formData) as Array<keyof Omit<Account, "id">>).forEach((field) => {
-      if (field === "status" || field === "role") return;
-      
+    (Object.keys(formData) as Array<keyof StaffAccount>).forEach((field) => {
+      // Skip location fields as they have default values
+      if (field === "longitude" || field === "latitude") return;
+
       const error = validateField(field, formData[field]);
       if (error) {
         newErrors[field] = error;
@@ -101,23 +123,43 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
 
   // Handlers
   const handleDateChange = (date: Date) => {
-    const isoDate = date.toISOString().split('T')[0];
-    setFormData(prev => ({ ...prev, dob: isoDate }));
-    if (errors.dob) setErrors(prev => ({ ...prev, dob: undefined }));
+    const isoDate = date.toISOString().split("T")[0];
+    setFormData((prev) => ({ ...prev, dob: isoDate }));
+    if (errors.dob) setErrors((prev) => ({ ...prev, dob: undefined }));
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    
-    // Prevent changing role if the field is role
-    if (name === "role") return;
-    
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    const { name, value, type } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    }));
+
     if (errors[name as keyof FormErrors]) {
-      const error = validateField(name as keyof Omit<Account, "id">, value);
+      const error = validateField(
+        name as keyof StaffAccount,
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value
+      );
       if (!error) {
-        setErrors(prev => ({ ...prev, [name]: undefined }));
+        setErrors((prev) => ({ ...prev, [name]: undefined }));
+      }
+    }
+  };
+
+  const handleNumberInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const numValue = parseInt(value, 10);
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: isNaN(numValue) ? 0 : numValue,
+    }));
+
+    if (errors[name as keyof FormErrors]) {
+      const error = validateField(name as keyof StaffAccount, isNaN(numValue) ? 0 : numValue);
+      if (!error) {
+        setErrors((prev) => ({ ...prev, [name]: undefined }));
       }
     }
   };
@@ -129,95 +171,114 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
     setIsSubmitting(true);
 
     try {
-      const response = await authenApi.post<ApiResponse<Account>>("/api/users", formData);
+      const response = await authenApi.post<ApiResponse<StaffAccount>>("/add-staff", formData);
 
       if (response.data.isSuccess) {
         await onSave(formData);
       } else {
-        setApiError(response.data.message || "Failed to create account");
+        setApiError(response.data.message || "Failed to create staff account");
       }
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse<null>>;
       setApiError(
-        axiosError.response?.data?.message || 
-        axiosError.message || 
-        "An error occurred while creating the account"
+        axiosError.response?.data?.message || axiosError.message || "An error occurred while creating the staff account"
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const togglePasswordVisibility = () => setShowPassword(prev => !prev);
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900">Add New Account</h3>
-          <button 
-            onClick={onCancel} 
+          <h3 className="text-lg font-medium text-gray-900">Thêm Tài Khoản Nhân Viên Mới</h3>
+          <button
+            onClick={onCancel}
             className="text-gray-500 hover:text-gray-700"
             disabled={isSubmitting}
-            aria-label="Close modal"
+            aria-label="Đóng"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {apiError && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {apiError}
-          </div>
-        )}
+        {apiError && <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{apiError}</div>}
 
         <div className="space-y-4 mb-6">
-          {/* Name Field */}
+          {/* First Name Field */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+              Tên
             </label>
             <input
-              id="name"
+              id="firstName"
               type="text"
-              name="name"
-              value={formData.name}
+              name="firstName"
+              value={formData.firstName}
               onChange={handleInputChange}
               disabled={isSubmitting}
               className={`w-full border ${
-                errors.name ? "border-red-500" : "border-gray-300"
+                errors.firstName ? "border-red-500" : "border-gray-300"
               } rounded px-3 py-2 text-sm`}
-              aria-invalid={!!errors.name}
-              aria-describedby={errors.name ? "name-error" : undefined}
+              aria-invalid={!!errors.firstName}
+              aria-describedby={errors.firstName ? "firstName-error" : undefined}
             />
-            {errors.name && (
-              <p id="name-error" className="text-red-500 text-xs mt-1">
-                {errors.name}
+            {errors.firstName && (
+              <p id="firstName-error" className="text-red-500 text-xs mt-1">
+                {errors.firstName}
+              </p>
+            )}
+          </div>
+
+          {/* Last Name Field */}
+          <div>
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+              Họ
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              disabled={isSubmitting}
+              className={`w-full border ${
+                errors.lastName ? "border-red-500" : "border-gray-300"
+              } rounded px-3 py-2 text-sm`}
+              aria-invalid={!!errors.lastName}
+              aria-describedby={errors.lastName ? "lastName-error" : undefined}
+            />
+            {errors.lastName && (
+              <p id="lastName-error" className="text-red-500 text-xs mt-1">
+                {errors.lastName}
               </p>
             )}
           </div>
 
           {/* Email Field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="gmail" className="block text-sm font-medium text-gray-700 mb-1">
               Email
             </label>
             <input
-              id="email"
+              id="gmail"
               type="email"
-              name="email"
-              value={formData.email}
+              name="gmail"
+              value={formData.gmail}
               onChange={handleInputChange}
               disabled={isSubmitting}
               className={`w-full border ${
-                errors.email ? "border-red-500" : "border-gray-300"
+                errors.gmail ? "border-red-500" : "border-gray-300"
               } rounded px-3 py-2 text-sm`}
-              aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? "email-error" : undefined}
+              aria-invalid={!!errors.gmail}
+              aria-describedby={errors.gmail ? "gmail-error" : undefined}
             />
-            {errors.email && (
-              <p id="email-error" className="text-red-500 text-xs mt-1">
-                {errors.email}
+            {errors.gmail && (
+              <p id="gmail-error" className="text-red-500 text-xs mt-1">
+                {errors.gmail}
               </p>
             )}
           </div>
@@ -225,7 +286,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
           {/* Date of Birth Field */}
           <div>
             <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">
-              Date of Birth
+              Ngày Sinh
             </label>
             <DatePicker
               id="dob"
@@ -236,6 +297,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
               className={`w-full ${errors.dob ? "border-red-500" : "border-gray-300"}`}
               aria-invalid={!!errors.dob}
               aria-describedby={errors.dob ? "dob-error" : undefined}
+              placeholderText="DD/MM/YYYY"
             />
             {errors.dob && (
               <p id="dob-error" className="text-red-500 text-xs mt-1">
@@ -247,7 +309,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
           {/* Phone Field */}
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number
+              Số Điện Thoại
             </label>
             <input
               id="phone"
@@ -272,7 +334,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
           {/* Password Field */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              Mật Khẩu
             </label>
             <div className="flex items-center">
               <input
@@ -293,7 +355,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
                 onClick={togglePasswordVisibility}
                 className="ml-2 text-gray-500 hover:text-blue-600"
                 disabled={isSubmitting}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -305,37 +367,61 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
             )}
           </div>
 
-          {/* Role Field - Display only (read-only) */}
+          {/* Blood Type Field */}
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-              Role
-            </label>
-            <input
-              id="role"
-              type="text"
-              name="role"
-              value="Staff"
-              readOnly
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-100"
-            />
-          </div>
-
-          {/* Status Field */}
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-              Status
+            <label htmlFor="bloodTypeId" className="block text-sm font-medium text-gray-700 mb-1">
+              Nhóm Máu
             </label>
             <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
+              id="bloodTypeId"
+              name="bloodTypeId"
+              value={formData.bloodTypeId}
+              onChange={handleNumberInputChange}
               disabled={isSubmitting}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+              className={`w-full border ${
+                errors.bloodTypeId ? "border-red-500" : "border-gray-300"
+              } rounded px-3 py-2 text-sm`}
+              aria-invalid={!!errors.bloodTypeId}
+              aria-describedby={errors.bloodTypeId ? "bloodTypeId-error" : undefined}
             >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              {bloodTypeOptions.map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.label}
+                </option>
+              ))}
             </select>
+            {errors.bloodTypeId && (
+              <p id="bloodTypeId-error" className="text-red-500 text-xs mt-1">
+                {errors.bloodTypeId}
+              </p>
+            )}
+          </div>
+
+          {/* Gender Field */}
+          <div>
+            <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
+              Giới Tính
+            </label>
+            <select
+              id="gender"
+              name="gender"
+              value={formData.gender ? "male" : "female"}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                handleInputChange(e);
+              }}
+              disabled={isSubmitting}
+              className={`w-full border ${
+                errors.gender ? "border-red-500" : "border-gray-300"
+              } rounded px-3 py-2 text-sm`}
+            >
+              <option value="male">Nam</option>
+              <option value="female">Nữ</option>
+            </select>
+            {errors.gender && (
+              <p id="gender-error" className="text-red-500 text-xs mt-1">
+                {errors.gender}
+              </p>
+            )}
           </div>
         </div>
 
@@ -345,14 +431,14 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
             disabled={isSubmitting}
             className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            Cancel
+            Hủy
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
             className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Saving..." : "Save"}
+            {isSubmitting ? "Đang lưu..." : "Lưu"}
           </button>
         </div>
       </div>
