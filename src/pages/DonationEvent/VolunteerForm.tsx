@@ -3,6 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
+import { useAuth } from "@/hooks/authen/AuthContext";
+import { toast } from "react-toastify";
+import api from "@/lib/instance";
 
 interface FormData {
   fullName: string;
@@ -37,6 +40,8 @@ export default function VolunteerForm() {
     email: "",
   });
 
+  const { accessToken } = useAuth();
+
   const [errors, setErrors] = useState<FormErrors>({});
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -68,14 +73,53 @@ export default function VolunteerForm() {
     return newErrors;
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      return;
     } else {
       setErrors({});
       console.log("Form submitted successfully:", formData);
+    }
+
+    try {
+      const payload = {
+        lastDonation: new Date(formData.lastDonation).toISOString(),
+        startVolunteerDate: new Date(formData.availableFrom).toISOString(),
+        endVolunteerDate: new Date(formData.availableTo).toISOString(),
+      };
+
+      const response = await api.post("/api/Volunteers", payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (response.data?.isSuccess) {
+        toast.success("Đăng ký thành công!");
+        setFormData({
+          fullName: "",
+          height: "",
+          weight: "",
+          address: "",
+          lastDonation: "",
+          availableFrom: "",
+          availableTo: "",
+          bloodType: "",
+          rhFactor: "",
+          phone: "",
+          email: "",
+        });
+
+        console.log(response.data);
+      } else {
+        toast.error("Đăng ký không thành công!");
+      }
+    } catch (e) {
+      console.error("Error submitting form:", e);
+      toast.error("Đã xảy ra lỗi khi gửi đơn đăng ký. Vui lòng thử lại sau.");
     }
   };
 
@@ -145,13 +189,7 @@ export default function VolunteerForm() {
             Địa chỉ
           </Label>
           <div className="flex-1">
-            <Input
-              id="address"
-              placeholder="Nhập địa chỉ"
-              className="py-2 text-base bg-[#F4F5F8] h-[40px]"
-              value={formData.address}
-              onChange={handleChange}
-            />
+            <Input id="address" placeholder="Nhập địa chỉ" className="py-2 text-base bg-[#F4F5F8] h-[40px]" value={formData.address} onChange={handleChange} />
           </div>
         </div>
 
@@ -161,13 +199,7 @@ export default function VolunteerForm() {
             Lần cuối hiến máu
           </Label>
           <div className="flex-1">
-            <Input
-              id="lastDonation"
-              type="date"
-              className="py-2 text-base h-[40px]"
-              value={formData.lastDonation}
-              onChange={handleChange}
-            />
+            <Input id="lastDonation" type="date" className="py-2 text-base h-[40px]" value={formData.lastDonation} onChange={handleChange} />
           </div>
         </div>
 
@@ -184,29 +216,16 @@ export default function VolunteerForm() {
                   <Label htmlFor="availableFrom" className="text-sm">
                     Từ
                   </Label>
-                  <Input
-                    id="availableFrom"
-                    type="date"
-                    className="py-2 text-base h-[40px]"
-                    value={formData.availableFrom}
-                    onChange={handleChange}
-                  />
+                  <Input id="availableFrom" type="date" className="py-2 text-base h-[40px]" value={formData.availableFrom} onChange={handleChange} />
                 </div>
                 <div className="flex-1">
                   <Label htmlFor="availableTo" className="text-sm">
                     Đến
                   </Label>
-                  <Input
-                    id="availableTo"
-                    type="date"
-                    className="py-2 text-base h-[40px]"
-                    value={formData.availableTo}
-                    onChange={handleChange}
-                  />
+                  <Input id="availableTo" type="date" className="py-2 text-base h-[40px]" value={formData.availableTo} onChange={handleChange} />
                 </div>
               </div>
               {errors.availableTo && <p className="text-red-500 text-sm">{errors.availableTo}</p>}
-
             </div>
           </div>
         </div>
@@ -290,10 +309,7 @@ export default function VolunteerForm() {
 
         {/* Buttons */}
         <div className="flex gap-4 pt-6">
-          <Button
-            type="submit"
-            className="px-8 py-2 text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer"
-          >
+          <Button type="submit" className="px-8 py-2 text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer">
             Gửi
           </Button>
           <Button
