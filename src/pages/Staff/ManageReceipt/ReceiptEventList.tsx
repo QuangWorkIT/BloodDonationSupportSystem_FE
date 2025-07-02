@@ -3,8 +3,9 @@ import { FaHeart } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Users2, CalendarDays } from "lucide-react";
 import StandardReceiptForm from "../StandardReceiptRequest/StandardReceiptForm";
-import api from "@/lib/instance";
+import api, { authenApi } from "@/lib/instance";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 interface Event {
   id: number;
@@ -26,34 +27,48 @@ const ReceiptEventList = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isCreateDonationFormOpen, setCreateDonationFormOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const handleCancelClick = (event: Event) => {
     setSelectedEvent(event);
     setShowModal(true);
   };
 
-  const handleConfirmCancel = () => {
-    console.log("Canceled:", selectedEvent?.id);
-    // Add real logic to delete/cancel here
-    setShowModal(false);
+  // fetch events
+  const fetchEvents = async () => {
+    try {
+      const response = await api.get('/api/events')
+      const data = response.data
+
+      if (data.isSuccess) {
+        console.log('Receive events ', data.data.items)
+        setEvents(data.data.items)
+      } else {
+        console.log('Event data status is wrong')
+      }
+    } catch (error) {
+      console.log('Failed to fetch event', error)
+    }
+  };
+
+  const handleConfirmCancel = async () => {
+    try {
+      setIsDeleting(true)
+      const response = await authenApi.put(`/api/events/${selectedEvent?.id}/deactive`)
+      if (response.status === 200) {
+        toast.success('Hủy sự kiện thành công')
+        await fetchEvents()
+      }
+    } catch (error) {
+      console.log('Fail to cancel event ', error)
+      toast.error('Hủy sự kiện thất bại')
+    } finally {
+      setIsDeleting(false)
+      setShowModal(false);
+    }
   };
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await api.get('/api/events')
-        const data = response.data
-
-        if (data.isSuccess) {
-          console.log('Receive events ', data.data.items)
-          setEvents(data.data.items)
-        } else {
-          console.log('Event data status is wrong')
-        }
-      } catch (error) {
-        console.log('Failed to fetch event', error)
-      }
-    };
-
     fetchEvents();
   }, []);
 
@@ -108,6 +123,7 @@ const ReceiptEventList = () => {
                 className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
                 transition={{ delay: index * 0.1, duration: 0.3 }}
               >
                 <div className="flex flex-col items-center md:flex-row p-6">
@@ -116,7 +132,7 @@ const ReceiptEventList = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-2xl text-red-700 font-semibold mb-5 hover:underline">
-                      <Link to = {`/staff/receipt/list/${event.id}`}>
+                      <Link to={`/staff/receipt/list/${event.id}`}>
                         {event.title}
                       </Link>
                     </h3>
@@ -124,7 +140,7 @@ const ReceiptEventList = () => {
                       Địa chỉ: <span className="font-semibold text-black">{event.address}</span>
                     </p>
                     <p className="text-xl text-gray-600 mb-5">
-                      Thời gian hoạt động: <span className="font-semibold text-black">{event.eventTime}</span>, 
+                      Thời gian hoạt động: <span className="font-semibold text-black">{event.eventTime}</span>,
                       từ  <span className="font-semibold text-black">7:00</span> đến <span className="font-semibold text-black">17:00</span>
                     </p>
                     <p className="text-xl text-gray-600">
@@ -140,6 +156,7 @@ const ReceiptEventList = () => {
                       {event.bloodRegisCount ? event.bloodRegisCount : 0} / {event.maxOfDonor}
                     </span>
                     <motion.button
+                      disabled={isDeleting}
                       className="bg-[#C14B53] text-white text-xl font-semibold px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -183,7 +200,10 @@ const ReceiptEventList = () => {
               Nếu bạn xác nhận hủy sự kiện này, các đơn yêu cầu tiếp theo cũng sẽ bị hủy. <span className="text-red-700">Không thể hoàn tác thao tác này.</span>
             </p>
             <div className="flex justify-end">
-              <button onClick={handleConfirmCancel} className="px-5 py-2 text-white bg-red-700 rounded-md hover:bg-red-800 cursor-pointer ">
+              <button
+                disabled={isDeleting}
+                onClick={handleConfirmCancel}
+                className="px-5 py-2 text-white bg-red-700 rounded-md hover:bg-red-800 cursor-pointer ">
                 Xác nhận
               </button>
             </div>
