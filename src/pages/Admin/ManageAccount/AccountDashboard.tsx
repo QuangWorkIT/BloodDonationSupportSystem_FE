@@ -84,6 +84,32 @@ interface SortConfig {
 interface FilterState {
   role: AccountRole | "";
 }
+type BloodTypeId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; // Assuming standard blood types (A+, A-, B+, B-, AB+, AB-, O+, O-)
+interface StaffAccount {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  gmail: string;
+  password: string;
+  longitude: number;
+  latitude: number;
+  bloodTypeId: BloodTypeId;
+  dob: string; // ISO date string (YYYY-MM-DD)
+  gender: boolean; // true for male, false for female
+}
+const convertStaffAccountToNewAccountData = (staffAccount: StaffAccount): NewAccountData => {
+  // Split the full name into first and last name
+  const name = `${staffAccount.firstName} ${staffAccount.lastName}`.trim();
+  
+  return {
+    name,
+    email: staffAccount.gmail,
+    dob: staffAccount.dob,
+    phone: staffAccount.phone,
+    role: "Staff", // Since this modal is for adding staff accounts
+    status: "Active" // Default to active status
+  };
+};
 
 const AccountDashboard = () => {
   // State Management
@@ -732,13 +758,15 @@ const AccountDashboard = () => {
         </div>
       )}
 
-      {showAddAccountModal && (
-        
-        <AddAccountModal 
-          onSave={handleAddNewAccount} 
-          onCancel={() => setShowAddAccountModal(false)} 
-        />
-      )}
+{showAddAccountModal && (
+  <AddAccountModal 
+    onSave={async (staffAccount) => {
+      const newAccountData = convertStaffAccountToNewAccountData(staffAccount);
+      await handleAddNewAccount(newAccountData);
+    }} 
+    onCancel={() => setShowAddAccountModal(false)} 
+  />
+)}
     </div>
   );
 };
