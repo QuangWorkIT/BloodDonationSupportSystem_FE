@@ -3,9 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
-import { useAuth } from "@/hooks/authen/AuthContext";
+// import { useAuth } from "@/hooks/authen/AuthContext";
 import { toast } from "react-toastify";
-import api from "@/lib/instance";
+import { authenApi } from "@/lib/instance";
 
 interface FormData {
   fullName: string;
@@ -40,7 +40,7 @@ export default function VolunteerForm() {
     email: "",
   });
 
-  const { accessToken } = useAuth();
+  // const { accessToken } = useAuth();
 
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -91,11 +91,7 @@ export default function VolunteerForm() {
         endVolunteerDate: new Date(formData.availableTo).toISOString(),
       };
 
-      const response = await api.post("/api/Volunteers", payload, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await authenApi.post("/api/Volunteers", payload);
 
       if (response.data?.isSuccess) {
         toast.success("Đăng ký thành công!");
