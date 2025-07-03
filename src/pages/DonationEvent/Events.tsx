@@ -15,6 +15,7 @@ interface Event {
   maxOfDonor: number;
   isUrgent: boolean;
   estimateVolume: number;
+  
 }
 const Events = () => {
   const [activeTab, setActiveTab] = useState("donation-events");
