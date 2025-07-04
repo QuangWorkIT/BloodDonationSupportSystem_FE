@@ -141,6 +141,7 @@ const Events = () => {
     );
   };
 
+  
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Navigation Toggle with animation */}
@@ -239,7 +240,7 @@ const Events = () => {
 
               {/* Events List with shadow boxing */}
               <div className="space-y-6 mb-8">
-                <>{currentEvents.length}</>
+                
                 {
                 currentEvents.map((event: Event, index) => (
                 <motion.div
