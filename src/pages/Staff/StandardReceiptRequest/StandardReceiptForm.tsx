@@ -91,7 +91,7 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="text-gray-500 size-4 mt-4 cursor-pointer"
+          className="size-5 mt-4 cursor-pointer"
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
         </svg>
@@ -168,9 +168,9 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="250">250ml</SelectItem>
                         <SelectItem value="350">350ml</SelectItem>
                         <SelectItem value="450">450ml</SelectItem>
+                        <SelectItem value="550">550ml</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

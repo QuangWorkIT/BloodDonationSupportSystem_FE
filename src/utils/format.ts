@@ -11,3 +11,13 @@ export const hiddenPhone = (phone: string): string => {
     const subPhone = phone.trim().substring(0,6)
     return subPhone.concat('XXXXXX')
 }
+
+// return a array of date and time ["20/05/2025", "19:00"]
+export const formatDateTime = (date: string): string[] => {
+    if(!date) return []
+    const currentDate = new Date(date)
+    const formattedDate = `${String(currentDate.getDate()).padStart(2,'0')}/${String(currentDate.getMonth() + 1).padStart(2,'0')}/${currentDate.getFullYear()}`
+    const time = `${String(currentDate.getHours()).padStart(2,'0')}:${String(currentDate.getMinutes()).padStart(2,'0')}`
+
+    return [formattedDate, time]
+}

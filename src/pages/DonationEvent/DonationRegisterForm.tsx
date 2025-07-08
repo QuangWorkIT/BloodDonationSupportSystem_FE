@@ -100,7 +100,7 @@ function DonationRegisterForm({ eventId, eventTime, setRegistraionFormOpen }: Do
 
                 if (data.isSuccess) {
                     const user = {
-                        name: data.data.name || "",
+                        unique_name: data.data.name || "",
                         phone: data.data.phone || "",
                         gmail: data.data.gmail || "",
                         bloodType: data.data.bloodType || "",
@@ -143,7 +143,7 @@ function DonationRegisterForm({ eventId, eventTime, setRegistraionFormOpen }: Do
         if (!currentUser) return
 
         reset({
-            donorName: currentUser.name,
+            donorName: currentUser.unique_name,
             phone: currentUser.phone,
             email: currentUser.gmail,
             bloodType: currentBloodType ? currentBloodType.bloodType : "",

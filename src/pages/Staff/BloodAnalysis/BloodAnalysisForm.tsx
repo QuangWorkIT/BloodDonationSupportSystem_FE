@@ -23,6 +23,15 @@ import {
     RadioGroup,
     RadioGroupItem,
 } from "@/components/ui/radio-group"
+import type { Donor } from "@/pages/Staff/BloodAnalysis/BloodAnalysisEventList"
+import { getComponentId, getTypeId } from "@/types/BloodCompatibility"
+import { authenApi } from "@/lib/instance"
+import { toast } from "react-toastify"
+import { useState } from "react"
+interface BloodAnalysisProps {
+    donor: Donor,
+    setIsAnalysisFormOpen: () => void
+}
 
 const formSchema = z.object({
     // normal information
@@ -63,7 +72,8 @@ const formSchema = z.object({
 
 type formType = z.infer<typeof formSchema>
 type formTypeName = keyof formType
-function BloodAnalysisForm() {
+function BloodAnalysisForm({ setIsAnalysisFormOpen, donor }: BloodAnalysisProps) {
+    const[isSubmitting, setIsSubmitting] = useState(false)
     const criterias: { label: string, name: formTypeName }[] = [
         { label: "HIV", name: "hiv" },
         { label: "Viêm gan C", name: "hepatitisC" },
@@ -72,29 +82,53 @@ function BloodAnalysisForm() {
     const form = useForm<formType>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            donorName: "",
-            bloodType: undefined,
-            rhFactor: "",
-            donationDate: new Date(),
+            donorName: donor.fullName,
+            bloodType: donor.bloodTypeName?.substring(0, 1),
+            rhFactor: donor.bloodTypeName?.substring(1),
+            donationDate: new Date(donor.performedAt),
             bloodComponent: undefined,
-            volume: 0,
+            volume: donor.volume,
             hematocrit: 0,
         }
     })
 
-    const onSubmit = (values: formType) => {
-        console.log(values)
-        // call post api here
+    const onSubmit = async (values: formType) => {
+        const bloodTypeId = getTypeId(values.bloodType + values.rhFactor) > 0 ? getTypeId(values.bloodType + values.rhFactor) : 1
+        const componentId = getComponentId(values.bloodComponent) >= 0 ? getComponentId(values.bloodComponent) : 0
+        const payload = {
+            isQualified: values.isQualified,
+            bloodTypeId: bloodTypeId,
+            bloodComponent: componentId,
+        }
+
+        console.log("payload ", payload)
+        try {
+            setIsSubmitting(true)
+            const response = await authenApi.post(`/api/blood-registrations/${donor.donationRegisId}/blood-procedures/qualify`,
+                payload
+            )
+            const data = response.data
+
+            console.log(data.message)
+            toast.success('Gửi đơn phân tích máu thành công!')
+        } catch (error) {
+            console.log('Error submitting blood analysis form ', error)
+            toast.error('Gửi đơn phân tích máu thất bại!')
+        }finally{
+            setIsSubmitting(false)
+        }
     }
 
     return (
-        <div className="w-[1000px] border-2 rounded-[20px] shadow-[2px_3px_3px_0px_rgba(0,0,0,0.25)]">
+        <div className="w-[1000px] bg-white mx-auto border-2 rounded-[20px] shadow-[2px_3px_3px_0px_rgba(0,0,0,0.25)]">
             {/* form header */}
             <div className="mb-[25px]">
                 <div className="flex justify-between items-center my-[25px] px-[20px]">
                     <h1 className="text-[28px] font-semibold">Đơn phân tích và kiểm định mẫu máu</h1>
 
-                    <svg className="hover:cursor-pointer" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg
+                        onClick={setIsAnalysisFormOpen}
+                        className="hover:cursor-pointer" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <mask id="path-1-inside-1_665_8286" fill="white">
                             <path fillRule="evenodd" clipRule="evenodd" d="M11.5843 1.02432C11.6968 0.911789 11.7601 0.759169 11.7601 0.600031C11.7601 0.440893 11.6968 0.288272 11.5843 0.175745C11.4718 0.0632173 11.3192 0 11.16 0C11.0009 0 10.8483 0.0632173 10.7357 0.175745L5.88003 5.03146L1.02432 0.175745C0.911789 0.0632173 0.759169 1.15868e-08 0.600031 1.27724e-08C0.440893 1.39581e-08 0.288272 0.0632173 0.175745 0.175745C0.0632173 0.288272 1.39581e-08 0.440893 1.27724e-08 0.600031C1.15868e-08 0.759169 0.0632173 0.911789 0.175745 1.02432L5.03146 5.88003L0.175745 10.7357C0.0632173 10.8483 0 11.0009 0 11.16C0 11.3192 0.0632173 11.4718 0.175745 11.5843C0.288272 11.6968 0.440893 11.7601 0.600031 11.7601C0.759169 11.7601 0.911789 11.6968 1.02432 11.5843L5.88003 6.7286L10.7357 11.5843C10.8483 11.6968 11.0009 11.7601 11.16 11.7601C11.3192 11.7601 11.4718 11.6968 11.5843 11.5843C11.6968 11.4718 11.7601 11.3192 11.7601 11.16C11.7601 11.0009 11.6968 10.8483 11.5843 10.7357L6.7286 5.88003L11.5843 1.02432Z" />
                         </mask>
@@ -233,7 +267,7 @@ function BloodAnalysisForm() {
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* qualified result */}
                             <div className="">
                                 <h1 className="text-[25px]">Kết quả kiểm định lâm sàn</h1>
@@ -246,7 +280,7 @@ function BloodAnalysisForm() {
                                                 control={form.control}
                                                 name={criteria.name}
                                                 render={({ field }) => (
-                                                    <FormItem className="flex mb-5">
+                                                    <FormItem className="flex mb-10">
                                                         <FormLabel className="w-[150px] text-[16px]">{criteria.label}</FormLabel>
                                                         <div>
                                                             <FormControl>
@@ -256,14 +290,14 @@ function BloodAnalysisForm() {
                                                                 >
                                                                     <FormItem className="flex items-center">
                                                                         <FormControl>
-                                                                            <RadioGroupItem value="true" />
+                                                                            <RadioGroupItem value="true" className="border-2 border-gray-500" />
                                                                         </FormControl>
                                                                         <FormLabel className="text-[16px] font-semibold">Có</FormLabel>
                                                                     </FormItem>
 
                                                                     <FormItem className="flex items-center">
                                                                         <FormControl>
-                                                                            <RadioGroupItem value="false" />
+                                                                            <RadioGroupItem value="false" className="border-2 border-gray-500" />
                                                                         </FormControl>
                                                                         <FormLabel className="text-[16px] font-semibold">Không</FormLabel>
                                                                     </FormItem>
@@ -312,14 +346,14 @@ function BloodAnalysisForm() {
                                                 >
                                                     <FormItem className="flex items-center">
                                                         <FormControl>
-                                                            <RadioGroupItem value="true" />
+                                                            <RadioGroupItem value="true" className="border-2 border-gray-500" />
                                                         </FormControl>
                                                         <FormLabel className="text-[16px] italic">Đạt chuẩn</FormLabel>
                                                     </FormItem>
 
                                                     <FormItem className="flex items-center">
                                                         <FormControl>
-                                                            <RadioGroupItem value="false" />
+                                                            <RadioGroupItem value="false" className="border-2 border-gray-500" />
                                                         </FormControl>
                                                         <FormLabel className="text-[16px] italic text-red-600">Không đạt chuẩn</FormLabel>
                                                     </FormItem>
@@ -331,8 +365,9 @@ function BloodAnalysisForm() {
                                 )}
                             />
                             <Button
+                                disabled = {isSubmitting}
                                 type="submit"
-                                className="text-[15px] font-bold bg-[#BA1B1D] rounded-[10px] w-[150px] h-[40px] mb-[20px] hover:cursor-pointer hover:bg-[#9F1214]"
+                                className="text-[15px] font-bold bg-[#BA1B1D] rounded-[7px] w-[200px] h-[40px] mb-[20px] hover:cursor-pointer hover:bg-[#9F1214]"
                             >
                                 Xác nhận
                             </Button>

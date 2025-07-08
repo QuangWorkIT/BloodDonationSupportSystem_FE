@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaHeart } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Users2, CalendarDays } from "lucide-react";
 import StandardReceiptForm from "../StandardReceiptRequest/StandardReceiptForm";
 import api, { authenApi } from "@/lib/instance";
@@ -103,7 +103,18 @@ const ReceiptEventList = () => {
 
   return (
     <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
-      {isCreateDonationFormOpen && <StandardReceiptForm onCick={() => setCreateDonationFormOpen(false)} />}
+      {isCreateDonationFormOpen && (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.5 }}
+          >
+            <StandardReceiptForm onCick={() => setCreateDonationFormOpen(false)} />
+          </motion.div>
+        </AnimatePresence>
+      )}
       {/* Events list */}
       {!isCreateDonationFormOpen && (
         <>

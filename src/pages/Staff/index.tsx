@@ -7,7 +7,9 @@ function Staffhome() {
     <div>
       <StaffNavbar />
       <div className="flex">
-        <StaffSidebar activeItem="" setActiveItem={() => {}} />
+        <div className="w-[250px] min-h-screen">
+          <StaffSidebar activeItem="" setActiveItem={() => { }} />
+        </div>
         <Outlet />
       </div>
     </div>

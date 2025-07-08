@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import type { DonorCardProps } from "@/pages/Staff/ManageReceipt/DonorCard"
+import { useAuth } from "@/hooks/authen/AuthContext";
+import { authenApi } from "@/lib/instance";
+import { toast } from "react-toastify";
 interface HealthCheckData {
   fullName: string;
   birthDate: string;
@@ -29,6 +32,7 @@ interface FormErrors {
 }
 
 export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCheckoutProps) {
+  const { user } = useAuth()
   const [formData, setFormData] = useState<HealthCheckData>({
     fullName: currentDonor?.memberName || "",
     birthDate: "",
@@ -42,24 +46,25 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
     hasReceivedBloodYes: false,
     hasReceivedBloodNo: false,
     additionalNotes: "",
-    staffId: "",
+    staffId: user?.unique_name || "",
     processCompleted: false,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { id, type, value, checked } = e.target;
+    const target = e.target as HTMLInputElement;
+    const { id, type, value } = target;
+    const checked = target.checked;
 
     if (id === 'hbvYes') {
-      setFormData({ ...formData, hbvYes: true, hbvNo: false })
-      return
+      setFormData({ ...formData, hbvYes: true, hbvNo: false });
+      return;
     }
     if (id === 'hbvNo') {
-      setFormData({ ...formData, hbvYes: false, hbvNo: true })
-      return
+      setFormData({ ...formData, hbvYes: false, hbvNo: true });
+      return;
     }
-    // Special handling for hasReceivedBlood checkboxes to keep them exclusive
     if (id === "hasReceivedBloodYes") {
       setFormData({
         ...formData,
@@ -76,8 +81,10 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
       });
       return;
     }
+
     setFormData({ ...formData, [id]: type === "checkbox" ? checked : value });
   };
+
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
@@ -191,7 +198,7 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
     return newErrors;
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
@@ -199,7 +206,32 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
     } else {
       setErrors({});
       console.log("Form submitted successfully:", formData);
-      // Here you would typically send the data to your backend
+      const pressure = formData.bloodPressure.split('/')
+      const payload = {
+        systolic: Number(pressure[0]),
+        diastolic: Number(pressure[1]),
+        temparature: Number(formData.temperature),
+        hb: Number(formData.hb),
+        hbv: formData.hbvNo,
+        weight: Number(formData.weight),
+        height: Number(formData.height),
+        isHealth: formData.hasReceivedBloodYes,
+        description: formData.additionalNotes
+      }
+
+      try {
+        const response = await authenApi.post(`/api/blood-registrations/${currentDonor?.id}/health-procedures`,
+          payload
+        )
+        if (response.status === 200) {
+          console.log('Checkout success')
+          toast.success('Đã khám sức khỏe thành công!')
+        }
+
+      } catch (error) {
+        toast.error('Gửi đơn thất bại!')
+        console.log("Submit checkout donor fail", error)
+      }
     }
   };
 
@@ -473,6 +505,7 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
         {/* Buttons */}
         <div className="flex gap-4 pt-6">
           <Button
+            disabled = {!formData.processCompleted}
             type="submit"
             className="px-12 py-2 text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer"
           >
