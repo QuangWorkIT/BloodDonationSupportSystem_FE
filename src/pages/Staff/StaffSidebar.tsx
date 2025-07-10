@@ -37,8 +37,8 @@ const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   ];
 
   return (
-    <aside className="bg-white min-h-screen w-[250px] border-r border-gray-300 shadow-lg">
-      <nav className="py-6 px-3 space-y-4 flex-1 flex flex-col mt-5">
+    <aside className="bg-white h-full w-[250px] border-r border-gray-300 shadow-lg">
+      <nav className="py-6 px-3 space-y-4 flex-1 flex flex-col ">
         {navItems.map((item) => (
           <Link
             key={item.id}

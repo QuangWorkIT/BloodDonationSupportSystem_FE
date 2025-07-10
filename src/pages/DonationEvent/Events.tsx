@@ -240,7 +240,6 @@ const Events = () => {
 
               {/* Events List with shadow boxing */}
               <div className="space-y-6 mb-8">
-                
                 {
                 currentEvents.map((event: Event, index) => (
                 <motion.div

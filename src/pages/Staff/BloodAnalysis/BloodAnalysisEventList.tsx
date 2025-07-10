@@ -2,25 +2,28 @@ import { useState, useEffect } from "react";
 import { FaHeart, FaSearch, FaTimes } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
 import { User2Icon, CalendarDays } from "lucide-react";
+import type { AxiosError } from "axios";
+import { authenApi } from "@/lib/instance";
+import LoadingSpinner from "@/components/layout/Spinner";
+import { toast } from "react-toastify";
+import { formatDateTime } from "@/utils/format";
+import BloodAnalysisForm from "./BloodAnalysisForm";
 
 interface Event {
   id: number;
   name: string;
-  address: string;
-  date: string;
-  time: string;
-  bloodTypes: string;
-  registered: number;
-  capacity: number;
+  total: number;
+  eventTime: string;
 }
 
-interface Donor {
+export interface Donor {
   id: number;
-  name: string;
-  healthStatus: string;
-  bloodType: string;
+  donationRegisId: number;
+  fullName: string;
+  isQualified: boolean;
+  bloodTypeName: string;
   volume: number;
-  time: string;
+  performedAt: string;
 }
 
 const BloodAnalysisEventList = () => {
@@ -30,28 +33,61 @@ const BloodAnalysisEventList = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [donors, setDonors] = useState<Donor[]>([]);
+  const [isFetchingEvent, setIsFetchingEvent] = useState(false)
+  const [isAnalysisFormOpen, setIsAnalysisFormOpen] = useState(false)
+  const [currentDonor, setCurrentDonor] = useState<Donor | null>(null)
 
+  // default donor in case no donor found
+  const defaultDonor = {
+    id: -1,
+    donationRegisId: -1,
+    fullName: '',
+    isQualified: false,
+    bloodTypeName: '',
+    volume: -1,
+    performedAt: ''
+  }
+
+  const fetchEvents = async () => {
+    try {
+      setIsFetchingEvent(true)
+      const response = await authenApi.get('/api/events/waiting-for-qualify-blood')
+      const data = response.data
+
+      if (data.isSuccess) {
+        console.log('fetch blood qualify events success!', data.data.items)
+        setEvents(data.data.items)
+      }
+    } catch (error) {
+      const err = error as AxiosError
+      if (err) {
+        console.log('err axios fetch events ', err.message)
+      } else {
+        console.log('Error ', error)
+      }
+    } finally {
+      setIsFetchingEvent(false)
+    }
+  }
+  // fetch total events
   useEffect(() => {
-    const fetchEvents = async () => {
-      const response = await fetch("https://6846eafc7dbda7ee7ab0dd85.mockapi.io/event");
-      const data = await response.json();
-      setEvents(data);
-    };
     fetchEvents();
   }, []);
 
+  // fetch a specific event
   const handleEventDetail = async (event: Event) => {
     setSelectedEvent(event);
-    // Simulate fetching donors
-    const dummyDonors = Array.from({ length: events.length }).map((_, i) => ({
-      id: i + 1,
-      name: "Nguyễn Văn A",
-      healthStatus: "Tốt",
-      bloodType: "A+",
-      volume: 250,
-      time: `${event.date}, 7:30 - 8:00`,
-    }));
-    setDonors(dummyDonors);
+    try {
+      const response = await authenApi.get(`/api/events/${event.id}/blood-procedures`)
+      const data = response.data
+      if (data.isSuccess) {
+        console.log('Fetch blood analysis event success', data.data)
+        setDonors(data.data.items)
+      }
+    } catch (error) {
+      console.log('Fail to fetch analysis event ', error)
+      toast.error('Đã xảy ra lỗi!')
+    }
   };
 
   const indexOfLastEvent = currentPage * eventsPerPage;
@@ -70,9 +106,8 @@ const BloodAnalysisEventList = () => {
           <motion.button
             key={page}
             onClick={() => setCurrentPage(page)}
-            className={`w-10 h-10 rounded-md border cursor-pointer ${
-              currentPage === page ? "bg-[#C14B53] text-white" : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
+            className={`w-10 h-10 rounded-md border cursor-pointer ${currentPage === page ? "bg-[#C14B53] text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -99,39 +134,46 @@ const BloodAnalysisEventList = () => {
           </div>
 
           <div className="space-y-6 mb-8">
-            {currentEvents.map((event: Event, index) => (
-              <motion.div
-                key={event.id}
-                className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.3 }}
-                whileHover={{ y: -5 }}
-              >
-                <div className="flex flex-col items-center md:flex-row p-4">
-                  <div className="w-16 h-16 bg-[#C14B53] rounded-full flex items-center justify-center mr-6 mb-4 md:mb-0 shadow-sm">
-                    <FaHeart className="text-white text-xl" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-2xl text-red-700 font-semibold mb-[20px]">{event.name}</h3>
-                    <p className="text-black text-xl mb-1">
-                      Số đơn máu chờ phân tích: <span className="font-semibold text-2xl">{event.registered} đơn</span>
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-4 items-end justify-between">
-                    <p className="text-black italic text-xl mr-1">{event.date}</p>
-                    <motion.button
-                      className="bg-blue-500 text-white font-semibold text-xl px-8 py-2 rounded-md hover:bg-blue-700 transition cursor-pointer shadow-sm"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleEventDetail(event)}
-                    >
-                      Chi tiết
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+            {isFetchingEvent ? (<LoadingSpinner />) : (
+              currentEvents.length > 0 ? (
+                currentEvents.map((event: Event, index) => (
+                  <motion.div
+                    key={event.id}
+                    className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <div className="flex flex-col items-center md:flex-row p-4">
+                      <div className="w-16 h-16 bg-[#C14B53] rounded-full flex items-center justify-center mr-6 mb-4 md:mb-0 shadow-sm">
+                        <FaHeart className="text-white text-xl" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-2xl text-red-700 font-semibold mb-[20px]">{event.name}</h3>
+                        <p className="text-black text-xl mb-1">
+                          Số đơn máu chờ phân tích: <span className="font-semibold text-2xl">{event.total} đơn</span>
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-4 items-end justify-between">
+                        <p className="text-black italic text-xl mr-1">thời gian {event.eventTime}</p>
+                        <motion.button
+                          className="bg-blue-500 text-white font-semibold text-xl px-8 py-2 rounded-md hover:bg-blue-700 transition cursor-pointer shadow-sm"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleEventDetail(event)}
+                        >
+                          Chi tiết
+                        </motion.button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="flex w-full justify-center text-[20px] italic text-gray-600">
+                  Chưa có đơn vị máu nào đang chờ phân tích.
+                </div>)
+            )}
           </div>
 
           <motion.div className="flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
@@ -143,7 +185,7 @@ const BloodAnalysisEventList = () => {
         <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
           <div className="mb-4 flex justify-between">
             <h2 className="text-xl font-medium text-gray-700 ml-2">
-              Sự kiện ngày: <span className="font-semibold text-black text-2xl">{selectedEvent.date}</span>
+              Sự kiện ngày: <span className="font-semibold text-black text-2xl"></span>
             </h2>
             <div className="ml-6 mr-2">
               <AnimatePresence mode="wait">
@@ -179,42 +221,66 @@ const BloodAnalysisEventList = () => {
           </div>
 
           <div className="space-y-4">
-            {currentDonors.map((donor, index) => (
-              <motion.div
-                key={donor.id}
-                className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200 p-4 flex justify-between items-end"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.3 }}
-                whileHover={{ y: -5 }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4 md:mb-0 shadow-sm">
-                    <User2Icon className="text-2xl" />
+            {!isAnalysisFormOpen ? (
+              currentDonors.map((donor, index) => (
+                <motion.div
+                  key={donor.id}
+                  className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200 p-4 flex justify-between items-end"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.3 }}
+                  whileHover={{ y: -5 }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4 md:mb-0 shadow-sm">
+                      <User2Icon className="text-2xl" />
+                    </div>
+                    <div className="flex flex-col gap-[10px]">
+                      <div className="text-2xl font-semibold">{donor.fullName}</div>
+                      <div className="text-lg text-gray-600">
+                        Loại máu: <span className="text-black font-semibold">{donor.bloodTypeName}</span>
+                      </div>
+                      <div className="text-lg text-gray-600">
+                        Lượng máu: <span className="text-black font-semibold">{donor.volume}ml</span>
+                      </div>
+                      <div className="text-lg font-semibold text-gray-600">
+                        Thời gian khám: <span className="text-black font-semibold">{formatDateTime(donor.performedAt)[0]}, {formatDateTime(donor.performedAt)[1]}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-[10px]">
-                    <div className="text-2xl font-semibold">{donor.name}</div>
-                    <div className="text-lg text-gray-600">
-                      Loại máu: <span className="text-black font-semibold">{donor.bloodType}</span>
-                    </div>
-                    <div className="text-lg text-gray-600">
-                      Lượng máu: <span className="text-black font-semibold">{donor.volume}ml</span>
-                    </div>
-                    <div className="text-lg font-semibold text-gray-600">
-                      Thời gian khám: <span className="text-black font-semibold">{donor.time}</span>
-                    </div>
-                  </div>
-                </div>
-                <button className="bg-yellow-400 hover:bg-yellow-500 text-xl text-white font-semibold px-4 py-2 rounded-md cursor-pointer">
-                  Tiến hành phân tích máu
-                </button>
-              </motion.div>
-            ))}
+                  <button
+                    onClick={() => {
+                      setCurrentDonor(donor)
+                      setIsAnalysisFormOpen(true)
+                    }}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-xl text-white font-semibold px-4 py-2 rounded-md cursor-pointer">
+                    Tiến hành phân tích máu
+                  </button>
+                </motion.div>
+              ))
+            ) : (
+              <AnimatePresence>
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <BloodAnalysisForm
+                    donor={currentDonor || defaultDonor}
+                    setIsAnalysisFormOpen={() => setIsAnalysisFormOpen(false)}
+                    fetchEvents={fetchEvents}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            )}
           </div>
 
-          <motion.div className="flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-            {renderPagination()}
-          </motion.div>
+          {!isAnalysisFormOpen && (
+            <motion.div className="flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+              {renderPagination()}
+            </motion.div>
+          )}
         </div>
       )}
     </>

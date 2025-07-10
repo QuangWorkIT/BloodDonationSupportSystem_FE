@@ -5,19 +5,21 @@ export interface DonorCardProps {
     id: number,
     memberName: string,
     phone: string,
+    dob: string,
     type: string,
-    eventTime: string
+    eventTime: string,
+    handleHeathCheckout: () => void
 }
 
-function DonorCard({ id, memberName, phone, type, eventTime }: DonorCardProps) {
+function DonorCard({  memberName, phone, type, eventTime, handleHeathCheckout }: DonorCardProps) {
     return (
-        <div className='w-full rounded-[7px] shadow-md flex bg-white p-4 gap-10'>
+        <div className='w-full rounded-[7px] shadow-md flex bg-white p-5 gap-10'>
             <div className="p-3 mx-auto my-auto">
                 <img src={maleIcon} alt="member img" />
             </div>
             <div className="flex-1 flex flex-col gap-2">
                 <div className="flex justify-between">
-                    <p className='text-[24px] font-bold'>{memberName}</p>
+                    <p className='text-[23px] font-bold'>{memberName}</p>
 
                     <div className="rounded-full bg-[#7F5ED9] p-2 hover:cursor-pointer hover:scale-110 transition duration-150">
                         <svg
@@ -26,18 +28,19 @@ function DonorCard({ id, memberName, phone, type, eventTime }: DonorCardProps) {
                         </svg>
                     </div>
                 </div>
-                <p className='text-[#7D7D7F] text-[20px]'>Số điện thoại:<span className='text-black font-semibold'> {phone}</span></p>
-                <p className='text-[#7D7D7F] text-[20px]'>Loại máu:<span className='text-black font-semibold'> {type}</span></p>
+                <p className='text-[#7D7D7F] text-[18px]'>Số điện thoại:<span className='text-black font-semibold'> {phone}</span></p>
+                <p className='text-[#7D7D7F] text-[18px]'>Loại máu:<span className='text-black font-semibold'> {type}</span></p>
                 <div className="flex justify-between">
-                    <p className='text-[#7D7D7F] text-[20px]'>Lịch hẹn: <span className='text-black font-semibold'> {eventTime}</span></p>
+                    <p className='text-[#7D7D7F] text-[18px]'>Lịch hẹn: <span className='text-black font-semibold'> {eventTime}</span></p>
                     <div className="flex gap-3">
                         <Button 
-                        className='bg-[#C14B53] hover:cursor-pointer hover:bg-[#66282c] hover:scale-110 font-semibold text-[16px] w-[100px] transition duration-150  hover:text-[#e6e6e6]'>
+                        className='bg-[#C14B53] hover:cursor-pointer hover:bg-[#C14B53] hover:scale-110 font-semibold text-[16px] w-[100px] transition duration-150 '>
                             Từ chối
                         </Button>
 
                         <Button 
-                        className='bg-[#FFC107] hover:cursor-pointer hover:bg-[#ad8200] hover:scale-110 text-black font-bold text-[16px] w-[100px] transition duration-150 hover:text-[#e6e6e6]'>
+                        onClick={handleHeathCheckout}
+                        className='bg-[#FFC107] hover:cursor-pointer hover:bg-[#FFC107] hover:scale-110 text-black font-bold text-[16px] w-[100px] transition duration-150 '>
                             Check-in
                         </Button>
                     </div>

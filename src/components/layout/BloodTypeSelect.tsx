@@ -18,8 +18,8 @@ export function BloodComponentSelect({ onValueChange, defaultVal }: SelectProps)
                 <SelectValue placeholder="Chọn loại máu" />
             </SelectTrigger>
             <SelectContent>
+                <SelectItem value="wholeblood">Máu toàn phần</SelectItem>
                 <SelectItem value="redbloodcell">Hồng cầu</SelectItem>
-                <SelectItem value="whitebloodcell">Bạch cầu</SelectItem>
                 <SelectItem value="platelet">Tiểu cầu</SelectItem>
                 <SelectItem value="plasma">Huyết tương</SelectItem>
             </SelectContent>

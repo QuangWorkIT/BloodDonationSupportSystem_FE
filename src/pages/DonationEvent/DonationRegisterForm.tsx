@@ -42,23 +42,9 @@ const formSchema = z.object({
     .min(1, { message: "Tên người dùng không được để trống" })
     .max(50, { message: "Tên không hợp lệ" }),
 
-  height: z.coerce.number({
-    required_error: "Chiều cao không được để trống",
-    invalid_type_error: "Chiều cao phải là số hợp lệ",
-  })
-    .min(1, { message: "Chiều cao không hợp lệ" })
-    .max(3, { message: "Chiều cao không hợp lệ" }),
-
-  weight: z.coerce.number({
-    required_error: "Cân nặng không được để trống",
-    invalid_type_error: "Cân nặng phải là số hợp lệ",
-  })
-    .min(42, { message: "Cân nặng phải từ 42 kg" })
-    .max(150, { message: "Cân nặng không hợp lệ" }),
-
-  address: z.string()
-    .min(1, { message: "Cần điền địa chỉ" })
-    .max(200, { message: "Địa chỉ không hợp lệ" }),
+    address: z.string()
+        .min(1, { message: "Cần điền địa chỉ" })
+        .max(200, { message: "Địa chỉ không hợp lệ" }),
 
   lastDonation: z.date({
     required_error: "Cần điền thời gian",
@@ -103,7 +89,7 @@ export function DonationRegisterForm({
 
         if (data.isSuccess) {
           const user: User = {
-              name: data.data.name || "",
+              unique_name: data.data.name || "",
               phone: data.data.phone || "",
               gmail: data.data.gmail || "",
               bloodType: data.data.bloodType || "",
@@ -131,8 +117,6 @@ export function DonationRegisterForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       donorName: "",
-      height: 0,
-      weight: 0,
       address: "",
       lastDonation: undefined,
       donationDate: new Date(eventTime),
@@ -149,7 +133,7 @@ export function DonationRegisterForm({
     if (!currentUser) return
 
     reset({
-      donorName: currentUser.name,
+      donorName: currentUser.unique_name,
       phone: currentUser.phone,
       email: currentUser.gmail,
       bloodType: currentBloodType?.bloodType ?? "",
@@ -220,44 +204,6 @@ export function DonationRegisterForm({
               </FormItem>
             )}
           />
-
-          <div className="flex flex-col md:flex-row gap-4 md:gap-5 w-full mb-4 md:mb-5">
-            <FormField
-              control={form.control}
-              name="height"
-              render={({ field }) => (
-                <FormItem className="flex flex-col md:flex-row gap-2 md:gap-5 flex-1">
-                  <FormLabel className="text-base md:text-[18px] whitespace-nowrap">
-                    Chiều cao (m)
-                  </FormLabel>
-                  <div className="w-full">
-                    <FormControl>
-                      <Input type="number" placeholder="Nhập chiều cao" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="weight"
-              render={({ field }) => (
-                <FormItem className="flex flex-col md:flex-row gap-2 md:gap-5 flex-1">
-                  <FormLabel className="text-base md:text-[18px] whitespace-nowrap">
-                    Cân nặng (kg)
-                  </FormLabel>
-                  <div className="w-full">
-                    <FormControl>
-                      <Input type="number" placeholder="Nhập cân nặng" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-          </div>
 
           <FormField
             control={form.control}

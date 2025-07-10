@@ -8,7 +8,11 @@ export const getUser = (token: string): User | null => {
         const decoded = decodeJwt(token)
         if (!decoded) return null
 
-        return { id: decoded.UserId, role: decoded.role as Role }
+        return {
+            id: decoded.UserId,
+            unique_name: decoded.unique_name,
+            role: decoded.role as Role
+        }
     } catch (error) {
         console.log("Error fetching user", error);
         return null

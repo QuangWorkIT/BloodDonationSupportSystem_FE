@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { authenApi } from "@/lib/instance";
 import type { DonorCardProps } from '@/pages/Staff/ManageReceipt/DonorCard'
 import LoadingSpinner from "@/components/layout/Spinner";
+import HealthCheckForm from "./HealthCheckForm";
 
 const searchSchema = z.object({
     searchContent: z.string()
@@ -29,6 +30,8 @@ function DonorReceiptList() {
     const [listOfDonor, setListOfDonor] = useState<DonorCardProps[]>([])
     const [eventTime, setEventTime] = useState('')
     const [isLoading, setIsLoading] = useState(true)
+    const [isHeathCheckout, setIsHealthCheckout] = useState(false)
+    const [currentDonor, setCurrentDonor] = useState<DonorCardProps | null>(null)
     // fetch registration
     useEffect(() => {
         const getDonors = async () => {
@@ -58,7 +61,7 @@ function DonorReceiptList() {
         <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
             <div className="flex justify-between items-center pb-4">
                 <p className="text-[26px] font-bold">Sự kiện ngày <span className="italic font-semibold">{eventTime}</span></p>
-            
+
                 {/* search donor */}
                 <Form {...searchForm}>
                     <form className="w-100">
@@ -97,7 +100,7 @@ function DonorReceiptList() {
 
             {/* display list of donor fetched */}
             {
-                !isLoading && (
+                !isLoading && !isHeathCheckout && (
                     <AnimatePresence>
                         {listOfDonor.length > 0 ? (
                             listOfDonor.map((donor, index) => (
@@ -108,12 +111,17 @@ function DonorReceiptList() {
                                     exit={{ opacity: 0, y: -10 }}
                                     transition={{ duration: 0.3, delay: index * 0.05 }}
                                 >
-                                    <DonorCard key={index}
+                                    <DonorCard key={donor.id}
                                         id={donor.id}
                                         memberName={donor.memberName}
                                         phone={donor.phone}
+                                        dob= {donor.dob}
                                         type="B+"
-                                        eventTime={donor.eventTime}
+                                        eventTime={eventTime}
+                                        handleHeathCheckout={() => {
+                                            setCurrentDonor(donor)
+                                            setIsHealthCheckout(true)
+                                        }}
                                     />
                                 </motion.div>
                             ))
@@ -123,6 +131,19 @@ function DonorReceiptList() {
                     </AnimatePresence>
                 )
             }
+
+            {isHeathCheckout && (
+                <AnimatePresence>
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <HealthCheckForm currentDonor =  {currentDonor} handleCancle={() => setIsHealthCheckout(false)} />
+                    </motion.div>
+                </AnimatePresence>
+            )}
         </div>
     )
 }
