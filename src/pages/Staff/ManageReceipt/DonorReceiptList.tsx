@@ -115,8 +115,9 @@ function DonorReceiptList() {
                                         id={donor.id}
                                         memberName={donor.memberName}
                                         phone={donor.phone}
+                                        dob= {donor.dob}
                                         type="B+"
-                                        eventTime={donor.eventTime}
+                                        eventTime={eventTime}
                                         handleHeathCheckout={() => {
                                             setCurrentDonor(donor)
                                             setIsHealthCheckout(true)

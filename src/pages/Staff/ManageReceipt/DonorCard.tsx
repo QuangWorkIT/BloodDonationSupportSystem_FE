@@ -5,6 +5,7 @@ export interface DonorCardProps {
     id: number,
     memberName: string,
     phone: string,
+    dob: string,
     type: string,
     eventTime: string,
     handleHeathCheckout: () => void

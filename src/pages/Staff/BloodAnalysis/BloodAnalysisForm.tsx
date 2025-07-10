@@ -30,7 +30,8 @@ import { toast } from "react-toastify"
 import { useState } from "react"
 interface BloodAnalysisProps {
     donor: Donor,
-    setIsAnalysisFormOpen: () => void
+    setIsAnalysisFormOpen: () => void,
+    fetchEvents: () => Promise<void>
 }
 
 const formSchema = z.object({
@@ -72,7 +73,7 @@ const formSchema = z.object({
 
 type formType = z.infer<typeof formSchema>
 type formTypeName = keyof formType
-function BloodAnalysisForm({ setIsAnalysisFormOpen, donor }: BloodAnalysisProps) {
+function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodAnalysisProps) {
     const[isSubmitting, setIsSubmitting] = useState(false)
     const criterias: { label: string, name: formTypeName }[] = [
         { label: "HIV", name: "hiv" },
@@ -111,6 +112,8 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor }: BloodAnalysisProps)
 
             console.log(data.message)
             toast.success('Gửi đơn phân tích máu thành công!')
+            await fetchEvents()
+            setIsAnalysisFormOpen()
         } catch (error) {
             console.log('Error submitting blood analysis form ', error)
             toast.error('Gửi đơn phân tích máu thất bại!')

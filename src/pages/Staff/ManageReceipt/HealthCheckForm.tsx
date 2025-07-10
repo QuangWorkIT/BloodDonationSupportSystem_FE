@@ -33,9 +33,10 @@ interface FormErrors {
 
 export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCheckoutProps) {
   const { user } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState<HealthCheckData>({
     fullName: currentDonor?.memberName || "",
-    birthDate: "",
+    birthDate: currentDonor?.dob || "",
     height: "",
     weight: "",
     bloodPressure: "",
@@ -220,17 +221,21 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
       }
 
       try {
+        setIsSubmitting(true)
         const response = await authenApi.post(`/api/blood-registrations/${currentDonor?.id}/health-procedures`,
           payload
         )
         if (response.status === 200) {
           console.log('Checkout success')
           toast.success('Đã khám sức khỏe thành công!')
+          handleCancle()
         }
 
       } catch (error) {
         toast.error('Gửi đơn thất bại!')
         console.log("Submit checkout donor fail", error)
+      }finally{
+        setIsSubmitting(false)
       }
     }
   };
@@ -505,13 +510,14 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
         {/* Buttons */}
         <div className="flex gap-4 pt-6">
           <Button
-            disabled = {!formData.processCompleted}
+            disabled = {!formData.processCompleted || isSubmitting}
             type="submit"
             className="px-12 py-2 text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer"
           >
             Gửi
           </Button>
           <Button
+            disabled = {isSubmitting}
             type="button"
             variant="outline"
             className="px-12 py-2 text-base rounded-full bg-[#FBA3A5] hover:bg-[#E99294] text-white border-[#FBA3A5] cursor-pointer"

@@ -12,6 +12,7 @@ interface Event {
   id: number;
   name: string;
   total: number;
+  eventTime: string;
 }
 
 export interface Donor {
@@ -41,28 +42,29 @@ const BloodCollectEventList = () => {
   const [isFetchingEvent, setIsFetchingEvent] = useState(false)
   const [isBloodCollectFormOpen, setIsBloodCollectFormOpen] = useState(false)
   const [currentDonor, setCurrentDonor] = useState<Donor | null>(null)
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setIsFetchingEvent(true)
-        const response = await authenApi.get('/api/events/waiting-for-blood-procedure')
-        const data = response.data
 
-        if (data.isSuccess) {
-          console.log('fetch waiting donor events success! ', data.data)
-          setEvents(data.data.items)
-        }
-      } catch (error) {
-        const err = error as AxiosError
-        if (err) {
-          console.log('err axios fetch events ', err.message)
-        } else {
-          console.log('Error ', error)
-        }
-      } finally {
-        setIsFetchingEvent(false)
+  const fetchEvents = async () => {
+    try {
+      setIsFetchingEvent(true)
+      const response = await authenApi.get('/api/events/waiting-for-blood-procedure')
+      const data = response.data
+
+      if (data.isSuccess) {
+        console.log('fetch waiting donor events success! ', data.data)
+        setEvents(data.data.items)
       }
+    } catch (error) {
+      const err = error as AxiosError
+      if (err) {
+        console.log('err axios fetch events ', err.message)
+      } else {
+        console.log('Error ', error)
+      }
+    } finally {
+      setIsFetchingEvent(false)
     }
+  }
+  useEffect(() => {
     fetchEvents();
   }, []);
 
@@ -151,6 +153,7 @@ const BloodCollectEventList = () => {
                         </p>
                       </div>
                       <div className="flex flex-col gap-4 items-end justify-between">
+                        <p>Thời gian {event.eventTime}</p>
                         <motion.button
                           className="bg-blue-500 text-white font-semibold text-xl px-8 py-2 rounded-md hover:bg-blue-700 transition cursor-pointer shadow-sm"
                           whileHover={{ scale: 1.05 }}
@@ -179,8 +182,7 @@ const BloodCollectEventList = () => {
           <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
             <div className="mb-4 flex justify-between">
               <h2 className="text-xl font-medium text-gray-700 ml-2">
-                {/* Sự kiện ngày: <span className="font-semibold text-black text-2xl">{selectedEvent.date}</span> */}
-                Sự kiện ngày nào đó
+                Sự kiện ngày<span className="font-semibold text-black text-2xl"> {selectedEvent.eventTime}</span>
               </h2>
               <div className="ml-6 mr-2">
                 <AnimatePresence mode="wait">
@@ -267,7 +269,11 @@ const BloodCollectEventList = () => {
               transition={{ duration: 0.5 }}
               className="flex-1 min-h-screen bg-gray-200 rounded-xl px-4 py-8 m-4"
             >
-              <StaffCheckoutReceiptForm donor={currentDonor ? currentDonor : defaultDonor} setIsBloodCollectFormOpen={() => setIsBloodCollectFormOpen(false)} />
+              <StaffCheckoutReceiptForm
+                donor={currentDonor ? currentDonor : defaultDonor}
+                setIsBloodCollectFormOpen={() => setIsBloodCollectFormOpen(false)}
+                fetchEvents={fetchEvents}
+              />
             </motion.div>
           </AnimatePresence>
         )

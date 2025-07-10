@@ -11,9 +11,11 @@ import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
+import { useState } from "react";
 interface StaffCheckoutReceiptFormProps {
   donor: Donor,
   setIsBloodCollectFormOpen: () => void
+  fetchEvents: () => Promise<void>
 }
 
 const formSchema = z.object({
@@ -30,8 +32,9 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormOpen }: StaffCheckoutReceiptFormProps) {
+export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormOpen, fetchEvents }: StaffCheckoutReceiptFormProps) {
   const { user } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,12 +55,15 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
     }
     console.log("id " + donor.bloodRegisId  + "payload ",   payload)
     try {
+      setIsSubmitting(true)
       const response = await authenApi.post(`/api/blood-registrations/${donor.bloodRegisId}/blood-procedures/collect`, payload)
       const data = response.data
 
       if(data.isSuccess) {
         console.log('Collect blood success')
         toast.success('Hiến máu thành công!')
+        await fetchEvents()
+        setIsBloodCollectFormOpen()
       }
     } catch (error) {
       toast.error('Gửi đơn thất bại!')
@@ -66,6 +72,8 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
         console.log('Fail submit form ', err)
       else
         console.log('Error submitting ', error)
+    }finally{
+      setIsSubmitting(false)
     }
   };
 
@@ -236,11 +244,12 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
               <Button
                 type="submit"
                 className="w-[160px] h-[40px] bg-red-600 text-white text-[17px] font-bold hover:bg-red-800 rounded-full cursor-pointer"
-                disabled={!isConfirmChecked}
+                disabled={!isConfirmChecked || isSubmitting}
               >
                 Gửi
               </Button>
               <Button
+                disabled = {isSubmitting}
                 type="button"
                 variant="outline"
                 className="w-[160px] h-[40px] bg-red-200 text-white text-[17px] font-bold hover:bg-red-400 rounded-full cursor-pointer"

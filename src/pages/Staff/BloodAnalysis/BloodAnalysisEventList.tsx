@@ -13,6 +13,7 @@ interface Event {
   id: number;
   name: string;
   total: number;
+  eventTime: string;
 }
 
 export interface Donor {
@@ -47,29 +48,29 @@ const BloodAnalysisEventList = () => {
     performedAt: ''
   }
 
+  const fetchEvents = async () => {
+    try {
+      setIsFetchingEvent(true)
+      const response = await authenApi.get('/api/events/waiting-for-qualify-blood')
+      const data = response.data
+
+      if (data.isSuccess) {
+        console.log('fetch blood qualify events success!', data.data.items)
+        setEvents(data.data.items)
+      }
+    } catch (error) {
+      const err = error as AxiosError
+      if (err) {
+        console.log('err axios fetch events ', err.message)
+      } else {
+        console.log('Error ', error)
+      }
+    } finally {
+      setIsFetchingEvent(false)
+    }
+  }
   // fetch total events
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setIsFetchingEvent(true)
-        const response = await authenApi.get('/api/events/waiting-for-qualify-blood')
-        const data = response.data
-
-        if (data.isSuccess) {
-          console.log('fetch blood qualify events success!', data.data.items)
-          setEvents(data.data.items)
-        }
-      } catch (error) {
-        const err = error as AxiosError
-        if (err) {
-          console.log('err axios fetch events ', err.message)
-        } else {
-          console.log('Error ', error)
-        }
-      } finally {
-        setIsFetchingEvent(false)
-      }
-    }
     fetchEvents();
   }, []);
 
@@ -155,7 +156,7 @@ const BloodAnalysisEventList = () => {
                         </p>
                       </div>
                       <div className="flex flex-col gap-4 items-end justify-between">
-                        <p className="text-black italic text-xl mr-1">thời gian</p>
+                        <p className="text-black italic text-xl mr-1">thời gian {event.eventTime}</p>
                         <motion.button
                           className="bg-blue-500 text-white font-semibold text-xl px-8 py-2 rounded-md hover:bg-blue-700 transition cursor-pointer shadow-sm"
                           whileHover={{ scale: 1.05 }}
@@ -265,7 +266,11 @@ const BloodAnalysisEventList = () => {
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <BloodAnalysisForm donor={currentDonor || defaultDonor} setIsAnalysisFormOpen={() => setIsAnalysisFormOpen(false)} />
+                  <BloodAnalysisForm
+                    donor={currentDonor || defaultDonor}
+                    setIsAnalysisFormOpen={() => setIsAnalysisFormOpen(false)}
+                    fetchEvents={fetchEvents}
+                  />
                 </motion.div>
               </AnimatePresence>
             )}

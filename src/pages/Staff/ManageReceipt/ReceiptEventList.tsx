@@ -10,7 +10,6 @@ import { toast } from "react-toastify";
 interface Event {
   id: number;
   title: string;
-  address: string;
   eventTime: string;
   time: string;
   bloodType: string;
@@ -148,7 +147,7 @@ const ReceiptEventList = () => {
                       </Link>
                     </h3>
                     <p className="text-xl text-gray-600 mb-5">
-                      Địa chỉ: <span className="font-semibold text-black">{event.address}</span>
+                      Địa chỉ: <span className="font-semibold text-black">387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh</span>
                     </p>
                     <p className="text-xl text-gray-600 mb-5">
                       Thời gian hoạt động: <span className="font-semibold text-black">{event.eventTime}</span>,
