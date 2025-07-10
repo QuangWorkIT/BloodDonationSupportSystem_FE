@@ -8,7 +8,6 @@ type geoAddress = {
 const geoApiKey = import.meta.env.VITE_GEOCODING_ID
 export const getLongLat = async (address: string): Promise<geoAddress | null> => {
     try {
-        console.log("api key " + geoApiKey)
         const response = await geoApi.get(``, {
             params: {
                 text: address,
@@ -20,8 +19,8 @@ export const getLongLat = async (address: string): Promise<geoAddress | null> =>
         if(!data || data.length === 0)
             throw new Error("Invalid address")
         return {
-            longitude: data[0].properties.lon,
-            latitude: data[0].properties.lat
+            longitude: data[0].lon,
+            latitude: data[0].lat
         }
 
     } catch (error) {

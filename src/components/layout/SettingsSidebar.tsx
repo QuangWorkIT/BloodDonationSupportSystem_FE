@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
+import { useAuth } from "@/hooks/authen/AuthContext";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 // Types for Feedback Modal
 type FeedbackType = "info" | "success" | "error" | "warning";
@@ -14,13 +17,13 @@ interface FeedbackModalProps {
   children?: React.ReactNode;
 }
 
-const FeedbackModal: React.FC<FeedbackModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  message, 
+const FeedbackModal: React.FC<FeedbackModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  message,
   type = "info",
-  children 
+  children
 }) => {
   const typeColors: Record<FeedbackType, string> = {
     info: "bg-blue-500",
@@ -31,7 +34,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
 
   // Portal implementation
   if (typeof document === 'undefined') return null;
-  
+
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -99,6 +102,8 @@ interface SettingsSidebarProps {
 }
 
 const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onClose }) => {
+  const { user, setToken, setUser } = useAuth()
+  const navigate = useNavigate()
   const [settings, setSettings] = useState<SettingsState>({
     smsNotifications: false,
     showDonationStatus: false,
@@ -126,7 +131,11 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
 
   const confirmLogout = () => {
     setIsLogoutModalOpen(false);
-    setShowLogoutSuccess(true);
+    setToken(null)
+    setUser(null)
+    toast.success('Đăng xuất thành công!')
+
+    user?.role === 'Admin' || user?.role === 'Staff' ? navigate('/login', { replace: true }) : navigate('/', { replace: true });
   };
 
   const confirmDeleteAccount = () => {
@@ -141,7 +150,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 0}}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={`bg-white rounded-md shadow-md p-6 ${isMobile ? 'fixed inset-0 z-40 overflow-y-auto' : 'sticky top-8'}`}
@@ -161,7 +170,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
         <div className="w-24 h-24 bg-[#C14B53] rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
           NVA
         </div>
-        <h1 className="text-xl font-bold">Nguyễn Văn A</h1>
+        <h1 className="text-xl font-bold">{user?.name}</h1>
       </div>
 
       <div className="mb-6">
@@ -214,8 +223,8 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
       </div>
 
       <div className="pt-4 border-t">
-        <button 
-          onClick={handleDeleteAccount} 
+        <button
+          onClick={handleDeleteAccount}
           className="text-red-500 hover:underline cursor-pointer"
         >
           Xóa tài khoản
@@ -263,7 +272,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
           </button>
           <button
             onClick={confirmDeleteAccount}
-            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 cursor-pointer"   
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 cursor-pointer"
           >
             Xác nhận xóa
           </button>

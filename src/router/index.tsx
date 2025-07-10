@@ -10,8 +10,6 @@ import BloodInfoPage from '@/pages/BloodInfo/BloodInfoPage';
 import BlogPage from '@/pages/Blog/BlogPage';
 import EventPage from '@/pages/DonationEvent/EventPage';
 import NotFoundPage from '@/pages/Error/NotFoundPage';
-import LoginPage from '@/pages/Authentication/LoginPage';
-import RegisterPage from '@/pages/Authentication/RegisterPage';
 import AdminHome from '@/pages/Admin/AdminHome';
 import Forbidden from '@/pages/Error/Forbidden';
 import ProtectedRoute from './ProtectedRoute';
@@ -28,17 +26,24 @@ import RoleBaseRedirect from './RoleBaseRedirect';
 import AnalyticsDashboard from '@/pages/Admin/ManageData/AnalyticsDashboard';
 import AdminSettings from '@/pages/Admin/AdminSetting';
 import AdminHelp from '@/pages/Admin/AdminHelp';
+import LoginForm from '@/pages/Authentication/LoginForm';
+import RegisterForm from '@/pages/Authentication/RegisterForm';
+import UserProfile from '@/components/layout/UserProfile';
+import OTPForm from '@/pages/Authentication/OTPForm';
+import DonorReceiptList from '@/pages/Staff/ManageReceipt/DonorReceiptList';
 
 
 // define routes
 const routes: RouteObject[] = [
-    { path: '/', element: <RoleBaseRedirect />},
+    { path: '/', element: <RoleBaseRedirect /> },
 
     { path: '/home', element: <HomePage /> },
 
-    { path: '/login', element: <LoginPage /> },
+    { path: '/login', element: <LoginForm /> },
 
-    { path: '/register', element: <RegisterPage /> },
+    { path: '/otp', element: <OTPForm /> },
+
+    { path: '/register', element: <RegisterForm /> },
 
     { path: '/bloodinfo', element: <BloodInfoPage /> },
 
@@ -51,13 +56,28 @@ const routes: RouteObject[] = [
     { path: '/compatibility', element: <Compatibility /> },
 
     {
+        path: '/profile', element: (
+            <ProtectedRoute element={<UserProfile />} allowRole={["Member", "Staff", "Admin"]} />
+        )
+    },
+
+    {
         path: '/staff', element: (
             <ProtectedRoute element={<Staffhome />} allowRole={["Staff"]} />
         ),
         children: [
             { index: true, element: <Inventory /> },
 
-            { path: 'receipt', element: <ReceiptEventList /> },
+            {
+                path: "receipt",
+                children: [
+                    { index: true, element: <ReceiptEventList /> },
+                    {
+                        path: "list/:eventId",
+                        element: <DonorReceiptList />,
+                    }
+                ]
+            },
 
             { path: 'bloodcollect', element: <BloodCollectEventList /> },
 
@@ -70,17 +90,17 @@ const routes: RouteObject[] = [
     {
         path: '/admin', element: (
             <ProtectedRoute element={<AdminHome />} allowRole={["Admin"]} />
-        ), 
+        ),
         children: [
-            {index: true, element: <AccountDashboard/>},
+            { index: true, element: <AccountDashboard /> },
 
-            {path: 'accounts', element: <Navigate to={'/admin'} replace/>},
+            { path: 'accounts', element: <Navigate to={'/admin'} replace /> },
 
-            {path: 'analytics', element: <AnalyticsDashboard/>},
+            { path: 'analytics', element: <AnalyticsDashboard /> },
 
-            {path: 'settings', element: <AdminSettings/>},
+            { path: 'settings', element: <AdminSettings /> },
 
-            {path: 'help', element: <AdminHelp/>},
+            { path: 'help', element: <AdminHelp /> },
         ]
     },
 

@@ -1,13 +1,33 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const FeedbackModal = ({ isOpen, onClose, title, message, type = "info" }: { isOpen: boolean; onClose: () => void; title: string; message: string; type?: "info" | "success" | "error" | "warning" }) => {
-  const typeColors = {
-    info: "bg-blue-500",
-    success: "bg-green-500",
-    error: "bg-red-500",
-    warning: "bg-yellow-500",
-  };
+
+
+interface Donation {
+  date: string;
+  type: string;
+  facility: string;
+  address: string;
+  status: "Hoàn thành" | "Thất bại";
+  amount?: string;
+  reason?: string;
+}
+
+interface DonationDetailsModalProps {
+  donation: Donation | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+// Feedback Modal Component
+
+// Donation Details Modal Component
+const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({ 
+  donation, 
+  isOpen, 
+  onClose 
+}) => {
+  if (!donation) return null;
 
   return (
     <AnimatePresence>
@@ -23,32 +43,55 @@ const FeedbackModal = ({ isOpen, onClose, title, message, type = "info" }: { isO
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
-            className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+            className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className={`w-16 h-16 rounded-full ${typeColors[type]} flex items-center justify-center mx-auto mb-4`}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {type === "success" ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                ) : type === "error" ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                )}
-              </svg>
+            <h3 className="text-2xl font-bold text-center mb-4 text-[#C14B53]">Chi tiết lần hiến máu</h3>
+            
+            <div className="space-y-6">
+              <div>
+                <p className="text-base text-gray-500">Ngày hiến máu</p>
+                <p className="font-medium">{donation.date}</p>
+              </div>
+              
+              <div>
+                <p className="text-base text-gray-500">Loại máu hiến</p>
+                <p className="font-medium">{donation.type}</p>
+              </div>
+              
+              <div>
+                <p className="text-base text-gray-500">Cơ sở</p>
+                <p className="font-medium">{donation.facility}</p>
+              </div>
+              
+              <div>
+                <p className="text-base text-gray-500">Địa chỉ</p>
+                <p className="font-medium">{donation.address}</p>
+              </div>
+              
+              <div>
+                <p className="text-base text-gray-500">Trạng thái</p>
+                <p className={`font-medium ${
+                  donation.status === "Hoàn thành" ? "text-green-600" : "text-red-600"
+                }`}>
+                  {donation.status}
+                </p>
+              </div>
+              
+              <div>
+                <p className="text-base text-gray-500">Mô tả</p>
+                <p className="font-medium">
+                  {donation.status === "Hoàn thành" 
+                    ? `Đã hiến thành công ${donation.amount || '350ml'} máu`
+                    : donation.reason || "Không đủ điều kiện sức khỏe để hiến máu"}
+                </p>
+              </div>
             </div>
-            <h3 className="text-lg font-bold text-center mb-2">{title}</h3>
-            <p className="text-gray-600 text-center mb-6">{message}</p>
-            <div className="flex justify-center">
+            
+            <div className="mt-6 flex justify-center">
               <button
                 onClick={onClose}
-                className={`px-6 py-2 ${type === "error" ? "bg-red-500" : type === "success" ? "bg-green-500" : type === "warning" ? "bg-yellow-500" : "bg-blue-500"} text-white rounded-md hover:opacity-90`}
+                className="px-6 py-3 bg-[#C14B53] text-white rounded-md hover:opacity-90 cursor-pointer"
               >
                 Đóng
               </button>
@@ -59,35 +102,51 @@ const FeedbackModal = ({ isOpen, onClose, title, message, type = "info" }: { isO
     </AnimatePresence>
   );
 };
-const DonationHistory = () => {
-  const donations = [
+
+// Main Donation History Component
+const DonationHistory: React.FC = () => {
+  const donations: Donation[] = [
     {
       date: "01 / 01 / 2024",
       type: "Toàn phần",
       facility: "Viện Huyết học - Truyền máu Trung ương",
       address: "14 Trần Thái Tông, Cầu Giấy, Hà Nội",
+      status: "Hoàn thành",
+      amount: "350ml"
     },
     {
       date: "13 / 05 / 2024",
       type: "Huyết tương",
       facility: "Bệnh viện Bạch Mai",
       address: "78 Giải Phóng, Đống Đa, Hà Nội",
+      status: "Thất bại",
+      reason: "Huyết áp không ổn định"
     },
     {
       date: "18 / 08 / 2024",
       type: "Toàn phần",
       facility: "Bệnh viện Hữu nghị Việt Đức",
       address: "40 Tràng Thi, Hoàn Kiếm, Hà Nội",
+      status: "Hoàn thành",
+      amount: "450ml"
     },
     {
       date: "12 / 03 / 2025",
       type: "Tiểu cầu",
       facility: "Bệnh viện Đa khoa Xanh Pôn",
       address: "12 Chu Văn An, Ba Đình, Hà Nội",
+      status: "Thất bại",
+      reason: "Nồng độ hemoglobin thấp"
     },
   ];
 
+  const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  const handleDetailsClick = (donation: Donation) => {
+    setSelectedDonation(donation);
+    setShowDetailsModal(true);
+  };
 
   return (
     <motion.div
@@ -96,52 +155,58 @@ const DonationHistory = () => {
       exit={{ opacity: 0 }}
       className="bg-white rounded-md shadow-md p-6"
     >
-      <h2 className="text-xl font-bold mb-6 text-[#C14B53]">Lịch sử hiến máu</h2>
+      <h2 className="text-2xl font-bold mb-6 text-[#C14B53]">Lịch sử hiến máu</h2>
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">Ngày</th>
+              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">
                 Loại máu hiến
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cơ sở</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Địa chỉ
+              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">Cơ sở</th>
+              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">
+                Trạng thái
+              </th>
+              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">
+                Hành động
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {donations.map((donation, index) => (
               <tr key={index}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.type}</td>
-                <td className="px-6 py-4 text-sm text-gray-900">{donation.facility}</td>
-                <td className="px-6 py-4 text-sm text-gray-900">{donation.address}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">{donation.date}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">{donation.type}</td>
+                <td className="px-6 py-4 text-base text-gray-900">{donation.facility}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-base">
+                  <span className={`px-2 py-1 rounded-full text-base font-medium ${
+                    donation.status === "Hoàn thành" 
+                      ? "bg-green-100 text-green-800" 
+                      : "bg-red-100 text-red-800"
+                  }`}>
+                    {donation.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 ">
+                  <button
+                    onClick={() => handleDetailsClick(donation)}
+                    className="text-[#C14B53] hover:underline cursor-pointer"
+                  >
+                    Xem chi tiết
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="mt-6">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer"
-          onClick={() => setShowDetailsModal(true)}
-        >
-          Xem chi tiết
-        </motion.button>
-      </div>
-
-      <FeedbackModal
-        isOpen={showDetailsModal}
-        onClose={() => setShowDetailsModal(false)}
-        title="Chi tiết lịch sử hiến máu"
-        message="Đây là chi tiết đầy đủ về lịch sử hiến máu của bạn."
-        type="info"
+      <DonationDetailsModal 
+        donation={selectedDonation} 
+        isOpen={showDetailsModal} 
+        onClose={() => setShowDetailsModal(false)} 
       />
     </motion.div>
   );

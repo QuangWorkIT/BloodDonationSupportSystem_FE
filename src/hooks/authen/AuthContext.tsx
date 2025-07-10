@@ -8,7 +8,9 @@ interface AuthContextType {
     accessToken: string | null,
     setToken: (token: string | null) => void,
     user: User | null
-    setUser: (user: User | null) => void
+    setUser: (user: User | null) => void,
+    isLoading: boolean,
+    setIsLoading: (isLoading: boolean) => void
 }
 
 interface AuthProviderProps {
@@ -22,26 +24,31 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     // no user and access token when no login as default
     const [accessToken, setToken] = useState<string | null>(null)
     const [user, setUser] = useState<User | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
     const refresh = useRefreshToken()
-
     // fetch token
     useEffect(() => {
         const initAuth = async () => {
             const storedToken = localStorage.getItem("token");
-            if (!storedToken) return;
+            if (!storedToken) {
+                console.log('No token found', storedToken)
+                setIsLoading(false)
+                return
+            };
 
             const validToken = isTokenExpired(storedToken)
                 ? await refresh()
                 : storedToken;
 
             setToken(validToken);
-
             if (validToken !== null) {
                 const user = getUser(validToken);
                 setUser(user);
-            }else {
+            } else {
                 console.log("Token is wrong!")
             }
+
+            setIsLoading(false)  
         };
 
         initAuth();
@@ -55,7 +62,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
 
     return (
-        <AuthContext.Provider value={{ accessToken, setToken, user, setUser }} >
+        <AuthContext.Provider value={{ accessToken, setToken, user, setUser, isLoading, setIsLoading }} >
             {children}
         </AuthContext.Provider>
     )
