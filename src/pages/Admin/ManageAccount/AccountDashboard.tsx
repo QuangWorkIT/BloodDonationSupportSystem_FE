@@ -18,6 +18,7 @@ import {
   ArrowDown,
   ArrowUpDown,
 } from "lucide-react";
+import { CSVLink } from "react-csv";
 import AdminSidebar from "../AdminSidebar";
 import DatePicker from "@/components/ui/datepicker";
 import AddAccountModal from "./AddAccount";
@@ -97,17 +98,22 @@ interface StaffAccount {
   dob: string; // ISO date string (YYYY-MM-DD)
   gender: boolean; // true for male, false for female
 }
+// CSV Headers Type
+type CSVHeaders = {
+  label: string;
+  key: string;
+}[];
 const convertStaffAccountToNewAccountData = (staffAccount: StaffAccount): NewAccountData => {
   // Split the full name into first and last name
   const name = `${staffAccount.firstName} ${staffAccount.lastName}`.trim();
-  
+
   return {
     name,
     email: staffAccount.gmail,
     dob: staffAccount.dob,
     phone: staffAccount.phone,
     role: "Staff", // Since this modal is for adding staff accounts
-    status: "Active" // Default to active status
+    status: "Active", // Default to active status
   };
 };
 
@@ -119,7 +125,7 @@ const AccountDashboard = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalItems, setTotalItems] = useState<number>(0);
+  const [totalItems, setTotalItems] = useState<number>(0); // <-- ensure this is in state
 
   // Search and Filter States
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -147,6 +153,7 @@ const AccountDashboard = () => {
         setLoading(true);
         setError(null);
 
+        // Fetch paginated data from the API
         const response = await authenApi.get<ApiResponse<PaginatedUserData>>(
           `/api/users?pageNumber=${currentPage}&pageSize=${rowsPerPage}`
         );
@@ -159,11 +166,7 @@ const AccountDashboard = () => {
         }
       } catch (err) {
         const error = err as AxiosError<ApiResponse<null>>;
-        setError(
-          error.response?.data?.message || 
-          error.message || 
-          "Error fetching accounts data"
-        );
+        setError(error.response?.data?.message || error.message || "Error fetching accounts data");
       } finally {
         setLoading(false);
       }
@@ -213,6 +216,67 @@ const AccountDashboard = () => {
     return result;
   }, [accounts, searchTerm, filters, sortConfig]);
 
+  // CSV Export Data Preparation
+  const csvHeaders: CSVHeaders = [
+    { label: "ID", key: "userId" },
+    { label: "Name", key: "name" },
+    { label: "Email", key: "email" },
+    { label: "Status", key: "status" },
+    { label: "Role", key: "role" },
+    { label: "Date of Birth", key: "dob" },
+    { label: "Phone", key: "phone" },
+  ];
+  // Add this phone number formatter utility
+const formatVietnamesePhoneNumber = (phone?: string): string => {
+  if (!phone) return "N/A";
+  
+  // Remove all non-digit characters
+  const digits = phone.replace(/\D/g, '');
+  
+  // If it's already properly formatted, return as-is
+  if (digits.startsWith('0') && digits.length === 10) {
+    return digits;
+  }
+  if (digits.startsWith('84') && digits.length === 11) {
+    return `+${digits}`;
+  }
+  
+  // For numbers without prefix but correct length (9 digits)
+  if (digits.length === 9) {
+    return `0${digits}`;
+  }
+  
+  // For numbers that might have 84 prefix but missing +
+  if (digits.length === 10 && digits.startsWith('84')) {
+    return `+${digits}`;
+  }
+  
+  // For numbers that might have international prefix already
+  if (digits.length >= 10 && digits.startsWith('84')) {
+    return `+${digits}`;
+  }
+  
+  // Default case - prepend 0 if it's a reasonable length
+  if (digits.length >= 9 && digits.length <= 11) {
+    return `0${digits.slice(-9)}`; // Take last 9 digits and prepend 0
+  }
+  
+  // Fallback - return the original if we can't format it
+  return phone;
+};
+
+// Update the CSV data preparation
+const csvExportData = useMemo(() => {
+  return filteredAccounts.map((account) => ({
+    userId: account.userId,
+    name: account.name,
+    email: account.email,
+    status: account.status,
+    role: account.role,
+    dob: account.dob,
+    phone: formatVietnamesePhoneNumber(account.phone),
+  }));
+}, [filteredAccounts]);
   const requestSort = (key: SortableField) => {
     let direction: SortDirection = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -221,10 +285,9 @@ const AccountDashboard = () => {
     setSortConfig({ key, direction });
   };
 
-  // Pagination Logic
+  // Pagination Logic (server-side)
   const totalPages = Math.ceil(totalItems / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const currentAccounts = filteredAccounts.slice(startIndex, startIndex + rowsPerPage);
+  const currentAccounts = filteredAccounts; // Only current page's data is available from server
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -248,16 +311,14 @@ const AccountDashboard = () => {
     });
   };
 
-  const handleEditFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleDateChange = (date: Date | null) => {
     if (!date) return;
-    const formattedDate = date.toISOString().split('T')[0];
+    const formattedDate = date.toISOString().split("T")[0];
     setEditFormData((prev) => ({ ...prev, dob: formattedDate }));
   };
 
@@ -272,18 +333,12 @@ const AccountDashboard = () => {
       };
 
       // API call would go here in a real implementation
-      setAccounts(accounts.map((a) => 
-        a.userId === account.userId ? { ...a, ...updatedUser } : a
-      ));
+      setAccounts(accounts.map((a) => (a.userId === account.userId ? { ...a, ...updatedUser } : a)));
       setEditingId(null);
       setEditFormData({});
     } catch (err) {
       const error = err as AxiosError<ApiResponse<null>>;
-      setError(
-        error.response?.data?.message || 
-        error.message || 
-        "Error updating account"
-      );
+      setError(error.response?.data?.message || error.message || "Error updating account");
     } finally {
       setLoading(false);
     }
@@ -307,11 +362,7 @@ const AccountDashboard = () => {
       setShowAddAccountModal(false);
     } catch (err) {
       const error = err as AxiosError<ApiResponse<null>>;
-      setError(
-        error.response?.data?.message || 
-        error.message || 
-        "Error creating account"
-      );
+      setError(error.response?.data?.message || error.message || "Error creating account");
     } finally {
       setLoading(false);
     }
@@ -347,11 +398,7 @@ const AccountDashboard = () => {
       }
     } catch (err) {
       const error = err as AxiosError<ApiResponse<null>>;
-      setError(
-        error.response?.data?.message || 
-        error.message || 
-        "Error banning account"
-      );
+      setError(error.response?.data?.message || error.message || "Error banning account");
     } finally {
       setLoading(false);
     }
@@ -359,22 +406,22 @@ const AccountDashboard = () => {
 
   // Search and Filter Handlers
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
     setCurrentPage(1);
+    setSearchTerm(e.target.value);
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ 
-      ...prev, 
-      [name]: value as AccountRole | "" 
-    }));
     setCurrentPage(1);
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value as AccountRole | "",
+    }));
   };
 
   const resetFilters = () => {
-    setFilters({ role: "" });
     setCurrentPage(1);
+    setFilters({ role: "" });
   };
 
   // Render Functions
@@ -444,10 +491,7 @@ const AccountDashboard = () => {
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
               {error}
-              <button 
-                onClick={() => setError(null)} 
-                className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              >
+              <button onClick={() => setError(null)} className="absolute top-0 bottom-0 right-0 px-4 py-3">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -477,10 +521,16 @@ const AccountDashboard = () => {
                     <Filter className="w-3 h-3" />
                     Lọc
                   </button>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer">
+                  <CSVLink
+                    data={csvExportData}
+                    headers={csvHeaders}
+                    filename={`accounts_export_${new Date().toISOString().slice(0, 10)}.csv`}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  >
                     <Download className="w-3 h-3" />
                     Xuất
-                  </button>
+                  </CSVLink>
+
                   <button
                     onClick={() => setShowAddAccountModal(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
@@ -527,7 +577,7 @@ const AccountDashboard = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                         #
                       </th>
-                      <th 
+                      <th
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r cursor-pointer hover:bg-gray-100"
                         onClick={() => requestSort("name")}
                       >
@@ -536,7 +586,7 @@ const AccountDashboard = () => {
                           {renderSortIcon("name")}
                         </div>
                       </th>
-                      <th 
+                      <th
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r cursor-pointer hover:bg-gray-100"
                         onClick={() => requestSort("email")}
                       >
@@ -545,7 +595,7 @@ const AccountDashboard = () => {
                           {renderSortIcon("email")}
                         </div>
                       </th>
-                      <th 
+                      <th
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r cursor-pointer hover:bg-gray-100"
                         onClick={() => requestSort("dob")}
                       >
@@ -557,7 +607,7 @@ const AccountDashboard = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                         Vai trò
                       </th>
-                      <th 
+                      <th
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r cursor-pointer hover:bg-gray-100"
                         onClick={() => requestSort("phone")}
                       >
@@ -579,7 +629,7 @@ const AccountDashboard = () => {
                           className={`hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
                         >
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                            {index + 1 + (currentPage - 1) * rowsPerPage}
+                            {index + 1}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r">
                             {editingId === account.userId ? (
@@ -691,7 +741,7 @@ const AccountDashboard = () => {
                     <ChevronLeft className="w-4 h-4" />
                   </button>
 
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  {Array.from({ length: totalPages }, (_, i) => {
                     const page = i + 1;
                     return (
                       <button
@@ -758,15 +808,15 @@ const AccountDashboard = () => {
         </div>
       )}
 
-{showAddAccountModal && (
-  <AddAccountModal 
-    onSave={async (staffAccount) => {
-      const newAccountData = convertStaffAccountToNewAccountData(staffAccount);
-      await handleAddNewAccount(newAccountData);
-    }} 
-    onCancel={() => setShowAddAccountModal(false)} 
-  />
-)}
+      {showAddAccountModal && (
+        <AddAccountModal
+          onSave={async (staffAccount) => {
+            const newAccountData = convertStaffAccountToNewAccountData(staffAccount);
+            await handleAddNewAccount(newAccountData);
+          }}
+          onCancel={() => setShowAddAccountModal(false)}
+        />
+      )}
     </div>
   );
 };
