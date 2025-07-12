@@ -435,7 +435,7 @@ const csvExportData = useMemo(() => {
   };
 
   return (
-    <div className="bg-[#EFEFEF] text-gray-800 min-h-screen flex h-screen w-screen">
+    <div className="flex min-h-screen h-full w-screen bg-[#EFEFEF]">
       <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
 
       <main className="flex-1 bg-[#EFEFEF]">

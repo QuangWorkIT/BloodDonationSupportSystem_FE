@@ -45,7 +45,7 @@ const AdminSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   ];
 
   return (
-    <aside className="bg-white flex flex-col border-r border-gray-200 shadow-sm h-full">
+    <aside className="bg-white flex flex-col border-r border-gray-200 shadow-sm h-full min-h-screen h-screen sticky top-0">
       <div className="flex-1">
         <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center">
