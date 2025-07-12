@@ -22,6 +22,7 @@ import { authenApi } from "@/lib/instance";
 import type { AxiosError } from "axios";
 import UrgencyReceiptForm from "../UrgencyReceiptRequest/UrgencyReceiptForm";
 import LoadingSpinner from "@/components/layout/Spinner";
+import DonorMap from "./DonorMap";
 
 export interface VolunteerProps {
     id: number,
@@ -31,7 +32,9 @@ export interface VolunteerProps {
     gmail: string,
     distance: number,
     startVolunteerDate: Date,
-    endVolunteerDate: Date
+    endVolunteerDate: Date,
+    lat: number,
+    lon: number
 }
 const formSchema = z.object({
     facility: z.string()
@@ -248,6 +251,9 @@ function DonorLookup() {
                             </AnimatePresence>
                         </div>
 
+                        {/* <div className="w-[200px] h-[200px]">
+                            <DonorMap volunteers={donorFound}></DonorMap>
+                        </div> */}
                         {/* Donor list */}
                         {
                             isLoading ? (<LoadingSpinner />) : (
@@ -320,7 +326,7 @@ function DonorLookup() {
                                                         )}
                                                     </div>
                                                     <Button
-                                                        disabled = {selectedDonor.length === 0}
+                                                        disabled={selectedDonor.length === 0}
                                                         onClick={handleCreateUrgent}
                                                         className="bg-[#4F81E5] text-[16px] text-white rounded-[7px] h-[50px] hover:bg-[#2c54a3] hover:cursor-pointer">
                                                         Tạo yêu cầu cần máu
