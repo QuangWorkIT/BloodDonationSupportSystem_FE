@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaHeart, FaSearch, FaTimes } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
-import { User2Icon, CalendarDays } from "lucide-react";
+import { User2Icon} from "lucide-react";
 import { authenApi } from "@/lib/instance";
 import type { AxiosError } from "axios";
 import LoadingSpinner from "@/components/layout/Spinner";
