@@ -65,7 +65,7 @@ const AccountEdit = () => {
   // sync form data
   useEffect(() => {
     setFormData({
-      name: user?.name || "",
+      name: user?.unique_name || "",
       gender: user?.gender ? "male" : "female",
       birthDate: user?.dob || null,
       phone: user?.phone || "",

@@ -83,7 +83,9 @@ const routes: RouteObject[] = [
 
             { path: 'bloodanalysis', element: <BloodAnalysisEventList /> },
 
-            { path: 'donorsearch', element: <DonorLookup /> }
+            { path: 'donorsearch', element: <DonorLookup /> },
+
+            { path: 'blogs', element: <>Blog staff</> }
         ]
     },
 

@@ -11,11 +11,12 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { VolunteerProps } from "../DonorLookup/DonorLookup";
-import { getComponentId } from "@/types/BloodCompatibility";
+import { getComponentId, getTypeId } from "@/types/BloodCompatibility";
 import { authenApi } from "@/lib/instance";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
 import { useAuth } from "@/hooks/authen/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 
 interface UrgentFormProps {
@@ -46,14 +47,14 @@ const UrgencyReceiptForm = ({ volunteerIds, setIsUrgentReceiptFormOpen }: Urgent
   const { user } = useAuth()
   const [date, setDate] = useState<Date>();
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+  const navigate = useNavigate()
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "Hiến máu nhân đạo",
       address: "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh",
-      bloodType: "",
-      bloodTypeRh: "",
+      bloodType: volunteerIds[0].bloodTypeName.substring(0,1),
+      bloodTypeRh: volunteerIds[0].bloodTypeName.substring(1),
       bloodComponent: "",
       bloodVolume: "",
       donationDate: undefined,
@@ -66,13 +67,15 @@ const UrgencyReceiptForm = ({ volunteerIds, setIsUrgentReceiptFormOpen }: Urgent
     const volunteerIDs: number[] = volunteerIds.map(selected => selected.id);
     console.log('id array ', volunteerIDs)
 
+    const bloodTypeId = getTypeId(data.bloodType + data.bloodTypeRh)
+    const componentId = getComponentId(data.bloodComponent)
     const payload = {
       title: data.fullName,
       maxOfDonor: data.maxOfDonor,
       estimatedVolume: data.bloodVolume,
       eventTime: data.donationDate.toISOString().split('T')[0],
-      bloodType: data.bloodType + data.bloodTypeRh,
-      bloodComponent: getComponentId(data.bloodComponent) !== -1 ? getComponentId(data.bloodComponent) : 0,
+      bloodTypeId: bloodTypeId !== 0 ? bloodTypeId : 1,
+      bloodComponent: componentId !== -1 ? componentId : 0,
       volunteerIds: volunteerIDs
     }
 
@@ -86,10 +89,11 @@ const UrgencyReceiptForm = ({ volunteerIds, setIsUrgentReceiptFormOpen }: Urgent
 
       if (data.data?.[0].isSucceded) {
         toast.success('Tạo sự kiện khẩn cấp và liên lạc với tình nguyện viên thành công!')
-        setIsUrgentReceiptFormOpen()
+        // setIsUrgentReceiptFormOpen()
+        navigate('/staff/receipt', {replace: true})
       } else {
         console.log('Error urgent creation ', data.data?.[0])
-        
+        toast.error('Tạo sự kiện khẩn cấp thất bại!')
       }
     } catch (error) {
       toast.error('Tạo sự kiện khẩn cấp thất bại!')
@@ -274,9 +278,9 @@ const UrgencyReceiptForm = ({ volunteerIds, setIsUrgentReceiptFormOpen }: Urgent
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="350">350ml</SelectItem>
-                        <SelectItem value="450">450ml</SelectItem>
-                        <SelectItem value="550">550ml</SelectItem>
+                        <SelectItem value="3500">3500ml</SelectItem>
+                        <SelectItem value="4500">4500ml</SelectItem>
+                        <SelectItem value="5500">5500ml</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -340,7 +344,7 @@ const UrgencyReceiptForm = ({ volunteerIds, setIsUrgentReceiptFormOpen }: Urgent
           {/* Buttons */}
           <div className="flex gap-[20px]">
             <Button
-              disabled = {isSubmitting}
+              disabled={isSubmitting}
               type="submit"
               className="w-[150px] h-[35x] text-[16px] bg-red-600 text-white hover:bg-red-800 rounded-full cursor-pointer">
               {isSubmitting ? "Đang gửi..." : "Gửi"}
