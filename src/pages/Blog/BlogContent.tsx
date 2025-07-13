@@ -9,6 +9,8 @@ import LoadingSpinner from "@/components/layout/Spinner";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
+import image from "@/assets/images/event1.png";
+import avatar from "@/assets/images/avatar.png";
 
 interface Blog {
   id: number;
@@ -140,7 +142,7 @@ export default function BlogContent() {
           <h1 className="sm:text-3xl text-xl font-bold font-serif text-red-800 text-center mb-6">{blog.title}</h1>
 
           {/* Image */}
-          <img src={new URL("@/assets/images/event1.png", import.meta.url).href} alt="Blog visual" className="w-full h-auto mb-6 rounded-lg shadow" />
+          <img src={image} alt="Blog visual" className="w-full h-auto mb-6 rounded-lg shadow" />
 
           {/* Content */}
           <div className="space-y-5 text-gray-800 leading-relaxed px-4">
@@ -154,7 +156,7 @@ export default function BlogContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <img src={new URL("@/assets/images/avatar.png", import.meta.url).href} alt="user-avatar" className="w-[40px]" />
+            <img src={avatar} alt="user-avatar" className="w-[40px]" />
             <div className="flex flex-col gap-2">
               <p className="text-sm">
                 Được đăng bởi: <span className="text-red-700 font-medium">{blog.author}</span>
@@ -173,7 +175,7 @@ export default function BlogContent() {
             <div className="sm:space-y-4 space-y-2">
               {comments.map((comment, idx) => (
                 <div key={idx} className="flex items-start gap-4 p-2 rounded-md">
-                  <img src={new URL("@/assets/images/avatar.png", import.meta.url).href} alt="user-avatar" className="size-10 sm:size-12" />
+                  <img src={avatar} alt="user-avatar" className="size-10 sm:size-12" />
                   <div>
                     <p className="font-medium max-sm:text-sm">{comment.member}</p>
                     <p className="text-gray-700 max-sm:text-sm">{comment.text}</p>
@@ -218,7 +220,7 @@ export default function BlogContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <img src={new URL("@/assets/images/avatar.png", import.meta.url).href} alt="user-avatar" className="w-[180px]" />
+          <img src={avatar} alt="user-avatar" className="w-[180px]" />
           <p>
             Được đăng bởi: <span className="text-red-700 text-lg font-medium">{blog.author}</span>
           </p>

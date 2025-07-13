@@ -8,6 +8,14 @@ import UrgentEvents from "../DonationEvent/UrgentEvents";
 import image5 from "@/assets/images/image5.png";
 import image6 from "@/assets/images/image6.png";
 import image7 from "@/assets/images/image7.png";
+import criteria1 from "@/assets/images/Frame1.png";
+import criteria2 from "@/assets/images/Frame2.png";
+import criteria3 from "@/assets/images/18+.png";
+import criteria4 from "@/assets/images/heart.png";
+import criteria5 from "@/assets/images/schedule.png";
+import criteria6 from "@/assets/images/virus.png";
+import Vector1 from "@/assets/images/Vector1.png";
+import Vector2 from "@/assets/images/Vector2.png";
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -67,32 +75,32 @@ export default function HomePage() {
   const criterias = [
     {
       text: "Cân nặng: Nam > 45 kg và Nữ > 42 kg",
-      image: "src/assets/images/Frame1.png",
+      image: criteria1,
       iconColor: "text-red-500",
     },
     {
       text: "Không nghiện ma túy, rượu bia và các chất kích thích",
-      image: "src/assets/images/Frame2.png",
+      image: criteria2,
       iconColor: "text-red-600",
     },
     {
       text: "Người khỏe mạnh trong độ tuổi từ 18 đến 60 tuổi",
-      image: "src/assets/images/18+.png",
+      image: criteria3,
       iconColor: "text-red-700",
     },
     {
       text: "Không mắc bệnh mãn tính hoặc cấp tính về tim mạch, huyết áp, hô hấp, dạ dày...",
-      image: "src/assets/images/heart.png",
+      image: criteria4,
       iconColor: "text-red-500",
     },
     {
       text: "Thời gian tối thiểu giữa 2 lần hiến máu là 12 tuần đối với cả Nam và Nữ",
-      image: "src/assets/images/schedule.png",
+      image: criteria5,
       iconColor: "text-red-600",
     },
     {
       text: "Không mắc hoặc không có các hành vi nguy cơ lây nhiễm HIV, viêm gan B, viêm gan C, và các virus lây qua đường truyền máu",
-      image: "src/assets/images/virus.png",
+      image: criteria6,
       iconColor: "text-red-700",
     },
   ];
@@ -180,12 +188,7 @@ export default function HomePage() {
           <div className="grid sm:grid-cols-2 gap-8 max-w-6xl mx-auto mb-16">
             <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow flex flex-col sm:flex-row gap-6 items-start text-left">
               <div className={`bg-red-100 p-4 rounded-full min-w-[80px] ${expandedIndex === 0 ? "animate-pulse" : ""}`}>
-                <img
-                  src="src/assets/images/Vector1.png"
-                  alt=""
-                  className="w-12 h-12 object-contain" // Fixed aspect ratio
-                  style={{ aspectRatio: "1/1" }}
-                />
+                <img src={Vector1} alt="" className="w-12 h-12 object-contain" style={{ aspectRatio: "1/1" }} />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-red-700 mb-2">Buổi hiến máu đầu tiên</h2>
@@ -199,12 +202,7 @@ export default function HomePage() {
 
             <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow flex flex-col sm:flex-row gap-6 items-start text-left">
               <div className={`bg-red-100 p-4 rounded-full min-w-[80px] ${expandedIndex === 1 ? "animate-pulse" : ""}`}>
-                <img
-                  src="src/assets/images/Vector2.png"
-                  alt=""
-                  className="w-12 h-12 object-contain" // Fixed aspect ratio
-                  style={{ aspectRatio: "1/1" }}
-                />
+                <img src={Vector2} alt="" className="w-12 h-12 object-contain" style={{ aspectRatio: "1/1" }} />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-red-700 mb-2">Quy trình hiến máu</h2>

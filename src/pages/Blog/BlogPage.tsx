@@ -8,6 +8,7 @@ import { Filter, Layers } from "lucide-react";
 import { Link } from "react-router-dom";
 import api from "@/lib/instance";
 import { format } from "date-fns";
+import image from "@/assets/images/event1.png";
 
 interface Blog {
   id: number;
@@ -83,7 +84,7 @@ export default function BlogPage() {
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
               <h2 className="sm:text-2xl text-xl text-center font-semibold text-[#705c7d] m-4">{blog.title}</h2>
-              <img src={new URL("@/assets/images/event1.png", import.meta.url).href} alt={blog.title} className="w-full h-48 object-cover" />
+              <img src={image} alt={blog.title} className="w-full h-48 object-cover" />
               <div className="p-5 flex flex-col justify-between min-h-[200px]">
                 <p className="text-gray-400 sm:text-lg text-md mb-4 line-clamp-3">{blog.content}</p>
                 <div className="flex flex-col items-center mt-auto space-y-3">
