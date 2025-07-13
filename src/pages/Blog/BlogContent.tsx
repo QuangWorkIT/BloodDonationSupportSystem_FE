@@ -187,7 +187,7 @@ export default function BlogContent() {
             <div className="mt-6 space-y-2">
               <h4 className="sm:text-2xl text-lg font-semibold mb-5">Bình luận</h4>
               <div className="flex gap-4">
-                <img src={new URL("@/assets/images/avatar.png", import.meta.url).href} alt="user-avatar" className="sm:size-[60px] size-10" />
+                <img src={avatar} alt="user-avatar" className="sm:size-[60px] size-10" />
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
