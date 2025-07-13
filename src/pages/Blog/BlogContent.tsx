@@ -8,6 +8,7 @@ import api from "@/lib/instance";
 import LoadingSpinner from "@/components/layout/Spinner";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { toast } from "react-toastify";
+import { format } from "date-fns";
 
 interface Blog {
   id: number;
@@ -139,7 +140,7 @@ export default function BlogContent() {
           <h1 className="sm:text-3xl text-xl font-bold font-serif text-red-800 text-center mb-6">{blog.title}</h1>
 
           {/* Image */}
-          <img src={new URL("@/assets/images/event2.png", import.meta.url).href} alt="Blog visual" className="w-full h-auto mb-6 rounded-lg shadow" />
+          <img src={new URL("@/assets/images/event1.png", import.meta.url).href} alt="Blog visual" className="w-full h-auto mb-6 rounded-lg shadow" />
 
           {/* Content */}
           <div className="space-y-5 text-gray-800 leading-relaxed px-4">
@@ -158,8 +159,8 @@ export default function BlogContent() {
               <p className="text-sm">
                 Được đăng bởi: <span className="text-red-700 font-medium">{blog.author}</span>
               </p>
-              <p className="text-sm">Ngày đăng: {blog.createAt}</p>
-              <p className="text-sm">Chỉnh sửa lần cuối: {blog.lastUpdate}</p>
+              <p className="text-sm">Ngày đăng: {format(new Date(blog.createAt), "dd/MM/yyyy")}</p>
+              <p className="text-sm">Chỉnh sửa lần cuối: {blog.lastUpdate ? format(new Date(blog.lastUpdate), "dd/MM/yyyy") : ""}</p>
             </div>
             <button onClick={() => {}} className="bg-red-700 hover:bg-red-800 text-white text-sm px-2 py-2 rounded-lg cursor-pointer">
               Xem hồ sơ
@@ -221,8 +222,8 @@ export default function BlogContent() {
           <p>
             Được đăng bởi: <span className="text-red-700 text-lg font-medium">{blog.author}</span>
           </p>
-          <p>Ngày đăng: {blog.createAt}</p>
-          <p>Chỉnh sửa lần cuối: {blog.lastUpdate}</p>
+          <p>Ngày đăng: {format(new Date(blog.createAt), "dd/MM/yyyy")}</p>
+          <p>Chỉnh sửa lần cuối: {blog.lastUpdate ? format(new Date(blog.lastUpdate), "dd/MM/yyyy") : ""}</p>
           <button onClick={() => {}} className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg cursor-pointer">
             Xem hồ sơ
           </button>

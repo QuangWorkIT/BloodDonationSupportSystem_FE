@@ -5,6 +5,9 @@ import BloodDonationNavbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Link } from "react-router-dom";
 import UrgentEvents from "../DonationEvent/UrgentEvents";
+import image5 from "@/assets/images/image5.png";
+import image6 from "@/assets/images/image6.png";
+import image7 from "@/assets/images/image7.png";
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -15,21 +18,21 @@ export default function HomePage() {
       title: "Tham gia hiến máu lần đầu tiên, bạn cần biết những gì?",
       description: "",
       buttonText: "Xem tại đây",
-      imageUrl: "src/assets/images/image7.png",
+      imageUrl: image7,
       bgGradient: "bg-gradient-to-r from-red-700 to-red-500",
     },
     {
       title: "Tham gia hiến máu KHẨN",
       description: "Để phục vụ cho nhu cầu truyền máu của người bệnh",
       buttonText: "Tham gia ngay",
-      imageUrl: "src/assets/images/image6.png",
+      imageUrl: image6,
       bgGradient: "bg-gradient-to-r from-red-800 to-red-600",
     },
     {
       title: "TP.HCM hiện đang cần\n2000+ ĐƠN VỊ MÁU",
       description: "Để phục vụ cho cấp cứu và điều trị",
       buttonText: "Đăng kí hiến máu tại đây",
-      imageUrl: "src/assets/images/image5.png",
+      imageUrl: image5,
       bgGradient: "bg-gradient-to-r from-red-900 to-red-700",
     },
   ];
@@ -115,9 +118,7 @@ export default function HomePage() {
 
       <div className="flex flex-col sm:gap-[100px] gap-10">
         {/* Hero Slider - With Red Hover Buttons */}
-        <section
-          className={`relative h-[300px] sm:h-[500px] ${slides[currentSlide].bgGradient} flex items-center overflow-hidden`}
-        >
+        <section className={`relative h-[300px] sm:h-[500px] ${slides[currentSlide].bgGradient} flex items-center overflow-hidden`}>
           <div className="absolute inset-0 bg-black/30 z-10"></div>
 
           {/* Carousel Navigation Buttons with Red Hover */}
@@ -146,9 +147,7 @@ export default function HomePage() {
                   </span>
                 ))}
               </h2>
-              {slides[currentSlide].description && (
-                <p className="text-yellow-200 text-lg sm:text-xl mb-6">{slides[currentSlide].description}</p>
-              )}
+              {slides[currentSlide].description && <p className="text-yellow-200 text-lg sm:text-xl mb-6">{slides[currentSlide].description}</p>}
               <Button className="bg-white text-red-700 hover:bg-gray-100 font-bold py-6 px-8 rounded-full shadow-lg transition-all hover:scale-105">
                 {slides[currentSlide].buttonText}
               </Button>
@@ -158,9 +157,7 @@ export default function HomePage() {
                   <button
                     key={index}
                     onClick={() => setCurrentSlide(index)}
-                    className={`h-2 w-2 sm:h-3 sm:w-3 rounded-full transition-all ${
-                      currentSlide === index ? "bg-white w-6" : "bg-white/50"
-                    }`}
+                    className={`h-2 w-2 sm:h-3 sm:w-3 rounded-full transition-all ${currentSlide === index ? "bg-white w-6" : "bg-white/50"}`}
                   />
                 ))}
               </div>
@@ -192,13 +189,8 @@ export default function HomePage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-red-700 mb-2">Buổi hiến máu đầu tiên</h2>
-                <p className="text-gray-600 mb-4 text-sm sm:text-base mt-4">
-                  Những gì bạn cần biết cho lần đầu tiên hiến máu
-                </p>
-                <Link
-                  to="/bloodinfo"
-                  className="inline-flex items-center text-red-600 font-medium hover:text-red-800 group text-sm sm:text-base mt-4"
-                >
+                <p className="text-gray-600 mb-4 text-sm sm:text-base mt-4">Những gì bạn cần biết cho lần đầu tiên hiến máu</p>
+                <Link to="/bloodinfo" className="inline-flex items-center text-red-600 font-medium hover:text-red-800 group text-sm sm:text-base mt-4">
                   Tìm hiểu thêm
                   <ChevronDown className="ml-1 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -216,13 +208,8 @@ export default function HomePage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-red-700 mb-2">Quy trình hiến máu</h2>
-                <p className="text-gray-600 mb-4 text-sm sm:text-base">
-                  Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả
-                </p>
-                <Link
-                  to="/bloodinfo"
-                  className="inline-flex items-center text-red-600 font-medium hover:text-red-800 group text-sm sm:text-base"
-                >
+                <p className="text-gray-600 mb-4 text-sm sm:text-base">Tìm hiểu về quy trình hiến máu một cách an toàn và hiệu quả</p>
+                <Link to="/bloodinfo" className="inline-flex items-center text-red-600 font-medium hover:text-red-800 group text-sm sm:text-base">
                   Tìm hiểu thêm
                   <ChevronDown className="ml-1 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -238,15 +225,14 @@ export default function HomePage() {
               <span className="absolute bottom-0 left-0 w-full h-2 bg-red-100 z-0"></span>
             </h2>
             <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
-              Cơ sở Hiến máu Nhân đạo - nơi kết nối những tấm lòng nhân ái vì cộng đồng. Chúng tôi là đơn vị y tế chuyên
-              tiếp nhận, quản lý và điều phối nguồn máu từ người hiến tới những bệnh nhân cần truyền máu kịp thời. Với
-              đội ngũ y bác sĩ tận tâm, hệ thống lưu trữ máu hiện đại cùng nền tảng công nghệ hỗ trợ hiệu quả, chúng tôi
-              cam kết mang lại quy trình hiến máu an toàn, nhanh chóng và minh bạch.
+              Cơ sở Hiến máu Nhân đạo - nơi kết nối những tấm lòng nhân ái vì cộng đồng. Chúng tôi là đơn vị y tế chuyên tiếp nhận, quản lý và điều phối nguồn
+              máu từ người hiến tới những bệnh nhân cần truyền máu kịp thời. Với đội ngũ y bác sĩ tận tâm, hệ thống lưu trữ máu hiện đại cùng nền tảng công nghệ
+              hỗ trợ hiệu quả, chúng tôi cam kết mang lại quy trình hiến máu an toàn, nhanh chóng và minh bạch.
             </p>
           </div>
         </section>
 
-        <UrgentEvents/>
+        <UrgentEvents />
         {/* Blood Donation Criteria Section - Responsive Improvements */}
         <section className="bg-[#a83a42] py-12 sm:py-16 px-6">
           <div className="container mx-auto">
@@ -254,9 +240,7 @@ export default function HomePage() {
               <h2 className="text-3xl sm:text-5xl font-bold text-white mb-4">
                 <span className="text-yellow-300">Tiêu chuẩn</span> hiến máu
               </h2>
-              <p className="text-red-100 max-w-2xl mx-auto text-base sm:text-lg">
-                Mỗi giọt máu bạn trao đi là một cơ hội sống bạn mang lại cho người khác
-              </p>
+              <p className="text-red-100 max-w-2xl mx-auto text-base sm:text-lg">Mỗi giọt máu bạn trao đi là một cơ hội sống bạn mang lại cho người khác</p>
             </div>
 
             <div className="grid sm:grid-cols-3 grid-cols-1 gap-4 sm:gap-6 max-w-6xl mx-auto">
@@ -265,9 +249,7 @@ export default function HomePage() {
                   key={idx}
                   className="bg-white rounded-xl shadow-xl p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 hover:transform hover:-translate-y-2 transition-transform duration-300"
                 >
-                  <div
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full ${item.iconColor} bg-opacity-20 flex items-center justify-center`}
-                  >
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full ${item.iconColor} bg-opacity-20 flex items-center justify-center`}>
                     <img src={item.image} alt="" className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
                   <div className="font-medium text-gray-800 text-sm sm:text-base">{item.text}</div>
@@ -281,26 +263,17 @@ export default function HomePage() {
         <section className="container mx-auto px-6 py-12 sm:py-16">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-red-700">Lưu ý quan trọng</h2>
-            <p className="text-gray-600 mb-8 sm:mb-12 max-w-2xl mx-auto text-base sm:text-lg">
-              Những điều cần biết trước khi tham gia hiến máu nhân đạo
-            </p>
+            <p className="text-gray-600 mb-8 sm:mb-12 max-w-2xl mx-auto text-base sm:text-lg">Những điều cần biết trước khi tham gia hiến máu nhân đạo</p>
 
             <div className="space-y-3 sm:space-y-4">
               {importantNotes.map((note, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-                >
+                <div key={index} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <button
                     className="w-full flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 text-left bg-white hover:bg-red-50 transition-colors"
                     onClick={() => setExpandedIndex(index === expandedIndex ? null : index)}
                   >
                     <h3 className="text-base sm:text-lg font-semibold text-red-700">{note.title}</h3>
-                    <ChevronDown
-                      className={`w-5 h-5 text-red-600 transition-transform duration-200 ${
-                        expandedIndex === index ? "rotate-180" : ""
-                      }`}
-                    />
+                    <ChevronDown className={`w-5 h-5 text-red-600 transition-transform duration-200 ${expandedIndex === index ? "rotate-180" : ""}`} />
                   </button>
 
                   {expandedIndex === index && (
@@ -319,10 +292,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            <Link
-              to="/blogs"
-              className="inline-block mt-6 sm:mt-8 text-red-600 font-medium hover:text-red-800 group transition-colors text-sm sm:text-base"
-            >
+            <Link to="/blogs" className="inline-block mt-6 sm:mt-8 text-red-600 font-medium hover:text-red-800 group transition-colors text-sm sm:text-base">
               Xem thêm thông tin
               <span className="block h-0.5 bg-red-600 group-hover:bg-red-800 transition-colors w-0 group-hover:w-full duration-300"></span>
             </Link>
