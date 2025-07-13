@@ -42,8 +42,8 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "",
-      address: "",
+      fullName: "Hiến máu nhân đạo",
+      address: "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh",
       bloodVolume: "",
       maxOfDonor: 0,
       donationDate: undefined,
@@ -55,7 +55,7 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
       try {
         setIsSubmitting(true)
         const payload = {
-          title: "Hiến máu nhân đạo",
+          title: data.fullName,
           maxOfDonor: data.maxOfDonor,
           estimatedVolume: data.bloodVolume,
           eventTime: data.donationDate.toISOString().split('T')[0]
@@ -81,7 +81,7 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
     };
 
   return (
-    <div className="w-[800px] mx-auto px-8 py-6 bg-white rounded-lg shadow-md border">
+    <div className="w-[800px] mx-auto mt-10 px-8 py-6 bg-white rounded-lg shadow-md border">
       <div className="flex justify-between">
         <h2 className="text-[27px] font-normal mb-6 ">Đơn yêu cầu nhận máu</h2>
         <svg
@@ -168,9 +168,9 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="350">350ml</SelectItem>
-                        <SelectItem value="450">450ml</SelectItem>
-                        <SelectItem value="550">550ml</SelectItem>
+                        <SelectItem value="3500">3500ml</SelectItem>
+                        <SelectItem value="4500">4500ml</SelectItem>
+                        <SelectItem value="5500">5500ml</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
