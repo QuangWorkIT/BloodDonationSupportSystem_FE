@@ -37,7 +37,11 @@ import DonorReceiptList from '@/pages/Staff/ManageReceipt/DonorReceiptList';
 const routes: RouteObject[] = [
     { path: '/', element: <RoleBaseRedirect /> },
 
-    { path: '/home', element: <HomePage /> },
+    {
+        path: '/home', element: (
+            <HomePage />
+        )
+    },
 
     { path: '/login', element: <LoginForm /> },
 
