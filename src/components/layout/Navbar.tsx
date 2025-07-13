@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaBars, FaSearch, FaTimes, FaUser } from "react-icons/fa";
+import { FaBars, FaUser } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";

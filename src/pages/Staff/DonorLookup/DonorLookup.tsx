@@ -22,7 +22,7 @@ import { authenApi } from "@/lib/instance";
 import type { AxiosError } from "axios";
 import UrgencyReceiptForm from "../UrgencyReceiptRequest/UrgencyReceiptForm";
 import LoadingSpinner from "@/components/layout/Spinner";
-import DonorMap from "./DonorMap";
+// import DonorMap from "./DonorMap";
 
 export interface VolunteerProps {
     id: number,

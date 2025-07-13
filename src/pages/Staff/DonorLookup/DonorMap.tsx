@@ -1,5 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
+// import L from 'leaflet';
 import type { VolunteerProps } from '@/pages/Staff/DonorLookup/DonorLookup'
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';

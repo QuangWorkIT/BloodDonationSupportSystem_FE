@@ -71,8 +71,18 @@ const FeedbackModal = ({
     </AnimatePresence>
   );
 };
+type Registration = {
+  id: number;
+  eventName: string;
+  date: string;
+  time: string;
+  location: string;
+  type: "normal" | "volunteer";
+  registeredDate: string;
+  volunteerDate?: string;
+};
 const RegistrationComponent = () => {
-  const [registrations, setRegistrations] = useState([
+  const [registrations, setRegistrations] = useState<Registration[]>([
     {
       id: 1,
       eventName: "Ngày hội hiến máu Xuân hồng 2025",
@@ -113,11 +123,11 @@ const RegistrationComponent = () => {
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [showDateError, setShowDateError] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
+  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [tempVolunteerDate, setTempVolunteerDate] = useState<Date | null>(null);
   const [registrationToCancel, setRegistrationToCancel] = useState<number | null>(null);
 
-  const openEditModal = (reg: unknown) => {
+  const openEditModal = (reg: Registration) => {
     setSelectedRegistration(reg);
     setTempVolunteerDate(volunteerDates[reg.id] || parseDateString(reg.date));
     setIsEditModalOpen(true);
