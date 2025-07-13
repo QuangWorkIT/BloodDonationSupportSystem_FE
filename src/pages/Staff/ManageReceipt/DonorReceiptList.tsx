@@ -60,7 +60,7 @@ function DonorReceiptList() {
     return (
         <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
             <div className="flex justify-between items-center pb-4">
-                <p className="text-[26px] font-bold">Sự kiện ngày <span className="italic font-semibold">{eventTime}</span></p>
+                <p className="text-[26px] font-semibold ">Sự kiện ngày <span className="italic font-semibold">{eventTime}</span></p>
 
                 {/* search donor */}
                 <Form {...searchForm}>

@@ -122,12 +122,6 @@ const BloodCollectEventList = () => {
         <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
           <div className="mb-4 flex justify-between">
             <h2 className="text-3xl font-medium text-gray-800 ml-2">Các sự kiện nhận máu</h2>
-            <div className="flex gap-4 items-center">
-              <button className="bg-blue-200 hover:bg-blue-400 text-gray-700 px-4 py-2 rounded-md text-lg flex items-center gap-2 cursor-pointer">
-                <CalendarDays className="w-5" />
-                Tạo sự kiện hiến máu
-              </button>
-            </div>
           </div>
 
           <div className="space-y-6 mb-8">

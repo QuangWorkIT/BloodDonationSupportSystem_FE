@@ -6,6 +6,8 @@ import StandardReceiptForm from "../StandardReceiptRequest/StandardReceiptForm";
 import api, { authenApi } from "@/lib/instance";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Button } from "@/components/ui/button";
+
 
 interface Event {
   id: number;
@@ -121,16 +123,17 @@ const ReceiptEventList = () => {
             <h2 className="text-3xl font-medium text-gray-800 ml-2">Các sự kiện hiến máu</h2>
             <button
               onClick={() => setCreateDonationFormOpen(true)}
-              className="bg-blue-200 hover:bg-blue-400 text-gray-700 px-4 py-2 rounded-md text-lg flex items-center gap-2 cursor-pointer">
+              className="bg-blue-300 hover:bg-blue-500 text-gray-700 px-4 py-2 rounded-md text-lg flex items-center gap-2
+              cursor-pointer transition-all duration-300 ease-in-out hover:text-white">
               <CalendarDays className="w-5" />
               Tạo sự kiện hiến máu
             </button>
           </div>
-          <div className="space-y-6 mb-8">
+          <div className="space-y-6 mt-5">
             {currentEvents.map((event: Event, index) => (
               <motion.div
                 key={event.id}
-                className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
+                className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200 mb-10"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -141,19 +144,24 @@ const ReceiptEventList = () => {
                     <FaHeart className="text-white text-xl" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl text-red-700 font-semibold mb-5 hover:underline">
-                      <Link to={`/staff/receipt/list/${event.id}`}>
-                        {event.title}
-                      </Link>
-                    </h3>
-                    <p className="text-xl text-gray-600 mb-5">
+                    <div className="flex gap-5">
+                      <h3 className="text-2xl text-[#ba3f3f] font-semibold mb-5 hover:underline w-max">
+                        <Link to={`/staff/receipt/list/${event.id}`}>
+                          {event.title}
+                        </Link>
+                      </h3>
+                      {event.isUrgent && (
+                        <Button className="bg-[#AA3939] hover:bg-[#ba3f3f] font-bold">Nguy cấp</Button>
+                      )}
+                    </div>
+                    <p className="text-lg text-gray-600 mb-5">
                       Địa chỉ: <span className="font-semibold text-black">387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh</span>
                     </p>
-                    <p className="text-xl text-gray-600 mb-5">
+                    <p className="text-lg text-gray-600 mb-5">
                       Thời gian hoạt động: <span className="font-semibold text-black">{event.eventTime}</span>,
                       từ  <span className="font-semibold text-black">7:00</span> đến <span className="font-semibold text-black">17:00</span>
                     </p>
-                    <p className="text-xl text-gray-600">
+                    <p className="text-lg text-gray-600">
                       Ưu tiên nhóm máu: <span className="font-semibold text-black">{event.bloodType ? event.bloodType : "A, B, AB, O"}</span>
                     </p>
                   </div>

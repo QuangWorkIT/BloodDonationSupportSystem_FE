@@ -44,9 +44,11 @@ const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
             key={item.id}
             to={item.path}
             onClick={() => setActiveItem(item.id)}
-            className={`flex items-center gap-6 w-full h-[80px] px-4 py-4 text-md transition-colors rounded-lg cursor-pointer ${
-              location.pathname === item.path || activeItem === item.id ? "bg-red-400 text-white" : "text-gray-600 hover:bg-red-50 hover:text-red-400"
-            }`}
+            className={`flex items-center gap-6 w-full h-[80px] px-4 py-4 text-md transition-colors rounded-lg cursor-pointer 
+              ${((location.pathname.includes(item.path) || location.pathname.includes("/staff/donorsearch")) && activeItem === item.id)
+                ? "bg-red-400 text-white"
+                : "text-gray-600 hover:bg-red-50 hover:text-red-400"
+              }`}
           >
             {item.icon}
             <span className="text-md font-medium">{item.label}</span>
