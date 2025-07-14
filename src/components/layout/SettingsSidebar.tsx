@@ -170,7 +170,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
         <div className="w-24 h-24 bg-[#C14B53] rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
           NVA
         </div>
-        <h1 className="text-xl font-bold">{user?.name}</h1>
+        <h1 className="text-xl font-bold">{user?.unique_name}</h1>
       </div>
 
       <div className="mb-6">
