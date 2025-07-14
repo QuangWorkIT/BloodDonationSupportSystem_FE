@@ -139,7 +139,7 @@ export default function BlogContent() {
           transition={{ duration: 0.4 }}
         >
           {/* Blog Header */}
-          <h1 className="sm:text-3xl text-xl font-bold font-serif text-red-800 text-center mb-6">{blog.title}</h1>
+          <h1 className="sm:text-3xl text-xl font-bold text-red-800 text-center mb-6">{blog.title}</h1>
 
           {/* Image */}
           <img src={image} alt="Blog visual" className="w-full h-auto mb-6 rounded-lg shadow" />
