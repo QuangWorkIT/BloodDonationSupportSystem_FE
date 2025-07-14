@@ -1,11 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { authenApi } from "@/lib/instance";
+import { AxiosError } from "axios";
 
+// API Response interfaces
+interface ApiResponse<T> {
+  isSuccess: boolean;
+  message: string;
+  data: T;
+}
 
+// API Donation interface matching the actual response
+interface ApiDonation {
+  registrationId: number;
+  donateDate: string;
+  facilityName: string;
+  facilityAddress: string;
+  longitude: number;
+  latitude: number;
+  status: boolean;
+  volume: number | null;
+  description: string;
+}
 
+// Display Donation interface for the UI
 interface Donation {
+  registrationId: number;
   date: string;
-  type: string;
   facility: string;
   address: string;
   status: "Hoàn thành" | "Thất bại";
@@ -19,7 +40,27 @@ interface DonationDetailsModalProps {
   onClose: () => void;
 }
 
-// Feedback Modal Component
+// Helper function to format date from API format (YYYY-MM-DD) to display format (DD / MM / YYYY)
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day} / ${month} / ${year}`;
+};
+
+// Helper function to transform API data to display format
+const transformApiDonation = (apiDonation: ApiDonation): Donation => {
+  return {
+    registrationId: apiDonation.registrationId,
+    date: formatDate(apiDonation.donateDate),
+    facility: apiDonation.facilityName,
+    address: apiDonation.facilityAddress,
+    status: apiDonation.status ? "Hoàn thành" : "Thất bại",
+    amount: apiDonation.volume ? `${apiDonation.volume}ml` : undefined,
+    reason: !apiDonation.status ? apiDonation.description : undefined,
+  };
+};
 
 // Donation Details Modal Component
 const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({ 
@@ -50,13 +91,13 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
             
             <div className="space-y-6">
               <div>
-                <p className="text-base text-gray-500">Ngày hiến máu</p>
-                <p className="font-medium">{donation.date}</p>
+                <p className="text-base text-gray-500">Mã đăng ký</p>
+                <p className="font-medium">#{donation.registrationId}</p>
               </div>
               
               <div>
-                <p className="text-base text-gray-500">Loại máu hiến</p>
-                <p className="font-medium">{donation.type}</p>
+                <p className="text-base text-gray-500">Ngày hiến máu</p>
+                <p className="font-medium">{donation.date}</p>
               </div>
               
               <div>
@@ -105,43 +146,47 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 
 // Main Donation History Component
 const DonationHistory: React.FC = () => {
-  const donations: Donation[] = [
-    {
-      date: "01 / 01 / 2024",
-      type: "Toàn phần",
-      facility: "Viện Huyết học - Truyền máu Trung ương",
-      address: "14 Trần Thái Tông, Cầu Giấy, Hà Nội",
-      status: "Hoàn thành",
-      amount: "350ml"
-    },
-    {
-      date: "13 / 05 / 2024",
-      type: "Huyết tương",
-      facility: "Bệnh viện Bạch Mai",
-      address: "78 Giải Phóng, Đống Đa, Hà Nội",
-      status: "Thất bại",
-      reason: "Huyết áp không ổn định"
-    },
-    {
-      date: "18 / 08 / 2024",
-      type: "Toàn phần",
-      facility: "Bệnh viện Hữu nghị Việt Đức",
-      address: "40 Tràng Thi, Hoàn Kiếm, Hà Nội",
-      status: "Hoàn thành",
-      amount: "450ml"
-    },
-    {
-      date: "12 / 03 / 2025",
-      type: "Tiểu cầu",
-      facility: "Bệnh viện Đa khoa Xanh Pôn",
-      address: "12 Chu Văn An, Ba Đình, Hà Nội",
-      status: "Thất bại",
-      reason: "Nồng độ hemoglobin thấp"
-    },
-  ];
-
+  // State Management
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Data Fetching
+  useEffect(() => {
+    const fetchDonationHistory = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch donation history data from the API
+        const response = await authenApi.get<ApiResponse<ApiDonation[]>>(
+          `/api/donation-history`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.data.isSuccess) {
+          // Transform API data to display format
+          const transformedDonations = response.data.data.map(transformApiDonation);
+          setDonations(transformedDonations);
+        } else {
+          setError(response.data.message || "Failed to fetch donation history");
+        }
+      } catch (err) {
+        const error = err as AxiosError<ApiResponse<null>>;
+        setError(error.response?.data?.message || error.message || "Error fetching donation history data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDonationHistory();
+  }, []);
 
   const handleDetailsClick = (donation: Donation) => {
     setSelectedDonation(donation);
@@ -157,51 +202,74 @@ const DonationHistory: React.FC = () => {
     >
       <h2 className="text-2xl font-bold mb-6 text-[#C14B53]">Lịch sử hiến máu</h2>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">Ngày</th>
-              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">
-                Loại máu hiến
-              </th>
-              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">Cơ sở</th>
-              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">
-                Trạng thái
-              </th>
-              <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">
-                Hành động
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {donations.map((donation, index) => (
-              <tr key={index}>
-                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">{donation.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">{donation.type}</td>
-                <td className="px-6 py-4 text-base text-gray-900">{donation.facility}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-base">
-                  <span className={`px-2 py-1 rounded-full text-base font-medium ${
-                    donation.status === "Hoàn thành" 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {donation.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 ">
-                  <button
-                    onClick={() => handleDetailsClick(donation)}
-                    className="text-[#C14B53] hover:underline cursor-pointer"
-                  >
-                    Xem chi tiết
-                  </button>
-                </td>
+      {loading && (
+        <div className="flex justify-center items-center py-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C14B53]"></div>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+          {error}
+          <button onClick={() => setError(null)} className="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <span className="text-red-700">×</span>
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">Mã ĐK</th>
+                <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">Ngày</th>
+                <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">Cơ sở</th>
+                <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">
+                  Trạng thái
+                </th>
+                <th className="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider">
+                  Hành động
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {donations.length > 0 ? (
+                donations.map((donation, index) => (
+                  <tr key={donation.registrationId}>
+                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">#{donation.registrationId}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">{donation.date}</td>
+                    <td className="px-6 py-4 text-base text-gray-900">{donation.facility}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-base">
+                      <span className={`px-2 py-1 rounded-full text-base font-medium ${
+                        donation.status === "Hoàn thành" 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {donation.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 ">
+                      <button
+                        onClick={() => handleDetailsClick(donation)}
+                        className="text-[#C14B53] hover:underline cursor-pointer"
+                      >
+                        Xem chi tiết
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-base text-gray-500">
+                    Không có lịch sử hiến máu nào
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <DonationDetailsModal 
         donation={selectedDonation} 

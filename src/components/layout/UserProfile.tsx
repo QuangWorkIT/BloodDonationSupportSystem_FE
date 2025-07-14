@@ -4,53 +4,237 @@ import AccountEdit from "./AccountEdit";
 import DonationHistory from "./DonationHistory";
 import RegistrationComponent from "./RegistrationComponent";
 import SettingsSidebar from "./SettingsSidebar";
+import { authenApi } from "@/lib/instance";
+import { AxiosError } from "axios";
 
-// MobileDonationHistory component
-interface DonationItem {
-  id: string;
+// API Response interfaces
+interface ApiResponse<T> {
+  isSuccess: boolean;
+  message: string;
+  data: T;
+}
+
+// API Donation interface matching the actual response
+interface ApiDonation {
+  registrationId: number;
+  donateDate: string;
+  facilityName: string;
+  facilityAddress: string;
+  longitude: number;
+  latitude: number;
+  status: boolean;
+  volume: number | null;
+  description: string;
+}
+
+// Mobile Donation interface for the UI
+interface MobileDonationItem {
+  registrationId: number;
   date: string;
   location: string;
   amount: string;
   status: string;
+  description?: string;
 }
 
+// Helper function to format date from API format (YYYY-MM-DD) to display format (DD/MM/YYYY)
+const formatMobileDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+// Helper function to transform API data to mobile display format
+const transformApiDonationToMobile = (apiDonation: ApiDonation): MobileDonationItem => {
+  return {
+    registrationId: apiDonation.registrationId,
+    date: formatMobileDate(apiDonation.donateDate),
+    location: apiDonation.facilityName,
+    amount: apiDonation.volume ? `${apiDonation.volume}ml` : "N/A",
+    status: apiDonation.status ? "Hoàn thành" : "Thất bại",
+    description: apiDonation.description,
+  };
+};
+
+// MobileDonationHistory component
 const MobileDonationHistory: React.FC = () => {
-  // Sample data - replace with your actual data
-  const donations: DonationItem[] = [
-    { id: "1", date: "15/06/2023", location: "Bệnh viện Chợ Rẫy", amount: "350ml", status: "Hoàn thành" },
-    { id: "2", date: "20/03/2023", location: "Viện Huyết học", amount: "350ml", status: "Hoàn thành" },
-    { id: "3", date: "10/12/2022", location: "Bệnh viện Nhân dân 115", amount: "350ml", status: "Hoàn thành" },
-  ];
+  // State Management
+  const [donations, setDonations] = useState<MobileDonationItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedDonation, setSelectedDonation] = useState<MobileDonationItem | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Data Fetching
+  useEffect(() => {
+    const fetchDonationHistory = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch donation history data from the API
+        const response = await authenApi.get<ApiResponse<ApiDonation[]>>(
+          `/api/donation-history`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.data.isSuccess) {
+          // Transform API data to mobile display format
+          const transformedDonations = response.data.data.map(transformApiDonationToMobile);
+          setDonations(transformedDonations);
+        } else {
+          setError(response.data.message || "Failed to fetch donation history");
+        }
+      } catch (err) {
+        const error = err as AxiosError<ApiResponse<null>>;
+        setError(error.response?.data?.message || error.message || "Error fetching donation history data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDonationHistory();
+  }, []);
+
+  const handleDetailsClick = (donation: MobileDonationItem) => {
+    setSelectedDonation(donation);
+    setShowDetailsModal(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-10">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C14B53]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+        {error}
+        <button onClick={() => setError(null)} className="absolute top-0 bottom-0 right-0 px-4 py-3">
+          <span className="text-red-700">×</span>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {donations.map((donation) => (
-        <motion.div 
-          key={donation.id}
-          whileHover={{ scale: 1.01 }}
-          className="bg-white rounded-lg shadow p-4"
-        >
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-medium text-gray-900">{donation.location}</h3>
-              <p className="text-sm text-gray-500">{donation.date}</p>
+      {donations.length > 0 ? (
+        donations.map((donation) => (
+          <motion.div 
+            key={donation.registrationId}
+            whileHover={{ scale: 1.01 }}
+            className="bg-white rounded-lg shadow p-4"
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-medium text-gray-900">{donation.location}</h3>
+                <p className="text-sm text-gray-500">{donation.date}</p>
+                <p className="text-xs text-gray-400">Mã: #{donation.registrationId}</p>
+              </div>
+              <span className={`px-2 py-1 text-xs rounded-full ${
+                donation.status === "Hoàn thành" 
+                  ? "bg-green-100 text-green-800" 
+                  : "bg-red-100 text-red-800"
+              }`}>
+                {donation.status}
+              </span>
             </div>
-            <span className={`px-2 py-1 text-xs rounded-full ${
-              donation.status === "Hoàn thành" 
-                ? "bg-green-100 text-green-800" 
-                : "bg-yellow-100 text-yellow-800"
-            }`}>
-              {donation.status}
-            </span>
-          </div>
-          <div className="mt-2 flex justify-between items-center">
-            <span className="text-sm font-medium">Lượng máu: {donation.amount}</span>
-            <button className="text-[#C14B53] text-sm font-medium hover:underline">
-              Chi tiết
-            </button>
-          </div>
-        </motion.div>
-      ))}
+            <div className="mt-2 flex justify-between items-center">
+              <span className="text-sm font-medium">Lượng máu: {donation.amount}</span>
+              <button 
+                onClick={() => handleDetailsClick(donation)}
+                className="text-[#C14B53] text-sm font-medium hover:underline"
+              >
+                Chi tiết
+              </button>
+            </div>
+          </motion.div>
+        ))
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          Không có lịch sử hiến máu nào
+        </div>
+      )}
+
+      {/* Mobile Details Modal */}
+      <AnimatePresence>
+        {showDetailsModal && selectedDonation && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowDetailsModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-center mb-4 text-[#C14B53]">Chi tiết lần hiến máu</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-500">Mã đăng ký</p>
+                  <p className="font-medium">#{selectedDonation.registrationId}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500">Ngày hiến máu</p>
+                  <p className="font-medium">{selectedDonation.date}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500">Cơ sở</p>
+                  <p className="font-medium">{selectedDonation.location}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500">Trạng thái</p>
+                  <p className={`font-medium ${
+                    selectedDonation.status === "Hoàn thành" ? "text-green-600" : "text-red-600"
+                  }`}>
+                    {selectedDonation.status}
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500">Lượng máu</p>
+                  <p className="font-medium">{selectedDonation.amount}</p>
+                </div>
+                
+                {selectedDonation.description && (
+                  <div>
+                    <p className="text-sm text-gray-500">Mô tả</p>
+                    <p className="font-medium">{selectedDonation.description}</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="px-6 py-3 bg-[#C14B53] text-white rounded-md hover:opacity-90 cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
