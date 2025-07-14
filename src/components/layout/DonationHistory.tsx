@@ -235,7 +235,7 @@ const DonationHistory: React.FC = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {donations.length > 0 ? (
-                donations.map((donation, index) => (
+                donations.map((donation) => (
                   <tr key={donation.registrationId}>
                     <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">#{donation.registrationId}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">{donation.date}</td>
