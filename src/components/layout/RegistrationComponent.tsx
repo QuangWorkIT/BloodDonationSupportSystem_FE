@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import DatePicker from "../ui/datepicker";
 import { FaCalendarAlt, FaMapMarkerAlt, FaUserFriends, FaRegEdit, FaTrash, FaClipboardList, FaCheckCircle, FaTimesCircle, FaInfoCircle, FaRegCalendarCheck } from "react-icons/fa";
+import { authenApi } from "@/lib/instance";
+import { AxiosError } from "axios";
 const FeedbackModal = ({ 
   isOpen, 
   onClose, 
@@ -82,40 +84,31 @@ type Registration = {
   registeredDate: string;
   volunteerDate?: string;
 };
-const RegistrationComponent = () => {
-  const [registrations, setRegistrations] = useState<Registration[]>([
-    {
-      id: 1,
-      eventName: "Ngày hội hiến máu Xuân hồng 2025",
-      date: "15/02/2025",
-      time: "08:00 - 12:00",
-      location: "Cung Văn hóa Hữu nghị Việt - Xô, 91 Trần Hưng Đạo, Hà Nội",
-      type: "normal",
-      registeredDate: "10/01/2025",
-    },
-    {
-      id: 2,
-      eventName: "Hiến máu nhân đạo tại Bệnh viện Bạch Mai",
-      date: "20/03/2025",
-      time: "07:30 - 11:30",
-      location: "Bệnh viện Bạch Mai, 78 Giải Phóng, Hà Nội",
-      type: "volunteer",
-      registeredDate: "05/02/2025",
-      volunteerDate: "20/03/2025",
-    },
-  ]);
+// API Response interfaces
+interface ApiResponse<T> {
+  isSuccess: boolean;
+  message: string;
+  data: T;
+}
 
-  const [volunteerDates, setVolunteerDates] = useState<Record<number, Date | null>>(
-    registrations.reduce((acc, reg) => {
-      if (reg.type === "volunteer" && reg.volunteerDate) {
-        const dateParts = reg.volunteerDate.split("/");
-        acc[reg.id] = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
-      } else {
-        acc[reg.id] = null;
-      }
-      return acc;
-    }, {} as Record<number, Date | null>)
-  );
+interface ApiRegistration {
+  id: number;
+  type: "Donation" | "Volunteer";
+  facilityName: string;
+  eventName: string | null;
+  eventDate: string | null;
+  longitude: number;
+  latitude: number;
+  registerDate: string;
+  startDate: string | null;
+  endDate: string | null;
+  isExpired: boolean | null;
+}
+const RegistrationComponent = () => {
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [volunteerDates, setVolunteerDates] = useState<Record<number, Date | null>>({});
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -127,6 +120,64 @@ const RegistrationComponent = () => {
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [tempVolunteerDate, setTempVolunteerDate] = useState<Date | null>(null);
   const [registrationToCancel, setRegistrationToCancel] = useState<number | null>(null);
+
+  // Helper to format date from YYYY-MM-DD to DD/MM/YYYY
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  // Transform API data to Registration type
+  const transformApiRegistration = (apiReg: ApiRegistration): Registration => {
+    const isVolunteer = apiReg.type === "Volunteer";
+    return {
+      id: apiReg.id,
+      eventName: apiReg.eventName || (isVolunteer ? "Tình nguyện viên" : "Hiến máu"),
+      date: formatDate(apiReg.eventDate || apiReg.startDate),
+      time: "", // API does not provide time, leave blank or parse if available
+      location: apiReg.facilityName,
+      type: isVolunteer ? "volunteer" : "normal",
+      registeredDate: formatDate(apiReg.registerDate),
+      volunteerDate: isVolunteer ? formatDate(apiReg.eventDate || apiReg.startDate) : undefined,
+    };
+  };
+
+  useEffect(() => {
+    const fetchRegistrations = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await authenApi.get<ApiResponse<ApiRegistration[]>>('/api/event-registration-history');
+        if (response.data.isSuccess) {
+          const transformed = response.data.data.map(transformApiRegistration);
+          setRegistrations(transformed);
+          // Set volunteerDates state for volunteer registrations
+          const volunteerDatesObj: Record<number, Date | null> = {};
+          transformed.forEach(reg => {
+            if (reg.type === "volunteer" && reg.volunteerDate) {
+              const [day, month, year] = reg.volunteerDate.split("/").map(Number);
+              volunteerDatesObj[reg.id] = new Date(year, month - 1, day);
+            } else {
+              volunteerDatesObj[reg.id] = null;
+            }
+          });
+          setVolunteerDates(volunteerDatesObj);
+        } else {
+          setError(response.data.message || "Failed to fetch registration history");
+        }
+      } catch (err) {
+        const error = err as AxiosError<ApiResponse<null>>;
+        setError(error.response?.data?.message || error.message || "Error fetching registration history");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRegistrations();
+  }, []);
 
   const openEditModal = (reg: Registration) => {
     setSelectedRegistration(reg);
@@ -178,6 +229,24 @@ const RegistrationComponent = () => {
     const [day, month, year] = dateString.split("/").map(Number);
     return new Date(year, month - 1, day);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-10">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C14B53]"></div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+        {error}
+        <button onClick={() => setError(null)} className="absolute top-0 bottom-0 right-0 px-4 py-3">
+          <span className="text-red-700">×</span>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <motion.div
