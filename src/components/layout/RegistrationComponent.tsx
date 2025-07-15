@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import DatePicker from "../ui/datepicker";
+import { FaCalendarAlt, FaMapMarkerAlt, FaUserFriends, FaRegEdit, FaTrash, FaClipboardList, FaCheckCircle, FaTimesCircle, FaInfoCircle, FaRegCalendarCheck } from "react-icons/fa";
 const FeedbackModal = ({ 
   isOpen, 
   onClose, 
@@ -183,55 +184,66 @@ const RegistrationComponent = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="bg-white rounded-md shadow-md p-6"
+      className="bg-white rounded-2xl shadow-2xl p-0 overflow-hidden mt-8"
     >
-      <h2 className="text-xl font-bold mb-6 text-[#C14B53]">Lịch đăng ký hiến máu</h2>
-
+      <div className="flex items-center gap-3 bg-[#C14B53] py-6 px-6">
+        <FaClipboardList className="text-white text-2xl" />
+        <h2 className="text-xl font-bold text-white">Lịch đăng ký hiến máu</h2>
+      </div>
+      <div className="border-b border-gray-200 my-0" />
       {registrations.length === 0 ? (
-        <p className="text-gray-500">Bạn chưa đăng ký tham gia sự kiện hiến máu nào.</p>
+        <div className="flex flex-col items-center justify-center py-16">
+          <FaRegCalendarCheck className="text-5xl text-gray-300 mb-4" />
+          <p className="text-gray-500 text-lg">Bạn chưa đăng ký tham gia sự kiện hiến máu nào.</p>
+        </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 p-6">
           {registrations.map((reg) => (
-            <div key={reg.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg text-[#C14B53]">{reg.eventName}</h3>
-                  <p className="text-gray-600 mt-1">
-                    <span className="font-medium">Ngày diễn ra:</span> {reg.date} ({reg.time})
-                  </p>
-                  <p className="text-gray-600">
-                    <span className="font-medium">Địa điểm:</span> {reg.location}
-                  </p>
-                  <p className="text-gray-600">
-                    <span className="font-medium">Ngày đăng ký:</span> {reg.registeredDate}
-                  </p>
-                  {reg.type === "volunteer" && (
-                    <div className="mt-2">
-                      <p className="text-gray-600">
-                        <span className="font-medium">Ngày tình nguyện:</span>{" "}
-                        {volunteerDates[reg.id]?.toLocaleDateString("en-GB") || reg.date}
-                        <button
-                          onClick={() => openEditModal(reg)}
-                          className="ml-2 text-[#C14B53] text-sm hover:underline cursor-pointer"
-                        >
-                          Chỉnh sửa
-                        </button>
-                      </p>
-                    </div>
-                  )}
-                </div>
+            <motion.div
+              key={reg.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              layout
+              className="border rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow bg-white flex flex-col gap-2 relative"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <FaUserFriends className="text-[#C14B53] text-lg" />
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${reg.type === 'volunteer' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>{reg.type === 'volunteer' ? 'Tình nguyện viên' : 'Thường'}</span>
+              </div>
+              <h3 className="font-bold text-lg text-[#C14B53] flex items-center gap-2 mb-2"><FaClipboardList className="text-[#C14B53]" />{reg.eventName}</h3>
+              <div className="flex flex-col gap-2 mt-1 mb-2">
+                <div className="flex items-center gap-2 text-gray-600 text-sm"><FaCalendarAlt /> <span><span className="font-medium">Ngày diễn ra:</span> {reg.date} ({reg.time})</span></div>
+                <div className="flex items-center gap-2 text-gray-600 text-sm"><FaMapMarkerAlt /> <span><span className="font-medium">Địa điểm:</span> {reg.location}</span></div>
+                <div className="flex items-center gap-2 text-gray-600 text-sm"><FaCalendarAlt /> <span><span className="font-medium">Ngày đăng ký:</span> {reg.registeredDate}</span></div>
+                {reg.type === "volunteer" && (
+                  <div className="flex items-center gap-2 text-blue-700 text-sm"><FaCalendarAlt /> <span><span className="font-medium">Ngày TN:</span> {volunteerDates[reg.id]?.toLocaleDateString("en-GB") || reg.date}</span></div>
+                )}
+              </div>
+              <div className="flex gap-2 mt-2 justify-end">
+                {reg.type === "volunteer" && (
+                  <button
+                    onClick={() => openEditModal(reg)}
+                    className="p-3 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 transition cursor-pointer text-lg shadow-sm active:scale-95"
+                    title="Chỉnh sửa ngày tình nguyện"
+                    aria-label="Chỉnh sửa ngày tình nguyện"
+                  >
+                    <FaRegEdit />
+                  </button>
+                )}
                 <button
                   onClick={() => openCancelModal(reg.id)}
-                  className="text-red-500 hover:text-red-700 text-sm font-medium ml-4 cursor-pointer"
+                  className="p-3 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition cursor-pointer text-lg shadow-sm active:scale-95"
+                  title="Hủy đăng ký"
+                  aria-label="Hủy đăng ký"
                 >
-                  Hủy đăng ký
+                  <FaTrash />
                 </button>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
-
       {/* Edit Volunteer Date Modal */}
       <AnimatePresence>
         {isEditModalOpen && selectedRegistration && (
@@ -246,41 +258,45 @@ const RegistrationComponent = () => {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+              className="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-md overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-[#C14B53] mb-4">Chỉnh sửa ngày tình nguyện</h3>
-
-              <p className="mb-2 font-medium">{selectedRegistration.eventName}</p>
-
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Ngày tình nguyện</label>
+              <div className="bg-blue-600 flex flex-col items-center justify-center py-6 px-4">
+                <FaRegEdit className="text-white text-3xl mb-2" />
+                <h3 className="text-xl font-bold text-center text-white">Chỉnh sửa ngày tình nguyện</h3>
+              </div>
+              <div className="border-b border-gray-200 my-0" />
+              <div className="p-6">
                 <DatePicker
                   value={tempVolunteerDate}
-                  onChange={(date: Date | null) => setTempVolunteerDate(date)}
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-[#C14B53]"
-                  minDate={parseDateString(selectedRegistration.date)}
-                  placeholderText="Chọn ngày tình nguyện"
+                  onChange={date => setTempVolunteerDate(date as Date)}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Chọn ngày tình nguyện"
                 />
-              </div>
-
-              <div className="flex justify-end space-x-3 mt-6">
-                <button onClick={closeAllModals} className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50">
-                  Hủy
-                </button>
-                <button
-                  onClick={handleSaveDate}
-                  className="px-4 py-2 bg-[#C14B53] text-white rounded-md hover:bg-[#a83a42] cursor-pointer"
-                >
-                  Lưu thay đổi
-                </button>
+                {showDateError && <span className="text-red-500 text-xs flex items-center mt-2"><FaTimesCircle className="mr-1" />Vui lòng chọn ngày hợp lệ</span>}
+                <div className="flex gap-4 justify-end mt-6">
+                  <button
+                    type="button"
+                    onClick={closeAllModals}
+                    className="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveDate}
+                    className="px-8 py-2 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all duration-200 flex items-center gap-2"
+                  >
+                    <FaCheckCircle />
+                    Lưu
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Cancel Registration Confirmation Modal */}
+      {/* Cancel Registration Modal */}
       <AnimatePresence>
         {isCancelModalOpen && (
           <motion.div
@@ -294,52 +310,52 @@ const RegistrationComponent = () => {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+              className="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-md overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-[#C14B53] mb-4">Xác nhận hủy đăng ký</h3>
-
-              <p className="mb-4">Bạn có chắc chắn muốn hủy đăng ký tham gia sự kiện này không?</p>
-
-              <div className="flex justify-end space-x-3 mt-6">
-                <button onClick={closeAllModals} className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50">
-                  Quay lại
-                </button>
-                <button
-                  onClick={handleConfirmCancel}
-                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 cursor-pointer"
-                >
-                  Xác nhận hủy
-                </button>
+              <div className="bg-red-600 flex flex-col items-center justify-center py-6 px-4">
+                <FaTrash className="text-white text-3xl mb-2" />
+                <h3 className="text-xl font-bold text-center text-white">Xác nhận hủy đăng ký</h3>
+              </div>
+              <div className="border-b border-gray-200 my-0" />
+              <div className="p-6">
+                <p className="text-gray-700 mb-4 flex items-center gap-2"><FaInfoCircle className="text-red-500" />Bạn có chắc chắn muốn hủy đăng ký sự kiện này không?</p>
+                <div className="flex gap-4 justify-end mt-6">
+                  <button
+                    type="button"
+                    onClick={closeAllModals}
+                    className="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmCancel}
+                    className="px-8 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 active:scale-95 transition-all duration-200 flex items-center gap-2"
+                  >
+                    <FaTrash />
+                    Xác nhận
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Success and Error Modals */}
-      <FeedbackModal
-        isOpen={showCancelSuccess}
-        onClose={() => setShowCancelSuccess(false)}
-        title="Thành công"
-        message="Đã hủy đăng ký sự kiện thành công!"
-        type="success"
-      />
-
+      {/* Success/Feedback Modals */}
       <FeedbackModal
         isOpen={showSaveSuccess}
         onClose={() => setShowSaveSuccess(false)}
-        title="Thành công"
-        message="Ngày tình nguyện đã được cập nhật!"
+        title="Cập nhật thành công"
+        message="Ngày tình nguyện đã được cập nhật."
         type="success"
       />
-
       <FeedbackModal
-        isOpen={showDateError}
-        onClose={() => setShowDateError(false)}
-        title="Lỗi"
-        message="Vui lòng chọn ngày tình nguyện"
-        type="error"
+        isOpen={showCancelSuccess}
+        onClose={() => setShowCancelSuccess(false)}
+        title="Hủy đăng ký thành công"
+        message="Bạn đã hủy đăng ký sự kiện thành công."
+        type="success"
       />
     </motion.div>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FaUser, FaHistory, FaClipboardList, FaEye, FaTint, FaHashtag, FaCalendarAlt, FaHospital, FaCheckCircle, FaTimesCircle, FaInfoCircle } from "react-icons/fa";
 import AccountEdit from "./AccountEdit";
 import DonationHistory from "./DonationHistory";
 import RegistrationComponent from "./RegistrationComponent";
@@ -153,9 +154,10 @@ const MobileDonationHistory: React.FC = () => {
               <span className="text-sm font-medium">Lượng máu: {donation.amount}</span>
               <button 
                 onClick={() => handleDetailsClick(donation)}
-                className="text-[#C14B53] text-sm font-medium hover:underline"
+                className="text-[#C14B53] p-2 rounded-full hover:bg-[#f8e6ea] transition cursor-pointer"
+                aria-label="Xem chi tiết"
               >
-                Chi tiết
+                <FaEye size={18} />
               </button>
             </div>
           </motion.div>
@@ -180,53 +182,73 @@ const MobileDonationHistory: React.FC = () => {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm"
+              className="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-sm overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold text-center mb-4 text-[#C14B53]">Chi tiết lần hiến máu</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">Mã đăng ký</p>
-                  <p className="font-medium">#{selectedDonation.registrationId}</p>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-gray-500">Ngày hiến máu</p>
-                  <p className="font-medium">{selectedDonation.date}</p>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-gray-500">Cơ sở</p>
-                  <p className="font-medium">{selectedDonation.location}</p>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-gray-500">Trạng thái</p>
-                  <p className={`font-medium ${
-                    selectedDonation.status === "Hoàn thành" ? "text-green-600" : "text-red-600"
-                  }`}>
-                    {selectedDonation.status}
-                  </p>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-gray-500">Lượng máu</p>
-                  <p className="font-medium">{selectedDonation.amount}</p>
-                </div>
-                
-                {selectedDonation.description && (
+              {/* Header with accent bar and icon */}
+              <div className="bg-[#C14B53] flex flex-col items-center justify-center py-6 px-4">
+                <FaTint className="text-white text-3xl mb-2" />
+                <h3 className="text-xl font-bold text-center text-white">Chi tiết lần hiến máu</h3>
+              </div>
+              <div className="border-b border-gray-200 my-0" />
+              {/* Details Card */}
+              <div className="p-6 bg-white grid grid-cols-1 gap-y-5">
+                <div className="flex items-center gap-3">
+                  <FaHashtag className="text-[#C14B53] text-base" />
                   <div>
-                    <p className="text-sm text-gray-500">Mô tả</p>
-                    <p className="font-medium">{selectedDonation.description}</p>
+                    <p className="text-sm text-gray-500">Mã đăng ký</p>
+                    <p className="font-medium">#{selectedDonation.registrationId}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FaCalendarAlt className="text-[#C14B53] text-base" />
+                  <div>
+                    <p className="text-sm text-gray-500">Ngày hiến máu</p>
+                    <p className="font-medium">{selectedDonation.date}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FaHospital className="text-[#C14B53] text-base" />
+                  <div>
+                    <p className="text-sm text-gray-500">Cơ sở</p>
+                    <p className="font-medium">{selectedDonation.location}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FaCheckCircle className={`text-base ${selectedDonation.status === 'Hoàn thành' ? 'text-green-500' : 'hidden'}`} />
+                  <FaTimesCircle className={`text-base ${selectedDonation.status === 'Thất bại' ? 'text-red-500' : 'hidden'}`} />
+                  <div>
+                    <p className="text-sm text-gray-500">Trạng thái</p>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      selectedDonation.status === "Hoàn thành"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}>
+                      {selectedDonation.status}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FaTint className="text-[#C14B53] text-base" />
+                  <div>
+                    <p className="text-sm text-gray-500">Lượng máu</p>
+                    <p className="font-medium">{selectedDonation.amount}</p>
+                  </div>
+                </div>
+                {selectedDonation.description && (
+                  <div className="flex items-center gap-3">
+                    <FaInfoCircle className="text-[#C14B53] text-base" />
+                    <div>
+                      <p className="text-sm text-gray-500">Mô tả</p>
+                      <p className="font-medium">{selectedDonation.description}</p>
+                    </div>
                   </div>
                 )}
               </div>
-              
-              <div className="mt-6 flex justify-center">
+              <div className="mt-0 flex justify-center bg-white pb-6">
                 <button
                   onClick={() => setShowDetailsModal(false)}
-                  className="px-6 py-3 bg-[#C14B53] text-white rounded-md hover:opacity-90 cursor-pointer"
+                  className="px-8 py-3 bg-[#C14B53] text-white rounded-xl font-semibold text-base hover:bg-[#a83a42] transition focus:outline-none focus:ring-2 focus:ring-[#C14B53] cursor-pointer shadow-md"
                 >
                   Đóng
                 </button>
@@ -282,6 +304,12 @@ const UserProfile: React.FC = () => {
     }
   };
 
+  const tabIcons = {
+    "account-edit": <FaUser className="mr-2" />,
+    "donation-history": <FaHistory className="mr-2" />,
+    "registrations": <FaClipboardList className="mr-2" />,
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {isMobile && (
@@ -326,22 +354,24 @@ const UserProfile: React.FC = () => {
           {/* Navigation Toggle - Responsive version */}
           <div className="flex justify-center mb-8">
             {isMobile ? (
-              <div className="w-full bg-white rounded-full shadow-sm border border-gray-200 overflow-hidden">
+              <div className="w-full bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
                 <div className="flex">
                   {(["account-edit", "donation-history", "registrations"] as ProfileTab[]).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      className={`flex-1 px-4 py-2 text-sm font-medium relative ${
-                        activeTab === tab ? "text-[#C14B53] font-semibold" : "text-gray-700"
+                      className={`flex-1 flex items-center justify-center px-4 py-3 text-base font-medium transition-all duration-200 rounded-full relative ${
+                        activeTab === tab ? "text-[#C14B53] bg-[#F8F9FA] shadow-inner" : "text-gray-700 hover:bg-gray-50"
                       }`}
+                      style={{ minHeight: 44 }}
                     >
+                      {tabIcons[tab]}
                       {tab === "account-edit" ? "Tài khoản" : 
                        tab === "donation-history" ? "Lịch sử" : "Đăng ký"}
                       {activeTab === tab && (
                         <motion.div
                           layoutId="mobileTabIndicator"
-                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C14B53]"
+                          className="absolute bottom-0 left-3 right-3 h-1 rounded-full bg-[#C14B53]"
                           transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         />
                       )}
@@ -351,7 +381,7 @@ const UserProfile: React.FC = () => {
               </div>
             ) : (
               <motion.div
-                className="flex bg-white rounded-full shadow-sm border border-gray-200 overflow-hidden"
+                className="flex bg-white rounded-full shadow-md border border-gray-200 overflow-hidden"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -359,12 +389,13 @@ const UserProfile: React.FC = () => {
                 {(["account-edit", "donation-history", "registrations"] as ProfileTab[]).map((tab) => (
                   <motion.button
                     key={tab}
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 px-4 py-2 text-sm font-medium cursor-pointer relative ${
+                    className={`flex-1 flex items-center justify-center px-6 py-4 text-base font-medium cursor-pointer transition-all duration-200 rounded-full relative ${
                       activeTab === tab ? "text-white" : "text-gray-700 hover:bg-gray-50"
                     }`}
+                    style={{ minHeight: 48 }}
                   >
                     {activeTab === tab && (
                       <motion.div
@@ -374,7 +405,8 @@ const UserProfile: React.FC = () => {
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       />
                     )}
-                    <span className="relative z-10">
+                    <span className="relative z-10 flex items-center whitespace-nowrap">
+                      {tabIcons[tab]}
                       {tab === "account-edit" ? "Tài khoản" : 
                        tab === "donation-history" ? "Lịch sử" : "Đăng ký"}
                     </span>

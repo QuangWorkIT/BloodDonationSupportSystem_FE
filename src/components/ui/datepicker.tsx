@@ -15,6 +15,7 @@ interface DatePickerProps {
   disabled?: boolean;
   ariaInvalid?: boolean;
   ariaDescribedby?: string;
+  hideCalendarIcon?: boolean;
 }
 
 const DatePicker: React.FC<DatePickerProps> = ({ 
@@ -24,7 +25,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   hasError,
   minDate,
   maxDate,
-  placeholderText = "MM/DD/YYYY"
+  placeholderText = "MM/DD/YYYY",
+  hideCalendarIcon = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -179,11 +181,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
           } rounded px-3 py-2 text-sm pr-10 cursor-pointer ${className}`}
           aria-label="Date input field"
         />
-        <Calendar
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer"
-          onClick={toggleCalendar}
-          aria-label="Toggle calendar"
-        />
+        {!hideCalendarIcon && (
+          <Calendar
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 cursor-pointer"
+            onClick={toggleCalendar}
+            aria-label="Toggle calendar"
+          />
+        )}
       </div>
 
       {isOpen && (
