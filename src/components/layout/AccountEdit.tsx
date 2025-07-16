@@ -37,20 +37,20 @@ const AccountEdit = () => {
       try {
         const response = await authenApi.get('/api/users/profile')
         const data = response.data
-                
         if (!user)
           return
 
         if (data.isSuccess) {
           const updatedUser = {
             ...user,
-            name: data.data.name,
+            unique_name: data.data.name,
             phone: data.data.phone,
             gmail: data.data.gmail,
             bloodType: data.data.bloodType,
             dob: new Date(data.data.dob),
             gender: data.data.gender
           };
+        console.log('user data ', updatedUser)
 
           setUser(updatedUser);
         } else {
