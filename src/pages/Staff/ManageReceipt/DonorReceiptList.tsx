@@ -20,6 +20,7 @@ import { authenApi } from "@/lib/instance";
 import type { DonorCardProps } from '@/pages/Staff/ManageReceipt/DonorCard'
 import LoadingSpinner from "@/components/layout/Spinner";
 import HealthCheckForm from "./HealthCheckForm";
+import { toast } from "react-toastify";
 
 const searchSchema = z.object({
     searchContent: z.string()
@@ -32,27 +33,54 @@ function DonorReceiptList() {
     const [isLoading, setIsLoading] = useState(true)
     const [isHeathCheckout, setIsHealthCheckout] = useState(false)
     const [currentDonor, setCurrentDonor] = useState<DonorCardProps | null>(null)
+    const [isShowModal, setIsShowModal] = useState(false)
+    const [currentDonorId, setCurrentDonorId] = useState<number | null>(null)
+    const [isRejecting, setIsRejecting] = useState(false)
     // fetch registration
-    useEffect(() => {
-        const getDonors = async () => {
-            try {
-                const response = await authenApi.get(`/api/events/${eventId}/blood-registrations`)
-                const data = response.data
-                if (data.isSuccess) {
-                    console.log('data ', data)
-                    setEventTime(data.data.eventTime)
-                    setListOfDonor(data.data.items)
-                } else {
-                    console.log('Donor list status failed')
-                }
-            } catch (error) {
-                console.log('Fail to fetch donors', error)
-            } finally {
-                setIsLoading(false)
+    const getDonors = async () => {
+        try {
+            const response = await authenApi.get(`/api/events/${eventId}/blood-registrations`)
+            const data = response.data
+            if (data.isSuccess) {
+                console.log('data ', data)
+                setEventTime(data.data.eventTime)
+                setListOfDonor(data.data.items)
+            } else {
+                console.log('Donor list status failed')
             }
+        } catch (error) {
+            console.log('Fail to fetch donors', error)
+        } finally {
+            setIsLoading(false)
         }
+    }
+    useEffect(() => {
         getDonors()
     }, [])
+
+    const handleReject = async () => {
+        if (currentDonorId == null) {
+            console.log('current donor id not found')
+            return
+        }
+        try {
+            setIsRejecting(true)
+            const response = await authenApi.put(`/api/blood-registrations/${currentDonorId}/reject`)
+            const data = response.data
+
+            if (data.isSuccess) {
+                toast.success('Đã từ chối đơn đăng ký hiến máu!')
+                getDonors() // Refetch the list of donors after rejection
+            }
+        } catch (error) {
+            console.error('Error rejecting donor registration:', error)
+            toast.error('Lỗi từ chối đơn đăng ký hiến máu!')
+        } finally {
+            setIsRejecting(false)
+            setIsShowModal(false)
+            setCurrentDonorId(null)
+        }
+    }
 
     const searchForm = useForm<z.infer<typeof searchSchema>>({
         resolver: zodResolver(searchSchema),
@@ -115,13 +143,16 @@ function DonorReceiptList() {
                                         id={donor.id}
                                         memberName={donor.memberName}
                                         phone={donor.phone}
-                                        dob= {donor.dob}
-                                        type="B+"
+                                        dob={donor.dob}
+                                        bloodType={donor.bloodType}
                                         eventTime={eventTime}
+                                        isApproved={donor.isApproved}
                                         handleHeathCheckout={() => {
                                             setCurrentDonor(donor)
                                             setIsHealthCheckout(true)
                                         }}
+                                        setIsShowModal={setIsShowModal}
+                                        setCurrentDonorId={setCurrentDonorId}
                                     />
                                 </motion.div>
                             ))
@@ -140,10 +171,51 @@ function DonorReceiptList() {
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <HealthCheckForm currentDonor =  {currentDonor} handleCancle={() => setIsHealthCheckout(false)} />
+                        <HealthCheckForm
+                            currentDonor={currentDonor}
+                            handleCancle={() => setIsHealthCheckout(false)} 
+                            refetchDonors={getDonors} // Pass the refetch function
+                            />
                     </motion.div>
                 </AnimatePresence>
             )}
+
+            {
+                isShowModal && (
+                    <div className="fixed inset-0 bg-black/70 z-50">
+                        <div className="bg-white rounded-lg shadow-lg p-6 max-w-xl w-full relative top-20 left-[33%]">
+                            <div className="flex justify-between mb-2">
+                                <h2 className="ml-2 text-[27px] font-normal mb-2">Xác nhận từ chối đơn đăng ký</h2>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="text-gray-500 size-4 mt-3 cursor-pointer"
+                                    onClick={() => setIsShowModal(false)}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                </svg>
+                            </div>
+
+                            <div className="h-[1px] bg-gray-200 mb-4"></div>
+
+                            <p className="text-lg text-gray-600 mb-4">
+                                Nếu bạn xác nhận hủy sự kiện này, các đơn yêu cầu tiếp theo cũng sẽ bị hủy. <span className="text-red-700">Không thể hoàn tác thao tác này.</span>
+                            </p>
+                            <div className="flex justify-end">
+                                <button
+                                    disabled={isRejecting}
+                                    onClick={handleReject}
+                                    className="px-5 py-2 text-white bg-red-700 rounded-md hover:bg-red-800 cursor-pointer ">
+                                    Xác nhận
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
         </div>
     )
 }

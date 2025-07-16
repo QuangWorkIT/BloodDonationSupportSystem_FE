@@ -25,13 +25,14 @@ interface HealthCheckData {
 }
 interface HealthCheckoutProps {
   currentDonor: DonorCardProps | null
-  handleCancle: () => void
+  handleCancle: () => void,
+  refetchDonors: () => void
 }
 interface FormErrors {
   [key: string]: string;
 }
 
-export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCheckoutProps) {
+export default function HealthCheckForm({ currentDonor, handleCancle, refetchDonors }: HealthCheckoutProps) {
   const { user } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState<HealthCheckData>({
@@ -229,6 +230,7 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
           console.log('Checkout success')
           toast.success('Đã khám sức khỏe thành công!')
           handleCancle()
+          refetchDonors()
         }
 
       } catch (error) {
