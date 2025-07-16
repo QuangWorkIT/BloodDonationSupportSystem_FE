@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/images/image12.png";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 interface Event {
   id: number;
@@ -81,27 +82,96 @@ const ReceiptEventList = () => {
 
   const renderPagination = () => {
     let pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      // Show all pages if total pages is less than max visible
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show first, last, and current page with ellipsis
+      if (currentPage <= 3) {
+        // Show first 3, ellipsis, last
+        pages = [1, 2, 3, "...", totalPages];
+      } else if (currentPage >= totalPages - 2) {
+        // Show first, ellipsis, last 3
+        pages = [1, "...", totalPages - 2, totalPages - 1, totalPages];
+      } else {
+        // Show first, ellipsis, current-1, current, current+1, ellipsis, last
+        pages = [
+          1,
+          "...",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "...",
+          totalPages,
+        ];
+      }
     }
 
     return (
       <div className="flex items-center space-x-2">
-        {pages.map((page) => (
-          <motion.button
-            key={page}
-            onClick={() => setCurrentPage(page)}
-            className={`w-10 h-10 rounded-md border cursor-pointer ${
-              currentPage === page
-                ? "bg-[#C14B53] text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {page}
-          </motion.button>
-        ))}
+        <motion.button
+          whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
+          whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${
+            currentPage === 1
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+          }`}
+        >
+          <FaChevronLeft />
+        </motion.button>
+
+        {pages.map((page, index) =>
+          page === "..." ? (
+            <motion.span
+              key={index}
+              className="px-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              ...
+            </motion.span>
+          ) : (
+            <motion.button
+              key={index}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCurrentPage(parseInt(page.toString()))}
+              className={`w-10 h-10 rounded-md ${
+                currentPage === parseInt(page.toString())
+                  ? "bg-[#C14B53] text-white cursor-pointer"
+                  : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+              }`}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {page}
+            </motion.button>
+          )
+        )}
+        <motion.button
+          whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
+          whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${
+            currentPage === totalPages
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+          }`}
+        >
+          <FaChevronRight />
+        </motion.button>
       </div>
     );
   };
@@ -126,7 +196,7 @@ const ReceiptEventList = () => {
       {!isCreateDonationFormOpen && (
         <>
           <div className="mb-4 flex justify-between">
-            <h2 className="text-3xl font-medium text-gray-800 ml-2">
+            <h2 className="text-3xl font-semibold text-red-700 ml-2">
               Các sự kiện hiến máu
             </h2>
             <button
@@ -188,11 +258,11 @@ const ReceiptEventList = () => {
                     </p>
                   </div>
                   <div className="flex flex-col items-center mt-4 md:mt-0">
-                    <div className="flex gap-1 font-semibold mb-2">
-                      <Users2 className="w-4" />
+                    <div className="flex gap-1 text-lg font-semibold mb-2">
+                      <Users2 className="w-5 mr-1 mt-1" />
                       Người đăng ký
                     </div>
-                    <span className="text-red-700 font-medium text-2xl mb-[64px]">
+                    <span className="text-red-700 font-medium text-[27px] mb-[64px]">
                       {event.bloodRegisCount ? event.bloodRegisCount : 0} /{" "}
                       {event.maxOfDonor}
                     </span>
