@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import DatePicker from "../ui/datepicker";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";
+import { FaUser, FaVenusMars, FaBirthdayCake, FaPhone, FaEnvelope, FaTint } from "react-icons/fa";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 
 type FormData = {
@@ -279,32 +281,44 @@ const AccountEdit = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="bg-white rounded-md shadow-md p-6"
+      className="bg-white rounded-2xl shadow-2xl p-0 overflow-hidden mt-8 max-w-2xl mx-auto"
     >
-      <h2 className="text-xl font-bold mb-6 text-[#C14B53]">Chỉnh sửa thông tin</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex items-center gap-3 bg-[#C14B53] py-6 px-6 rounded-t-2xl">
+        <FaUser className="text-white text-2xl" />
+        <h2 className="text-xl font-bold text-white">Chỉnh sửa thông tin</h2>
+      </div>
+      <div className="border-b border-gray-200 my-0" />
+      <form onSubmit={handleSubmit} className="space-y-6 p-8 md:p-10">
+        {/* Name */}
         <div>
-          <label className="block text-gray-700 mb-1">
+          <label className="block text-gray-800 font-semibold mb-2" htmlFor="name">
             Họ và tên <span className="text-red-500">*</span>
           </label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            placeholder="Họ và tên người dùng"
-            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 ${errors.name ? "border-red-500 focus:ring-red-500" : "focus:ring-[#C14B53]"
-              }`}
-          />
+          <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+            <FaUser className="text-[#C14B53] text-[22px] mr-4" />
+            <input
+              id="name"
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={e => handleChange("name", e.target.value)}
+              placeholder="Họ và tên người dùng"
+              className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
+            />
+          </div>
           {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
         </div>
 
+        {/* Gender */}
         <div>
-          <label className="block text-gray-700 mb-1">
-            Giới tính <span className="text-red-500">*</span>
-          </label>
-          <div className="flex space-x-4">
-            <label className="inline-flex items-center">
+          <div className="flex items-center mb-2">
+            <span className="flex items-center text-[#C14B53] text-[22px] mr-3"><FaVenusMars /></span>
+            <label className="block text-gray-800 font-semibold">
+              Giới tính <span className="text-red-500">*</span>
+            </label>
+          </div>
+          <div className="flex items-center gap-6 pl-2">
+            <label className="inline-flex items-center text-base">
               <input
                 type="radio"
                 name="gender"
@@ -314,7 +328,7 @@ const AccountEdit = () => {
               />
               <span className="ml-2">Nam</span>
             </label>
-            <label className="inline-flex items-center">
+            <label className="inline-flex items-center text-base">
               <input
                 type="radio"
                 name="gender"
@@ -328,80 +342,96 @@ const AccountEdit = () => {
           {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
         </div>
 
+        {/* Birth Date */}
         <div>
-          <label className="block text-gray-700 mb-1">
+          <label className="block text-gray-800 font-semibold mb-2" htmlFor="birthDate">
             Ngày tháng năm sinh <span className="text-red-500">*</span>
           </label>
-          <DatePicker
-            value={formData.birthDate}
-            onChange={(date: Date) => handleChange("birthDate", date)}
-            placeholderText="dd/MM/yyyy"
-            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 ${errors.birthDate ? "border-red-500 focus:ring-red-500" : "focus:ring-[#C14B53]"
-              }`}
-            maxDate={new Date()}
-          />
+          <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+            <FaBirthdayCake className="text-[#C14B53] text-[22px] mr-4" />
+            <DatePicker
+              id="birthDate"
+              value={formData.birthDate}
+              onChange={(date: Date) => handleChange("birthDate", date)}
+              placeholderText="dd/MM/yyyy"
+              className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0"
+              hideCalendarIcon={true}
+              maxDate={new Date()}
+            />
+          </div>
           {errors.birthDate && <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>}
         </div>
 
+        {/* Phone */}
         <div>
-          <label className="block text-gray-700 mb-1">
+          <label className="block text-gray-800 font-semibold mb-2" htmlFor="phone">
             Số điện thoại <span className="text-red-500">*</span>
           </label>
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={(e) => handleChange("phone", e.target.value)}
-            placeholder="Số điện thoại người dùng"
-            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 ${errors.phone ? "border-red-500 focus:ring-red-500" : "focus:ring-[#C14B53]"
-              }`}
-          />
+          <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+            <FaPhone className="text-[#C14B53] text-[22px] mr-4" />
+            <input
+              id="phone"
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={e => handleChange("phone", e.target.value)}
+              placeholder="Số điện thoại người dùng"
+              className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
+            />
+          </div>
           {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
         </div>
 
+        {/* Gmail */}
         <div>
-          <label className="block text-gray-700 mb-1">Thêm địa chỉ Gmail</label>
-          <input
-            type="gmail"
-            name="gmail"
-            value={formData.gmail}
-            onChange={(e) => handleChange("gmail", e.target.value)}
-            placeholder="Vd: aboxyz69@gmail.com"
-            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 ${errors.gmail ? "border-red-500 focus:ring-red-500" : "focus:ring-[#C14B53]"
-              }`}
-          />
+          <label className="block text-gray-800 font-semibold mb-2" htmlFor="gmail">Email</label>
+          <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+            <FaEnvelope className="text-[#C14B53] text-[22px] mr-4" />
+            <input
+              id="gmail"
+              type="gmail"
+              name="gmail"
+              value={formData.gmail}
+              onChange={e => handleChange("gmail", e.target.value)}
+              placeholder="Vd: aboxyz69@gmail.com"
+              className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
+            />
+          </div>
           {errors.gmail && <p className="text-red-500 text-sm mt-1">{errors.gmail}</p>}
         </div>
 
+        {/* Blood Type */}
         <div>
-          <label className="block text-gray-700 mb-1">
+          <label className="block text-gray-800 font-semibold mb-2" htmlFor="bloodType">
             Nhóm máu <span className="text-red-500">*</span>
           </label>
-          <select
-            name="bloodType"
-            value={formData.bloodType}
-            onChange={(e) => handleChange("bloodType", e.target.value)}
-            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 ${errors.bloodType ? "border-red-500 focus:ring-red-500" : "focus:ring-[#C14B53]"
-              }`}
-          >
-            <option value="">Chọn nhóm máu</option>
-            {bloodTypeOptions.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+            <FaTint className="text-[#C14B53] text-[22px] mr-4" />
+            <Select
+              value={formData.bloodType}
+              onValueChange={value => handleChange("bloodType", value)}
+            >
+              <SelectTrigger className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0">
+                <SelectValue placeholder="Chọn nhóm máu" />
+              </SelectTrigger>
+              <SelectContent>
+                {bloodTypeOptions.map(type => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           {errors.bloodType && <p className="text-red-500 text-sm mt-1">{errors.bloodType}</p>}
         </div>
 
         <div className="pt-4">
           <motion.button
             type="submit"
-            whileHover={!hasNotChanged ? { scale: 1.02 } : undefined}
-            whileTap={!hasNotChanged ? { scale: 0.98 } : undefined}
-            className={`px-6 py-2 rounded-md transition cursor-pointer ${hasNotChanged
-              ? 'bg-gray-300 text-white cursor-not-allowed'
-              : 'bg-[#C14B53] text-white hover:bg-[#a83a42]'
+            whileHover={!hasNotChanged ? { scale: 1.01 } : undefined}
+            whileTap={!hasNotChanged ? { scale: 0.99 } : undefined}
+            className={`w-full px-8 py-3 rounded-xl font-semibold text-lg shadow transition cursor-pointer ${hasNotChanged
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-[#C14B53] text-white hover:bg-[#a83a42] shadow-lg'
               }`}
             disabled={hasNotChanged}
           >
