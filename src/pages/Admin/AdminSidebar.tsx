@@ -45,12 +45,12 @@ const AdminSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
       icon: <Settings className="w-6 h-6" />,
       label: "Cài đặt",
     },
-    {
-      id: "help",
-      path: "/admin/help",
-      icon: <HelpCircle className="w-6 h-6" />,
-      label: "Hỗ trợ",
-    },
+    // {
+    //   id: "help",
+    //   path: "/admin/help",
+    //   icon: <HelpCircle className="w-6 h-6" />,
+    //   label: "Hỗ trợ",
+    // },
   ];
 
   return (
