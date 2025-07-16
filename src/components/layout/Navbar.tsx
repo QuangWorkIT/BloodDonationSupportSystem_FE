@@ -1,5 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { FaBars, FaUser, FaTimes, FaCalendarAlt, FaHome, FaTint, FaRegNewspaper } from "react-icons/fa";
+import {
+  FaBars,
+  FaUser,
+  FaTimes,
+  FaCalendarAlt,
+  FaHome,
+  FaTint,
+  FaRegNewspaper,
+} from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
@@ -8,13 +16,33 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 const navItems = [
-  { id: "event", label: "Sự kiện hiến máu", href: "/events", icon: <FaCalendarAlt className="mr-2" /> },
-  { id: "home", label: "Trang chủ", href: "/", icon: <FaHome className="mr-2" /> },
-  { id: "info", label: "Thông tin máu", href: "/bloodinfo", icon: <FaTint className="mr-2" /> },
-  { id: "share", label: "Chia sẻ", href: "/blogs", icon: <FaRegNewspaper className="mr-2" /> },
+  {
+    id: "event",
+    label: "Sự kiện hiến máu",
+    href: "/events",
+    icon: <FaCalendarAlt className="mr-2" />,
+  },
+  {
+    id: "home",
+    label: "Trang chủ",
+    href: "/",
+    icon: <FaHome className="mr-2" />,
+  },
+  {
+    id: "info",
+    label: "Thông tin máu",
+    href: "/bloodinfo",
+    icon: <FaTint className="mr-2" />,
+  },
+  {
+    id: "share",
+    label: "Chia sẻ",
+    href: "/blogs",
+    icon: <FaRegNewspaper className="mr-2" />,
+  },
 ];
 
 export default function BloodDonationNavbar() {
@@ -26,8 +54,10 @@ export default function BloodDonationNavbar() {
   // eslint-disable-next-line no-empty-pattern
   const [] = useState<number | null>(null);
 
-  const activeItem = navItems.find((item) =>
-    location.pathname === item.href || (item.href === "/" && location.pathname === "/home")
+  const activeItem = navItems.find(
+    (item) =>
+      location.pathname === item.href ||
+      (item.href === "/" && location.pathname === "/home")
   )?.id;
 
   useEffect(() => {
@@ -35,9 +65,10 @@ export default function BloodDonationNavbar() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMenuOpen(false);
       if (e.key === "Tab" && mobileMenuRef.current) {
-        const focusableEls = mobileMenuRef.current.querySelectorAll<HTMLElement>(
-          'a, button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
+        const focusableEls =
+          mobileMenuRef.current.querySelectorAll<HTMLElement>(
+            'a, button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
         const first = focusableEls[0];
         const last = focusableEls[focusableEls.length - 1];
         if (!e.shiftKey && document.activeElement === last) {
@@ -53,7 +84,9 @@ export default function BloodDonationNavbar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [menuOpen]);
 
-  const profileLabel = accessToken ? (user?.unique_name || "Tài khoản") : "Đăng nhập";
+  const profileLabel = accessToken
+    ? user?.unique_name || "Tài khoản"
+    : "Đăng nhập";
 
   return (
     <nav className="bg-white shadow-sm w-full sticky top-0 z-50">
@@ -65,11 +98,18 @@ export default function BloodDonationNavbar() {
         >
           <FaBars size={24} className="text-[#C14B53]" />
         </button>
-        <Link to="/" className="flex items-center gap-2 focus:outline-none focus-visible:outline-none cursor-pointer" tabIndex={0} aria-label="Trang chủ">
+        <Link
+          to="/"
+          className="flex items-center gap-2 focus:outline-none focus-visible:outline-none cursor-pointer"
+          tabIndex={0}
+          aria-label="Trang chủ"
+        >
           <div className="w-10 h-10 bg-[#C14B53] dark:bg-[#333] rounded-full flex items-center justify-center cursor-pointer">
             <span className="text-white font-bold text-xs">BD</span>
           </div>
-          <span className="ml-2 text-[#C14B53] dark:text-white font-bold text-lg hidden sm:inline">Blood Donation</span>
+          <span className="ml-2 text-[#C14B53] dark:text-white font-bold text-lg hidden sm:inline">
+            Blood Donation
+          </span>
         </Link>
         <div className="flex items-center md:mr-0 gap-6">
           <div className="md:flex hidden space-x-4 lg:space-x-10">
@@ -119,8 +159,14 @@ export default function BloodDonationNavbar() {
                           <FaUser size={22} color="#fff" />
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-semibold text-[#C14B53] dark:text-white text-base">{user?.unique_name || 'Tài khoản'}</span>
-                          {user?.gmail && <span className="text-xs text-gray-500 dark:text-gray-300">{user.gmail}</span>}
+                          <span className="font-semibold text-[#C14B53] dark:text-white text-base">
+                            {user?.unique_name || "Tài khoản"}
+                          </span>
+                          {user?.gmail && (
+                            <span className="text-xs text-gray-500 dark:text-gray-300">
+                              {user.gmail}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <Link
@@ -136,8 +182,8 @@ export default function BloodDonationNavbar() {
                         onClick={() => {
                           setToken(null);
                           setUser(null);
-                          toast.success('Đăng xuất thành công!');
-                          navigate('/', { replace: true });
+                          toast.success("Đăng xuất thành công!");
+                          navigate("/", { replace: true });
                         }}
                       >
                         <FaTimes className="mr-2" /> Đăng xuất
@@ -195,8 +241,10 @@ export default function BloodDonationNavbar() {
                   key={item.id}
                   to={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className={`block px-4 py-3 rounded transition text-base font-medium focus:outline-none focus:ring-2 focus:ring-[#C14B53] flex items-center cursor-pointer ${
-                    activeItem === item.id ? "bg-[#C14B53] text-white" : "hover:bg-[#C14B53]/10 text-black"
+                  className={`px-4 py-3 rounded transition text-base font-medium focus:outline-none focus:ring-2 focus:ring-[#C14B53] flex items-center cursor-pointer ${
+                    activeItem === item.id
+                      ? "bg-[#C14B53] text-white"
+                      : "hover:bg-[#C14B53]/10 text-black"
                   }`}
                   tabIndex={0}
                   aria-current={activeItem === item.id ? "page" : undefined}

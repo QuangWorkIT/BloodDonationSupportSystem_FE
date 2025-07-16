@@ -17,14 +17,14 @@ interface SidebarProps {
 
 const AdminSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   const location = useLocation();
-  const navigate = useNavigate()
-  const { setToken, setUser } = useAuth()
+  const navigate = useNavigate();
+  const { setToken, setUser } = useAuth();
   const handleLogout = () => {
-    setToken(null)
-    setUser(null)
-    navigate('/login', { replace: true })
-    toast.success('Đăng xuất thành công!')
-  }
+    setToken(null);
+    setUser(null);
+    navigate("/login", { replace: true });
+    toast.success("Đăng xuất thành công!");
+  };
   // Define your navigation items with their paths
   const navItems = [
     {
@@ -54,13 +54,15 @@ const AdminSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
   ];
 
   return (
-    <aside className="bg-white flex flex-col border-r border-gray-200 shadow-sm h-full min-h-screen h-screen sticky top-0">
+    <aside className="bg-white flex flex-col border-r border-gray-200 shadow-sm min-h-screen h-screen sticky top-0">
       <div className="flex-1">
         <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">🔥</span>
           </div>
-          <span className="text-lg font-semibold text-gray-800">Blood gang</span>
+          <span className="text-lg font-semibold text-gray-800">
+            Blood gang
+          </span>
         </div>
         <nav className="py-6 px-3 space-y-4">
           {navItems.map((item) => (
@@ -68,10 +70,11 @@ const AdminSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
               key={item.id}
               to={item.path}
               onClick={() => setActiveItem(item.id)}
-              className={`flex items-center gap-6 w-full px-4 py-4 text-md transition-colors rounded-lg cursor-pointer ${location.pathname === item.path || activeItem === item.id
-                ? "bg-blue-600 text-white"
-                : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
-                }`}
+              className={`flex items-center gap-6 w-full px-4 py-4 text-md transition-colors rounded-lg cursor-pointer ${
+                location.pathname === item.path || activeItem === item.id
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+              }`}
             >
               {item.icon}
               <span className="text-md font-medium">{item.label}</span>
@@ -83,7 +86,8 @@ const AdminSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
       <div className="border-t border-gray-100 p-6">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-4 w-full px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors rounded-lg cursor-pointer">
+          className="flex items-center gap-4 w-full px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors rounded-lg cursor-pointer"
+        >
           <LogOut className="w-5 h-5" />
           <span className="text-sm font-medium">Đăng xuất</span>
         </button>
