@@ -57,11 +57,11 @@ const AdminSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
     <aside className="bg-white flex flex-col border-r border-gray-200 shadow-sm min-h-screen h-screen sticky top-0">
       <div className="flex-1">
         <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">🔥</span>
+          <div className="w-10 h-10 bg-[#C14B53] dark:bg-[#333] rounded-full flex items-center justify-center cursor-pointer">
+            <span className="text-white font-bold text-xs">BD</span>
           </div>
-          <span className="text-lg font-semibold text-gray-800">
-            Blood gang
+          <span className="ml-2 text-[#C14B53] dark:text-white font-bold text-lg hidden sm:inline">
+            Blood Donation
           </span>
         </div>
         <nav className="py-6 px-3 space-y-4">
