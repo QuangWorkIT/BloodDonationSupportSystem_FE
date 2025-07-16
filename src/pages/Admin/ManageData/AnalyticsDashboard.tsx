@@ -99,17 +99,6 @@ const AnalyticsDashboard = () => {
     trend: 'up' as 'up' | 'down',
   });
 
-  // Mockdata for Critical Alerts
-  const [criticalAlerts] = useState({
-    lowStock: [
-      { type: 'O', stock: 5, threshold: 10 },
-      { type: 'A', stock: 7, threshold: 10 },
-    ],
-    lowEventRegistration: [
-      { id: 12603, name: 'Mar 5, 2024 - 707 Business Park', registered: 120, expected: 180 },
-    ],
-  });
-
   const [bloodStock] = useState<BloodStock[]>([
     { type: 'A', quantity: 15, color: '#FF6384' },
     { type: 'B', quantity: 23, color: '#36A2EB' },
@@ -306,12 +295,6 @@ const AnalyticsDashboard = () => {
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
-
-  const changeEventStatus = (id: number, newStatus: EventStatus) => {
-    setEvents(events.map(event => 
-      event.id === id ? { ...event, status: newStatus } : event
-    ));
   };
 
   // CSV export headers for events
