@@ -103,16 +103,23 @@ function DonorMap({ volunteers, selectedDonor, toggleSelectDonor }: DonorMapProp
                                     }
                                 }}
                             >
-                                <Tooltip
-                                    className='w-[230px] h-[100px] flex flex-col justify-center items-center rounded-lg'
-                                >
-                                    <div className="">
-                                        <p className='text-[14px]'><span className="text-[#7D7D7F]">Tên:</span> {volunteer.fullName}</p>
-                                        <p className='text-[14px]'><span className="text-[#7D7D7F]">Loại máu:</span> {volunteer.bloodTypeName}</p>
-                                        <p className='text-[14px]'><span className="text-[#7D7D7F]">Số điện thoại:</span> {volunteer.phone}</p>
-                                        <p className='text-[14px]'><span className="text-[#7D7D7F]">Gmail: </span>{volunteer.gmail}</p>
+                                <Tooltip className="w-[230px] h-max p-2 flex flex-col justify-center items-start rounded-lg bg-white">
+                                    <div className="w-full space-y-1">
+                                        <p className="text-[14px] break-words whitespace-normal">
+                                            <span className="text-[#7D7D7F]">Tên:</span> {volunteer.fullName}
+                                        </p>
+                                        <p className="text-[14px] break-words whitespace-normal">
+                                            <span className="text-[#7D7D7F]">Loại máu:</span> {volunteer.bloodTypeName}
+                                        </p>
+                                        <p className="text-[14px] break-words whitespace-normal">
+                                            <span className="text-[#7D7D7F]">Số điện thoại:</span> {volunteer.phone}
+                                        </p>
+                                        <p className="text-[14px] break-words whitespace-normal">
+                                            <span className="text-[#7D7D7F]">Gmail:</span> {volunteer.gmail}
+                                        </p>
                                     </div>
                                 </Tooltip>
+
                             </Marker>
                         )
                     )

@@ -92,10 +92,11 @@ export default function RegisterForm() {
 
       copyForm.phone = formatPhoneOtp(formData.phone)
       copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor)
-      const address = formData.address + " " + formData.district + " " + formData.province + " Việt Nam"
+      const address = formData.address + " Quận " + formData.district + " " + formData.province + " Việt Nam"
       try {
         const geoCoding = await getLongLat(address);
         if (geoCoding !== null) {
+          console.log("Geocoding register success", geoCoding);
           copyForm.longitude = geoCoding.longitude;
           copyForm.latitude = geoCoding.latitude;
         } else {
