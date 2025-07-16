@@ -7,6 +7,7 @@ import { Trash2 } from "lucide-react";
 import { BloodUnit } from "./BloodUnit";
 import { authenApi } from "@/lib/instance";
 import LoadingSpinner from "@/components/layout/Spinner";
+import { useNavigate } from "react-router-dom";
 
 const bloodTypes = [
   { type: "A-", units: 112 },
@@ -31,14 +32,18 @@ interface Entry {
   description?: string | null;
 }
 
+interface BloodTypeAlert {
+  bloodTypeName: string;
+}
 export default function Inventory() {
+  const nav = useNavigate()
   const [bloodInventories, setBloodInventories] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
+  const [bloodTypeAlert, setBloodTypeAlert] = useState<BloodTypeAlert[]>([]);
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -70,6 +75,25 @@ export default function Inventory() {
     fetchInventories();
   }, [currentPage]);
 
+  // fetch blood type alert
+  useEffect(() => {
+    const fetchBloodTypeAlert = async () => {
+      try {
+        const response = await authenApi.get("/api/blood-inventories/alert");
+        if (response.data?.isSuccess) {
+          console.log("Blood type alert:", response.data.data);
+          setBloodTypeAlert(response.data.data);
+        } else {
+          console.error("Failed to fetch blood type alert:", response.data?.message || "Unknown error");
+        }
+      } catch (err) {
+        console.error("Failed to fetch blood type alert:", err);
+      }
+    };
+
+    fetchBloodTypeAlert();
+  }, [])
+
   const handleDelete = async () => {
     if (!selectedDeleteId) return;
     try {
@@ -90,13 +114,20 @@ export default function Inventory() {
   return (
     <div className="container bg-[#F0EFF4] rounded-xl p-6 shadow-md flex flex-col items-center m-4">
       <div className="flex justify-center items-center mb-4">
-        <Input className="p-3 w-[530px] rounded-md border border-red-700 mr-4" placeholder="Tìm kiếm nhóm máu, người hiến,..." />
+        <Input className="p-3 w-[530px] rounded-md border bg-white border-red-700 mr-4"
+          placeholder="Tìm kiếm nhóm máu" />
         <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tìm kiếm</button>
       </div>
-      <div className="bg-red-200 px-4 py-2 rounded-md font-semibold mb-6 flex justify-between items-center w-full">
-        <p className="text-lg text-red-600">Lưu ý: Nhóm máu O- sắp hết</p>
-        <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tạo yêu cầu khẩn cấp</button>
-      </div>
+      {
+        bloodTypeAlert.length > 0 && (
+          <div className="bg-red-200 px-4 py-2 rounded-md font-semibold mb-6 flex justify-between items-center w-full">
+            <p className="text-lg text-red-600">Lưu ý: Nhóm máu {bloodTypeAlert[0].bloodTypeName} sắp hết</p>
+            <button
+              onClick={() => nav("/staff/donorsearch", { replace: true })}
+              className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tạo yêu cầu khẩn cấp</button>
+          </div>
+        )
+      }
 
       {/* Still hardcoding */}
       <div className="grid grid-cols-2 sm:grid-cols-4 w-fit gap-x-[87px] gap-y-[45px] mb-8 justify-items-center items-center">
@@ -209,9 +240,8 @@ export default function Inventory() {
           <Button
             key={page}
             variant={page === currentPage ? "outline" : "ghost"}
-            className={`rounded-lg w-10 h-10 p-0 cursor-pointer ${
-              page === currentPage ? "border border-blue-500 text-blue-600 bg-white" : "border border-gray-300 text-gray-600 bg-white"
-            }`}
+            className={`rounded-lg w-10 h-10 p-0 cursor-pointer ${page === currentPage ? "border border-blue-500 text-blue-600 bg-white" : "border border-gray-300 text-gray-600 bg-white"
+              }`}
             onClick={() => handlePageChange(page)}
           >
             {page}
