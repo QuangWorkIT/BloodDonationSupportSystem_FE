@@ -120,7 +120,7 @@ const convertStaffAccountToNewAccountData = (staffAccount: StaffAccount): NewAcc
 const AccountDashboard = () => {
   // State Management
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [rowsPerPage] = useState<number>(10); // Fixed at 10 per page
   const [activeSidebarItem, setActiveSidebarItem] = useState<string>("accounts");
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -146,21 +146,19 @@ const AccountDashboard = () => {
   const [showAddAccountModal, setShowAddAccountModal] = useState<boolean>(false);
   const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
 
-  // Data Fetching
+  // Data Fetching (fetch all accounts at once, only on mount)
   useEffect(() => {
-    const fetchAccounts = async () => {
+    const fetchAllAccounts = async () => {
       try {
         setLoading(true);
         setError(null);
-
-        // Fetch paginated data from the API
+        // Fetch all accounts by requesting a very large pageSize
         const response = await authenApi.get<ApiResponse<PaginatedUserData>>(
-          `/api/users?pageNumber=${currentPage}&pageSize=${rowsPerPage}`
+          `/api/users?pageNumber=1&pageSize=10000`
         );
-
         if (response.data.isSuccess) {
-          setAccounts(response.data.data.items);
-          setTotalItems(response.data.data.totalItems);
+          setAccounts(response.data.data.items); // all accounts
+          setTotalItems(response.data.data.items.length);
         } else {
           setError(response.data.message || "Failed to fetch accounts");
         }
@@ -171,14 +169,12 @@ const AccountDashboard = () => {
         setLoading(false);
       }
     };
+    fetchAllAccounts();
+  }, []); // Only run on mount
 
-    fetchAccounts();
-  }, [currentPage, rowsPerPage]);
-
-  // Sorting and Filtering Logic
+  // Sorting and Filtering Logic (unchanged)
   const filteredAccounts = useMemo(() => {
     let result = [...accounts];
-
     // Apply search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -189,19 +185,16 @@ const AccountDashboard = () => {
           (account.phone && account.phone.toLowerCase().includes(term))
       );
     }
-
     // Apply role filter
     if (filters.role) {
       result = result.filter((account) => account.role === filters.role);
     }
-
     // Apply sorting
     if (sortConfig.key) {
       result.sort((a, b) => {
         const key = sortConfig.key as keyof Account;
         const aValue = a[key];
         const bValue = b[key];
-
         if (aValue === undefined || bValue === undefined) return 0;
         if (aValue < bValue) {
           return sortConfig.direction === "ascending" ? -1 : 1;
@@ -212,7 +205,6 @@ const AccountDashboard = () => {
         return 0;
       });
     }
-
     return result;
   }, [accounts, searchTerm, filters, sortConfig]);
 
@@ -285,20 +277,13 @@ const csvExportData = useMemo(() => {
     setSortConfig({ key, direction });
   };
 
-  // Pagination Logic (server-side)
-  const totalPages = Math.ceil(totalItems / rowsPerPage);
-  const currentAccounts = filteredAccounts; // Only current page's data is available from server
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const handleRowsPerPageChange = (value: number) => {
-    setRowsPerPage(value);
-    setCurrentPage(1);
-  };
+  // Pagination Logic (frontend)
+  const totalPages = Math.ceil(filteredAccounts.length / rowsPerPage);
+  const currentAccounts = useMemo(() => {
+    const startIdx = (currentPage - 1) * rowsPerPage;
+    const endIdx = startIdx + rowsPerPage;
+    return filteredAccounts.slice(startIdx, endIdx);
+  }, [filteredAccounts, currentPage, rowsPerPage]);
 
   // CRUD Operations
   const handleEditClick = (account: Account) => {

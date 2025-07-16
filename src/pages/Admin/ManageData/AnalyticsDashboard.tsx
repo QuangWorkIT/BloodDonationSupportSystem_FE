@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Filter,
   Download,
@@ -15,6 +15,8 @@ import {
 import { Doughnut, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import AdminSidebar from "../AdminSidebar";
+import api from "@/lib/instance";
+import { CSVLink } from "react-csv";
 
 
 // Register ChartJS components
@@ -90,6 +92,24 @@ const AnalyticsDashboard = () => {
     },
   });
 
+  // Mockdata for User Growth Trends
+  const [userGrowth] = useState({
+    newUsersThisMonth: 87,
+    growthRate: 5.2, // percent
+    trend: 'up' as 'up' | 'down',
+  });
+
+  // Mockdata for Critical Alerts
+  const [criticalAlerts] = useState({
+    lowStock: [
+      { type: 'O', stock: 5, threshold: 10 },
+      { type: 'A', stock: 7, threshold: 10 },
+    ],
+    lowEventRegistration: [
+      { id: 12603, name: 'Mar 5, 2024 - 707 Business Park', registered: 120, expected: 180 },
+    ],
+  });
+
   const [bloodStock] = useState<BloodStock[]>([
     { type: 'A', quantity: 15, color: '#FF6384' },
     { type: 'B', quantity: 23, color: '#36A2EB' },
@@ -112,18 +132,41 @@ const AnalyticsDashboard = () => {
     { month: 'DEC', donations: 140 },
   ]);
 
-  const [events, setEvents] = useState<DonationEvent[]>([
-    { id: 12594, date: "Oct 15, 2023", location: "312 Vitamette Ave", registeredDonors: 134, expectedDonors: 225, status: "upcoming" },
-    { id: 12595, date: "Nov 5, 2023", location: "456 Main Street", registeredDonors: 210, expectedDonors: 300, status: "upcoming" },
-    { id: 12596, date: "Aug 20, 2023", location: "789 Park Avenue", registeredDonors: 250, expectedDonors: 250, status: "completed" },
-    { id: 12597, date: "Sep 10, 2023", location: "101 Center Road", registeredDonors: 150, expectedDonors: 180, status: "completed" },
-    { id: 12598, date: "Dec 1, 2023", location: "202 Emergency Lane", registeredDonors: 320, expectedDonors: 350, status: "ongoing" },
-    { id: 12599, date: "Jul 15, 2023", location: "303 Regular Street", registeredDonors: 180, expectedDonors: 200, status: "completed" },
-    { id: 12600, date: "Jun 5, 2023", location: "404 Cancelled Road", registeredDonors: 90, expectedDonors: 150, status: "cancelled" },
-    { id: 12601, date: "Jan 20, 2024", location: "505 Community Ave", registeredDonors: 150, expectedDonors: 280, status: "upcoming" },
-    { id: 12602, date: "Feb 10, 2024", location: "606 School Street", registeredDonors: 190, expectedDonors: 220, status: "upcoming" },
-    { id: 12603, date: "Mar 5, 2024", location: "707 Business Park", registeredDonors: 120, expectedDonors: 180, status: "upcoming" },
-  ]);
+  // Remove the mock events initialization
+  const [events, setEvents] = useState<DonationEvent[]>([]);
+
+  // Fetch events from API
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const response = await api.get("/api/events");
+        if (response.data.isSuccess) {
+          setEvents(
+            response.data.data.items.map((item: any) => ({
+              id: item.id,
+              date: new Date(item.eventTime).toLocaleDateString(),
+              location: "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh", // Hardcoded address
+              registeredDonors: item.bloodRegisCount,
+              expectedDonors: item.maxOfDonor,
+              status: inferStatus(item.eventTime),
+            }))
+          );
+        }
+      } catch (error) {
+        setEvents([]);
+      }
+    }
+    fetchEvents();
+  }, []);
+
+  // Helper to infer status from eventTime
+  function inferStatus(eventTime: string): EventStatus {
+    const now = new Date();
+    const eventDate = new Date(eventTime);
+    if (eventDate > now) return "upcoming";
+    // You can add more logic for ongoing/completed/cancelled if available
+    return "completed";
+  }
 
   // Chart data and options
   const bloodStockChartData = {
@@ -257,7 +300,7 @@ const AnalyticsDashboard = () => {
       case 'ongoing':
         return 'bg-green-100 text-green-800';
       case 'completed':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-green-100 text-green-800'; // Light green for completed
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -270,6 +313,36 @@ const AnalyticsDashboard = () => {
       event.id === id ? { ...event, status: newStatus } : event
     ));
   };
+
+  // CSV export headers for events
+  const csvHeaders = [
+    { label: "ID", key: "id" },
+    { label: "Date", key: "date" },
+    { label: "Address", key: "location" },
+    { label: "Registered Donors", key: "registeredDonors" },
+    { label: "Expected Donors", key: "expectedDonors" },
+    { label: "Status", key: "status" },
+  ];
+
+  const csvExportData = useMemo(() => {
+    return filteredEvents.map((event) => ({
+      id: event.id,
+      date: event.date,
+      location: event.location,
+      registeredDonors: event.registeredDonors,
+      expectedDonors: event.expectedDonors,
+      status:
+        event.status === "upcoming"
+          ? "Sắp diễn ra"
+          : event.status === "ongoing"
+          ? "Đang diễn ra"
+          : event.status === "completed"
+          ? "Đã hoàn thành"
+          : event.status === "cancelled"
+          ? "Đã hủy"
+          : event.status,
+    }));
+  }, [filteredEvents]);
 
   return (
     <div className="flex min-h-screen h-full w-screen bg-[#EFEFEF]">
@@ -320,12 +393,32 @@ const AnalyticsDashboard = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            {/* User Growth Trends */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-1">Người dùng mới tháng này</p>
+                  <p className="text-2xl font-bold text-gray-900">{userGrowth.newUsersThisMonth}</p>
+                </div>
+                <div className="bg-yellow-100 p-2 rounded-full">
+                  <Users className="w-5 h-5 text-yellow-600" />
+                </div>
+              </div>
+              <div className="mt-2 flex items-center">
+                {userGrowth.trend === 'up' ? (
+                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+                ) : (
+                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                )}
+                <p className={`text-sm ${userGrowth.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>{userGrowth.growthRate}%</p>
+              </div>
+            </div>
             {/* Current Viewers */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Số người hiển thị</p>
+                  <p className="text-sm font-medium text-gray-500 mb-1">Tổng số người dùng</p>
                   <p className="text-2xl font-bold text-gray-900">{dashboardStats.currentViewers.toLocaleString()}</p>
                 </div>
                 <div className="bg-blue-100 p-2 rounded-full">
@@ -338,9 +431,7 @@ const AnalyticsDashboard = () => {
                 ) : (
                   <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
                 )}
-                <p className={`text-sm ${dashboardStats.weeklyChanges.viewers.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  {dashboardStats.weeklyChanges.viewers.value}
-                </p>
+                <p className={`text-sm ${dashboardStats.weeklyChanges.viewers.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>{dashboardStats.weeklyChanges.viewers.value}</p>
               </div>
             </div>
 
@@ -445,10 +536,15 @@ const AnalyticsDashboard = () => {
                   <Filter className="w-3 h-3" />
                   Lọc
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer">
+                <CSVLink
+                  data={csvExportData}
+                  headers={csvHeaders}
+                  filename={`events_export_${new Date().toISOString().slice(0, 10)}.csv`}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                >
                   <Download className="w-3 h-3" />
                   Xuất
-                </button>
+                </CSVLink>
               </div>
             </div>
 
@@ -545,11 +641,8 @@ const AnalyticsDashboard = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                       Số người hiến
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                      Trạng thái
-                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Hành động
+                      Trạng thái
                     </th>
                   </tr>
                 </thead>
@@ -582,23 +675,11 @@ const AnalyticsDashboard = () => {
                             {event.status === 'cancelled' && 'Đã hủy'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <select
-                            value={event.status}
-                            onChange={(e) => changeEventStatus(event.id, e.target.value as EventStatus)}
-                            className="border border-gray-300 rounded px-2 py-1 text-xs"
-                          >
-                            <option value="upcoming">Sắp diễn ra</option>
-                            <option value="ongoing">Đang diễn ra</option>
-                            <option value="completed">Đã hoàn thành</option>
-                            <option value="cancelled">Đã hủy</option>
-                          </select>
-                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
                         Không tìm thấy sự kiện nào phù hợp
                       </td>
                     </tr>
