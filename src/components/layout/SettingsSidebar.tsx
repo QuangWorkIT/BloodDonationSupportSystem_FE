@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { FaUser, FaBell, FaSync, FaSignOutAlt, FaTrash, FaCog } from "react-icons/fa";
 
 // Types for Feedback Modal
 type FeedbackType = "info" | "success" | "error" | "warning";
@@ -153,12 +154,12 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
       initial={{ opacity: 0}}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className={`bg-white rounded-md shadow-md p-6 ${isMobile ? 'fixed inset-0 z-40 overflow-y-auto' : 'sticky top-8'}`}
+      className={`bg-white rounded-2xl shadow-xl p-0 ${isMobile ? 'fixed inset-0 z-40 overflow-y-auto' : 'sticky top-8'}`}
     >
       {isMobile && (
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Cài đặt tài khoản</h2>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100">
+        <div className="flex justify-between items-center px-4 pt-4 mb-2">
+          <h2 className="text-lg font-bold">Cài đặt tài khoản</h2>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#C14B53]" aria-label="Đóng">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -166,69 +167,103 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
         </div>
       )}
 
-      <div className="text-center mb-6">
-        <div className="w-24 h-24 bg-[#C14B53] rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
-          NVA
+      {/* Profile Card */}
+      <div className={`flex flex-col items-center bg-[#F8F9FA] rounded-t-2xl ${isMobile ? 'px-4 pt-6 pb-4' : 'px-8 pt-8 pb-6'} border-b border-gray-200`}>
+        <div className="w-16 h-16 rounded-full bg-[#C14B53] flex items-center justify-center mb-3 shadow text-white">
+          <FaUser size={32} />
         </div>
-        <h1 className="text-xl font-bold">{user?.unique_name}</h1>
+        <h1 className="text-base font-bold text-[#C14B53] mb-1">{user?.unique_name}</h1>
+        {user?.gmail && <div className="text-gray-500 text-xs">{user.gmail}</div>}
+        {user?.phone && <div className="text-gray-400 text-xs">{user.phone}</div>}
       </div>
 
-      <div className="mb-6">
-        <button
-          onClick={handleLogout}
-          className="w-full text-[#C14B53] hover:bg-gray-100 py-2 rounded-md text-left px-4 cursor-pointer transition"
-        >
-          Đăng xuất
-        </button>
+      {/* Settings Card */}
+      <div className={`${isMobile ? 'px-4 py-4' : 'px-8 py-6'}`}>
+        <h3 className="font-semibold text-base mb-4 flex items-center gap-2">
+          <FaCog className="text-[#C14B53]" /> Cài đặt
+        </h3>
+        <div className="bg-white rounded-xl shadow border border-gray-100 divide-y divide-gray-100">
+          {/* Setting Row: Notifications */}
+          <div className="flex items-center justify-between px-4 py-3 group focus-within:bg-gray-50 transition">
+            <div className="flex items-center gap-3">
+              <FaBell className="text-[#C14B53]" />
+              <span className="font-medium text-sm">Nhận thông báo (SMS) hiến máu gần đây</span>
+            </div>
+            <button
+              aria-label="Bật/tắt thông báo SMS"
+              className={`w-20 h-8 rounded-full relative cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] transition-colors focus:outline-none ${settings.smsNotifications ? 'bg-[#C14B53]' : 'bg-gray-300'}`}
+              onClick={() => handleSettingChange("smsNotifications", !settings.smsNotifications)}
+              tabIndex={0}
+            >
+              <span className={`absolute top-1 ${settings.smsNotifications ? 'right-1' : 'left-1'} w-6 h-6 rounded-full bg-white shadow transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]`}></span>
+            </button>
+          </div>
+          {/* Setting Row: Show Donation Status */}
+          <div className="flex items-center justify-between px-4 py-3 group focus-within:bg-gray-50 transition">
+            <div className="flex items-center gap-3">
+              <FaUser className="text-[#C14B53]" />
+              <span className="font-medium text-sm">Hiển thị trạng thái sẵn sàng hiến máu</span>
+            </div>
+            <button
+              aria-label="Bật/tắt trạng thái hiến máu"
+              className={`w-20 h-8 rounded-full relative cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] transition-colors focus:outline-none ${settings.showDonationStatus ? 'bg-[#C14B53]' : 'bg-gray-300'}`}
+              onClick={() => handleSettingChange("showDonationStatus", !settings.showDonationStatus)}
+              tabIndex={0}
+            >
+              <span className={`absolute top-1 ${settings.showDonationStatus ? 'right-1' : 'left-1'} w-6 h-6 rounded-full bg-white shadow transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]`}></span>
+            </button>
+          </div>
+          {/* Setting Row: Auto Update */}
+          <div className="flex items-center justify-between px-4 py-3 group focus-within:bg-gray-50 transition">
+            <div className="flex items-center gap-3">
+              <FaSync className="text-[#C14B53]" />
+              <span className="font-medium text-sm">Tự động cập nhật hệ thống (nếu có)</span>
+            </div>
+            <button
+              aria-label="Bật/tắt tự động cập nhật"
+              className={`w-20 h-8 rounded-full relative cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] transition-colors focus:outline-none ${settings.autoUpdate ? 'bg-[#C14B53]' : 'bg-gray-300'}`}
+              onClick={() => handleSettingChange("autoUpdate", !settings.autoUpdate)}
+              tabIndex={0}
+            >
+              <span className={`absolute top-1 ${settings.autoUpdate ? 'right-1' : 'left-1'} w-6 h-6 rounded-full bg-white shadow transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]`}></span>
+            </button>
+          </div>
+          {/* Setting Row: Logout Other Devices */}
+          <div className="flex items-center justify-between px-4 py-3 group focus-within:bg-gray-50 transition">
+            <div className="flex items-center gap-3">
+              <FaSignOutAlt className="text-[#C14B53]" />
+              <span className="font-medium text-sm">Đăng xuất khỏi các thiết bị khác</span>
+            </div>
+            <button
+              aria-label="Đăng xuất khỏi thiết bị khác"
+              className={`w-20 h-8 rounded-full relative cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] transition-colors focus:outline-none ${settings.logoutOtherDevices ? 'bg-[#C14B53]' : 'bg-gray-300'}`}
+              onClick={() => handleSettingChange("logoutOtherDevices", !settings.logoutOtherDevices)}
+              tabIndex={0}
+            >
+              <span className={`absolute top-1 ${settings.logoutOtherDevices ? 'right-1' : 'left-1'} w-6 h-6 rounded-full bg-white shadow transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]`}></span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <h3 className="font-medium text-lg mb-4">Cài đặt</h3>
-      <div className="space-y-3 mb-6">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            className="text-[#C14B53] focus:ring-[#C14B53] rounded"
-            checked={settings.smsNotifications}
-            onChange={(e) => handleSettingChange("smsNotifications", e.target.checked)}
-          />
-          <span className="ml-2">Nhận thông báo (SMS) hiến máu gần đây</span>
-        </label>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            className="text-[#C14B53] focus:ring-[#C14B53] rounded"
-            checked={settings.showDonationStatus}
-            onChange={(e) => handleSettingChange("showDonationStatus", e.target.checked)}
-          />
-          <span className="ml-2">Hiển thị trạng thái sẵn sàng hiến máu</span>
-        </label>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            className="text-[#C14B53] focus:ring-[#C14B53] rounded"
-            checked={settings.autoUpdate}
-            onChange={(e) => handleSettingChange("autoUpdate", e.target.checked)}
-          />
-          <span className="ml-2">Tự động cập nhật hệ thống (nếu có)</span>
-        </label>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            className="text-[#C14B53] focus:ring-[#C14B53] rounded"
-            checked={settings.logoutOtherDevices}
-            onChange={(e) => handleSettingChange("logoutOtherDevices", e.target.checked)}
-          />
-          <span className="ml-2">Đăng xuất khỏi các thiết bị khác</span>
-        </label>
-      </div>
-
-      <div className="pt-4 border-t">
-        <button
-          onClick={handleDeleteAccount}
-          className="text-red-500 hover:underline cursor-pointer"
-        >
-          Xóa tài khoản
-        </button>
+      {/* Actions Card */}
+      <div className={`${isMobile ? 'px-4 pb-4' : 'px-8 pb-8'}`}>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#C14B53] text-white font-semibold hover:bg-[#a83a42] focus:outline-none focus:ring-2 focus:ring-[#C14B53] transition cursor-pointer text-base"
+            aria-label="Đăng xuất"
+          >
+            <FaSignOutAlt /> Đăng xuất
+          </button>
+          <button
+            onClick={handleDeleteAccount}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-100 text-red-600 font-semibold hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 transition cursor-pointer text-base"
+            aria-label="Xóa tài khoản"
+          >
+            <FaTrash /> Xóa tài khoản
+          </button>
+        </div>
       </div>
 
       {/* Logout Confirmation Modal */}
@@ -242,7 +277,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
         <div className="flex justify-center space-x-4 mt-4">
           <button
             onClick={closeAllModals}
-            className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50"
+            className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50 cursor-pointer"
           >
             Hủy
           </button>
@@ -266,7 +301,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
         <div className="flex justify-center space-x-4 mt-4">
           <button
             onClick={closeAllModals}
-            className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50"
+            className="px-4 py-2 text-gray-600 rounded-md border hover:bg-gray-50 cursor-pointer"
           >
             Hủy
           </button>

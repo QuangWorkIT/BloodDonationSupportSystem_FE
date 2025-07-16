@@ -3,6 +3,11 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { X } from "lucide-react"
+import { authenApi } from "@/lib/instance"
+import { toast } from "react-toastify"
+import type { AxiosError } from "axios"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/hooks/authen/AuthContext"
 
 interface FormData {
   fullName: string
@@ -28,8 +33,10 @@ interface FormErrors {
 }
 
 export default function VolunteerForm() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [formData, setFormData] = useState<FormData>({
-    fullName: "",
+    fullName: user?.unique_name || "",
     height: "",
     weight: "",
     address: "",
@@ -38,8 +45,8 @@ export default function VolunteerForm() {
     availableTo: "",
     bloodType: "",
     rhFactor: "",
-    phone: "",
-    email: "",
+    phone: user?.phone || "",
+    email: user?.gmail || "",
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -56,21 +63,21 @@ export default function VolunteerForm() {
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {}
-    
+
     if (!formData.fullName.trim()) {
       newErrors.fullName = "Đây là trường thông tin bắt buộc."
     }
-    
+
     if (!formData.weight.trim()) {
       newErrors.weight = "Đây là trường thông tin bắt buộc."
     } else if (parseFloat(formData.weight) < 42) {
       newErrors.weight = "Cân nặng phải từ 42 kg trở lên"
     }
-    
+
     if (!formData.bloodType) {
       newErrors.bloodType = "Đây là trường thông tin bắt buộc."
     }
-    
+
     if (!formData.phone.trim()) {
       newErrors.phone = "Đây là trường thông tin bắt buộc."
     } else if (!/^(0|\+84)[0-9]{9,10}$/.test(formData.phone)) {
@@ -80,14 +87,14 @@ export default function VolunteerForm() {
     if (formData.availableFrom && formData.availableTo) {
       const fromDate = new Date(formData.availableFrom)
       const toDate = new Date(formData.availableTo)
-      
+
       if (fromDate > toDate) {
         newErrors.availableTo = "Ngày kết thúc phải sau ngày bắt đầu"
       }
 
       const oneYearLater = new Date(fromDate)
       oneYearLater.setFullYear(oneYearLater.getFullYear() + 1)
-      
+
       if (toDate > oneYearLater) {
         newErrors.availableTo = "Khoảng thời gian tối đa là 1 năm"
       }
@@ -99,7 +106,7 @@ export default function VolunteerForm() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
+
     const validationErrors = validateForm()
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
@@ -125,8 +132,24 @@ export default function VolunteerForm() {
         email: "",
       })
       setErrors({})
+      const payload = {
+        lastDonation: new Date(formData.lastDonation).toISOString(),
+        startVolunteerDate: new Date(formData.availableFrom).toISOString(),
+        endVolunteerDate: new Date(formData.availableTo).toISOString(),
+      }
+      const response = await authenApi.post("/api/Volunteers",
+        payload
+      )
+      const data = response.data
+      if (data.isSuccess) {
+        navigate("/", { replace: true })
+        toast.success("Đăng ký tình nguyện viên thành công!")
+      }
     } catch (error) {
-      console.error("Submission error:", error)
+      toast.error("Đăng ký tình nguyện viên thất bại. Vui lòng thử lại sau.")
+      const err = error as AxiosError
+      if (err) console.log('Error volunteer form: ', err)
+      else console.error("Submission error:", error)
     } finally {
       setIsSubmitting(false)
     }
@@ -139,7 +162,7 @@ export default function VolunteerForm() {
         <h1 className="text-xl md:text-2xl font-normal text-black">
           Đơn đăng ký hiến máu tình nguyện
         </h1>
-        <button 
+        <button
           className="text-gray-500 hover:text-gray-700 cursor-pointer"
           aria-label="Đóng form"
         >
@@ -187,7 +210,7 @@ export default function VolunteerForm() {
               />
             </div>
           </div>
-          
+
           <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
             <Label htmlFor="weight" className="text-sm md:text-base w-full md:w-1/4">
               Cân nặng (kg)<span className="text-red-500"> *</span>
