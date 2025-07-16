@@ -285,6 +285,13 @@ const csvExportData = useMemo(() => {
     return filteredAccounts.slice(startIdx, endIdx);
   }, [filteredAccounts, currentPage, rowsPerPage]);
 
+  // Add this function after pagination logic
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   // CRUD Operations
   const handleEditClick = (account: Account) => {
     setEditingId(account.userId);
@@ -487,15 +494,6 @@ const csvExportData = useMemo(() => {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <span>Đang hiện</span>
-                  <select
-                    className="border border-gray-300 rounded px-3 py-1 text-sm bg-white"
-                    value={rowsPerPage}
-                    onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
-                  >
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={30}>30</option>
-                  </select>
                   <span>trong tổng số {totalItems} tài khoản</span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -753,15 +751,6 @@ const csvExportData = useMemo(() => {
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <select
-                    value={rowsPerPage}
-                    onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm bg-white"
-                  >
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={30}>30</option>
-                  </select>
                   <span>/Trang</span>
                 </div>
               </div>
