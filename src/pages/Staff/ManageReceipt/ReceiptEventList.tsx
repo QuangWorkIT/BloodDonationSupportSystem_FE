@@ -103,7 +103,7 @@ const ReceiptEventList = () => {
   };
 
   return (
-    <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
+    <div className="container flex flex-col gap-4 bg-[#F0EFF4] rounded-xl px-4 py-8 m-4">
       {isCreateDonationFormOpen && (
         <AnimatePresence>
           <motion.div

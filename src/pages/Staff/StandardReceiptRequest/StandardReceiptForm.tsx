@@ -52,13 +52,14 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
   });
 
     const onSubmit = async (data: FormData) => {
+      console.log("Form data: ", data);
       try {
         setIsSubmitting(true)
         const payload = {
           title: data.fullName,
           maxOfDonor: data.maxOfDonor,
           estimatedVolume: data.bloodVolume,
-          eventTime: data.donationDate.toISOString().split('T')[0]
+          eventTime: data.donationDate.toLocaleDateString('en-CA')
         }
         console.log(payload)
         const response = await authenApi.post('/api/events', payload)

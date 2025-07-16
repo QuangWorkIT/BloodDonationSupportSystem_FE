@@ -11,6 +11,7 @@ import { getUser } from "@/utils/permisson";
 import api from '@/lib/instance'
 import type { RecaptchaVerifier } from "firebase/auth";
 import { toast } from 'react-toastify';
+import { AnimatePresence, motion } from "framer-motion";
 
 const formSchema = z.object({
   phone: z.string().min(10, "Số điện thoại không hợp lệ"),
@@ -127,7 +128,7 @@ export default function LoginForm() {
         script.async = true;
         script.defer = true;
         script.onload = () => {
-        if (window.google?.accounts) {
+          if (window.google?.accounts) {
             loadSDK()
             rendeSignInButton()
           }
@@ -145,51 +146,86 @@ export default function LoginForm() {
   }, [clientID]);
 
   return (
-    <div className="h-screen flex items-center bg-[#F0EFF4]">
-      <div className="max-w-md h-max w-200 mx-auto min-sm:mt-0 min-sm:border rounded-lg min-sm:shadow p-6 space-y-6 bg-white max-sm:h-screen max-sm:flex max-sm:flex-col max-sm:justify-center">
-        <h2 className="text-2xl max-sm:text-3xl max-sm:text-center font-semibold text-red-600">Đăng nhập</h2>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Số điện thoại</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nhập số điện thoại" {...field} className="bg-[#F0EFF4]" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mật khẩu</FormLabel>
-                  <FormControl>
-                    <Input type="password" data-testid="phone-input" placeholder="Mật khẩu" {...field} className="bg-[#F0EFF4]" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer" disabled={isLogin}>
-              Đăng nhập
-            </Button>
-            <div className="text-center text-black text-sm ">Hoặc tiếp tục với</div>
-            <div id="googleSignInDiv" className="flex justify-center" />
-            <div className="text-center text-sm">
-              Chưa có tài khoản?{" "}
-              <Link to="/register" className="text-blue-600">
-                Đăng kí
-              </Link>
-            </div>
-          </form>
-        </Form>
-      </div>
+    <div className="relative h-screen flex items-center bg-[#F0EFF4] overflow-hidden">
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, x: -20, y: 100 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          exit={{ opacity: 0, x: -20, y: 10 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="w-[430px] h-[393px] bg-[#d94545] absolute top-[-150px] left-[-150px]"
+          style={{ borderRadius: "38% 62% 50% 50% / 58% 61% 39% 42%" }}
+        >
+        </motion.div>
+      </AnimatePresence>
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, x: -20, y: -100 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          exit={{ opacity: 0, x: -20, y: 10 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="w-[430px] h-[393px] bg-[#d94545] absolute bottom-[-120px] right-[-150px]"
+          style={{ borderRadius: "38% 62% 50% 50% / 58% 61% 39% 42%" }}>
+        </motion.div>
+      </AnimatePresence>
+      {
+        true && (
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, x: -20, y: -10 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              exit={{ opacity: 0, x: -20, y: -10 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="w-full"
+            >
+              <div className="max-w-md h-max w-200 mx-auto min-sm:mt-0 min-sm:border rounded-lg min-sm:shadow p-6 space-y-6 bg-white max-sm:h-screen max-sm:flex max-sm:flex-col max-sm:justify-center">
+                <h2 className="text-2xl max-sm:text-3xl max-sm:text-center font-semibold text-red-600">Đăng nhập</h2>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Số điện thoại</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nhập số điện thoại" {...field} className="bg-[#F0EFF4]" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mật khẩu</FormLabel>
+                          <FormControl>
+                            <Input type="password" data-testid="phone-input" placeholder="Mật khẩu" {...field} className="bg-[#F0EFF4]" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer" disabled={isLogin}>
+                      Đăng nhập
+                    </Button>
+                    <div className="text-center text-black text-sm ">Hoặc tiếp tục với</div>
+                    <div id="googleSignInDiv" className="flex justify-center" />
+                    <div className="text-center text-sm">
+                      Chưa có tài khoản?{" "}
+                      <Link to="/register" className="text-blue-600">
+                        Đăng kí
+                      </Link>
+                    </div>
+                  </form>
+                </Form>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        )
+      }
     </div>
   );
 }
