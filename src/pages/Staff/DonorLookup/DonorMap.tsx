@@ -2,7 +2,6 @@ import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { VolunteerProps } from '@/pages/Staff/DonorLookup/DonorLookup'
-import { Button } from '@/components/ui/button';
 
 interface DonorMapProps {
     toggleSelectDonor: (donor: VolunteerProps) => void
