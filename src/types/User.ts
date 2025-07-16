@@ -8,6 +8,7 @@ export type User = {
     gmail?: string,
     bloodType?: string,
     dob?: Date,
-    address?: string,
+    longitude?: number,
+    latitude?: number
     role: Role
 }

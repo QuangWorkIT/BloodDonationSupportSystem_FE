@@ -88,7 +88,7 @@ export default function Inventory() {
   };
 
   return (
-    <div className="container bg-gray-100 rounded-xl p-6 shadow-md flex flex-col items-center m-4">
+    <div className="container bg-[#F0EFF4] rounded-xl p-6 shadow-md flex flex-col items-center m-4">
       <div className="flex justify-center items-center mb-4">
         <Input className="p-3 w-[530px] rounded-md border border-red-700 mr-4" placeholder="Tìm kiếm nhóm máu, người hiến,..." />
         <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tìm kiếm</button>

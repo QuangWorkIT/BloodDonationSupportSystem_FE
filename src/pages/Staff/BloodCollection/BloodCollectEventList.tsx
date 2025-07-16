@@ -119,7 +119,7 @@ const BloodCollectEventList = () => {
     <>
       {!selectedEvent ? (
         // Events list
-        <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
+        <div className="container flex flex-col gap-4 bg-[#F0EFF4] rounded-xl px-4 py-8 m-4">
           <div className="mb-4 flex justify-between">
             <h2 className="text-3xl font-medium text-gray-800 ml-2">Các sự kiện nhận máu</h2>
           </div>
