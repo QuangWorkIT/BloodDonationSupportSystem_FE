@@ -83,13 +83,15 @@ function DonorLookup() {
     }
 
     const foundDonor = (filterCriterias: string[]) => {
-        const filterListFound: VolunteerProps[] = []
-        donorFound.forEach(donor => {
-            if (filterCriterias.some(filter => filter === donor.bloodTypeName.substring(0, 1))) {
-                filterListFound.push(donor)
-            }
-        })
-        setDisplayrDonorList(filterListFound)
+        const criteriaSet = new Set(filterCriterias.map(item => item.toUpperCase()));
+        const filtered = donorFound.filter(donor => {
+            const bloodPrefix = donor.bloodTypeName.startsWith("AB")
+                ? "AB"
+                : donor.bloodTypeName[0]; // "A", "B", "O"
+
+            return criteriaSet.has(bloodPrefix.toUpperCase());
+        });
+        setDisplayrDonorList(filtered)
     }
     const handleSelectFilter = (item: string) => {
         const filterCriterias: string[] = filterList.includes(item)
@@ -323,7 +325,7 @@ function DonorLookup() {
                                                     <AnimatePresence initial={false}>
                                                         {isOpen && (
                                                             <motion.section
-                                                                className="flex flex-col gap-10 pb-10 items-center"
+                                                                className="flex flex-col gap-5 pb-5 items-center"
                                                                 initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
                                                                 animate={{ opacity: 1, height: "auto", overflow: 'hidden' }}
                                                                 exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
