@@ -9,6 +9,7 @@ export type User = {
     bloodType?: string,
     dob?: Date,
     longitude?: number,
-    latitude?: number
+    latitude?: number,
+    address?: string,
     role: Role
 }
