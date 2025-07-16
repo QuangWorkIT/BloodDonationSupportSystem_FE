@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaHeart, FaSearch, FaTimes } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
-import { User2Icon} from "lucide-react";
+import { User2Icon } from "lucide-react";
 import { authenApi } from "@/lib/instance";
 import type { AxiosError } from "axios";
 import LoadingSpinner from "@/components/layout/Spinner";
@@ -212,42 +212,46 @@ const BloodCollectEventList = () => {
             </div>
 
             <div className="space-y-4">
-              {currentDonors.map((donor, index) => (
-                <motion.div
-                  key={donor.id}
-                  className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200 p-4 flex justify-between items-end"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.3 }}
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4 md:mb-0 shadow-sm">
-                      <User2Icon className="text-2xl" />
+              {currentDonors.length > 0 ? (
+                currentDonors.map((donor, index) => (
+                  <motion.div
+                    key={donor.id}
+                    className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200 p-4 flex justify-between items-end"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4 md:mb-0 shadow-sm">
+                        <User2Icon className="text-2xl" />
+                      </div>
+                      <div className="flex flex-col gap-[10px]">
+                        <div className="text-2xl font-semibold">{donor.fullName}</div>
+                        <div className="text-lg text-gray-600">
+                          Tình trạng sức khỏe: <span className="text-black font-semibold">{donor.isHealth && "Tốt"}</span>
+                        </div>
+                        <div className="text-lg text-gray-600">
+                          Loại máu: <span className="text-black font-semibold">{donor.bloodTypeName ? donor.bloodTypeName : "A"}</span>
+                        </div>
+                        <div className="text-lg font-semibold text-gray-600">
+                          Thời gian khám: <span className="text-black font-semibold">{formatDateTime(donor.performedAt)[0]}, {formatDateTime(donor.performedAt)[1]}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-[10px]">
-                      <div className="text-2xl font-semibold">{donor.fullName}</div>
-                      <div className="text-lg text-gray-600">
-                        Tình trạng sức khỏe: <span className="text-black font-semibold">{donor.isHealth && "Tốt"}</span>
-                      </div>
-                      <div className="text-lg text-gray-600">
-                        Loại máu: <span className="text-black font-semibold">{donor.bloodTypeName ? donor.bloodTypeName : "A"}</span>
-                      </div>
-                      <div className="text-lg font-semibold text-gray-600">
-                        Thời gian khám: <span className="text-black font-semibold">{formatDateTime(donor.performedAt)[0]}, {formatDateTime(donor.performedAt)[1]}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setCurrentDonor(donor)
-                      setIsBloodCollectFormOpen(true)
-                    }}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-xl text-white font-semibold px-4 py-2 rounded-md cursor-pointer">
-                    Tiến hành lấy máu
-                  </button>
-                </motion.div>
-              ))}
+                    <button
+                      onClick={() => {
+                        setCurrentDonor(donor)
+                        setIsBloodCollectFormOpen(true)
+                      }}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-xl text-white font-semibold px-4 py-2 rounded-md cursor-pointer">
+                      Tiến hành lấy máu
+                    </button>
+                  </motion.div>
+                ))
+              ) : (<div className="flex w-full justify-center text-[20px] italic text-gray-600">
+                Chưa có người hiến máu nào chờ được hiến máu.
+              </div>)}
             </div>
 
             <motion.div className="flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
@@ -265,7 +269,13 @@ const BloodCollectEventList = () => {
             >
               <StaffCheckoutReceiptForm
                 donor={currentDonor ? currentDonor : defaultDonor}
-                setIsBloodCollectFormOpen={() => setIsBloodCollectFormOpen(false)}
+                setIsBloodCollectFormOpen={() => {
+                  setIsBloodCollectFormOpen(false);
+                  if (currentDonor) {
+                    setDonors(prev => prev.filter(d => d.id !== currentDonor.id));
+                    setCurrentDonor(null);
+                  }
+                }}
                 fetchEvents={fetchEvents}
               />
             </motion.div>
