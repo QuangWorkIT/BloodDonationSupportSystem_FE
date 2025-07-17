@@ -170,6 +170,15 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                   </span>
                 </div>
               </div>
+              {donation.status === "Hoàn thành" && donation.amount && (
+                <div className="flex items-center gap-3 col-span-1 md:col-span-2">
+                  <FaTint className="text-[#C14B53] text-lg" />
+                  <div>
+                    <p className="text-base text-gray-500">Lượng máu hiến</p>
+                    <p className="font-medium">{donation.amount}</p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-3 col-span-1 md:col-span-2">
                 <FaInfoCircle className="text-[#C14B53] text-lg" />
                 <div>
