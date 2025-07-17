@@ -30,9 +30,9 @@ interface Donation {
   date: string;
   facility: string;
   address: string;
-  status: "Hoàn thành" | "Thất bại";
+  status: "Hoàn thành" | "Đang diễn ra" | "Thất bại";
   amount?: string;
-  reason?: string;
+  description: string;
 }
 
 interface DonationDetailsModalProps {
@@ -52,14 +52,25 @@ const formatDate = (dateString: string): string => {
 
 // Helper function to transform API data to display format
 const transformApiDonation = (apiDonation: ApiDonation): Donation => {
+  let status: "Hoàn thành" | "Đang diễn ra" | "Thất bại";
+  if (apiDonation.status) {
+    if (apiDonation.volume !== null) {
+      status = "Hoàn thành";
+    } else {
+      status = "Đang diễn ra";
+    }
+  } else {
+    status = "Thất bại";
+  }
+
   return {
     registrationId: apiDonation.registrationId,
     date: formatDate(apiDonation.donateDate),
     facility: apiDonation.facilityName,
     address: apiDonation.facilityAddress,
-    status: apiDonation.status ? "Hoàn thành" : "Thất bại",
+    status: status,
     amount: apiDonation.volume ? `${apiDonation.volume}ml` : undefined,
-    reason: !apiDonation.status ? apiDonation.description : undefined,
+    description: apiDonation.description,
   };
 };
 
@@ -71,9 +82,31 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
 }) => {
   if (!donation) return null;
 
-  const statusIcon = donation.status === "Hoàn thành"
-    ? <FaCheckCircle className="text-green-500 mr-2" />
-    : <FaTimesCircle className="text-red-500 mr-2" />;
+  const getStatusIcon = () => {
+    switch (donation.status) {
+      case "Hoàn thành":
+        return <FaCheckCircle className="text-green-500 mr-2" />;
+      case "Đang diễn ra":
+        return <FaInfoCircle className="text-blue-500 mr-2" />;
+      case "Thất bại":
+        return <FaTimesCircle className="text-red-500 mr-2" />;
+      default:
+        return <FaInfoCircle className="text-gray-500 mr-2" />;
+    }
+  };
+
+  const getStatusStyle = () => {
+    switch (donation.status) {
+      case "Hoàn thành":
+        return "bg-green-100 text-green-800";
+      case "Đang diễn ra":
+        return "bg-blue-100 text-blue-800";
+      case "Thất bại":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -129,26 +162,29 @@ const DonationDetailsModal: React.FC<DonationDetailsModalProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-3 col-span-1 md:col-span-2">
-                {statusIcon}
+                {getStatusIcon()}
                 <div>
                   <p className="text-base text-gray-500">Trạng thái</p>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-base font-medium ${
-                    donation.status === "Hoàn thành"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-base font-medium ${getStatusStyle()}`}>
                     {donation.status}
                   </span>
                 </div>
               </div>
+              {donation.status === "Hoàn thành" && donation.amount && (
+                <div className="flex items-center gap-3 col-span-1 md:col-span-2">
+                  <FaTint className="text-[#C14B53] text-lg" />
+                  <div>
+                    <p className="text-base text-gray-500">Lượng máu hiến</p>
+                    <p className="font-medium">{donation.amount}</p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-3 col-span-1 md:col-span-2">
                 <FaInfoCircle className="text-[#C14B53] text-lg" />
                 <div>
                   <p className="text-base text-gray-500">Mô tả</p>
                   <p className="font-medium">
-                    {donation.status === "Hoàn thành" 
-                      ? `Đã hiến thành công ${donation.amount || '350ml'} máu`
-                      : donation.reason || "Không đủ điều kiện sức khỏe để hiến máu"}
+                    {donation.description}
                   </p>
                 </div>
               </div>
@@ -272,6 +308,8 @@ const DonationHistory: React.FC = () => {
                       <span className={`px-2 py-1 rounded-full text-base font-medium ${
                         donation.status === "Hoàn thành" 
                           ? "bg-green-100 text-green-800" 
+                          : donation.status === "Đang diễn ra"
+                          ? "bg-blue-100 text-blue-800"
                           : "bg-red-100 text-red-800"
                       }`}>
                         {donation.status}
