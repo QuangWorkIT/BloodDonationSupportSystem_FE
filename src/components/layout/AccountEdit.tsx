@@ -3,9 +3,22 @@ import { AnimatePresence, motion } from "framer-motion";
 import DatePicker from "../ui/datepicker";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";
-import { FaUser, FaVenusMars, FaBirthdayCake, FaPhone, FaEnvelope, FaTint } from "react-icons/fa";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-
+import {
+  FaUser,
+  FaVenusMars,
+  FaBirthdayCake,
+  FaPhone,
+  FaEnvelope,
+  FaTint,
+} from "react-icons/fa";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { getTypeId } from "@/types/BloodCompatibility";
 
 type FormData = {
   name: string;
@@ -28,17 +41,16 @@ type FormErrors = {
 type FormField = keyof FormData;
 
 const AccountEdit = () => {
-  const { user, setUser} = useAuth()
-  const [hasNotChanged, setHasNotChanged] = useState(true)
+  const { user, setUser } = useAuth();
+  const [hasNotChanged, setHasNotChanged] = useState(true);
 
-  //fetch user 
+  //fetch user
   useEffect(() => {
     const getUser = async () => {
       try {
-        const response = await authenApi.get('/api/users/profile')
-        const data = response.data
-        if (!user)
-          return
+        const response = await authenApi.get("/api/users/profile");
+        const data = response.data;
+        if (!user) return;
 
         if (data.isSuccess) {
           const updatedUser = {
@@ -48,21 +60,21 @@ const AccountEdit = () => {
             gmail: data.data.gmail,
             bloodType: data.data.bloodType,
             dob: new Date(data.data.dob),
-            gender: data.data.gender
+            gender: data.data.gender,
           };
-        console.log('user data ', updatedUser)
+          console.log("user data ", updatedUser);
 
           setUser(updatedUser);
         } else {
-          console.log('Data status is wrong')
+          console.log("Data status is wrong");
         }
       } catch (error) {
-        console.log('Failed to fetch user profile ', error)
+        console.log("Failed to fetch user profile ", error);
       }
-    }
+    };
 
-    getUser()
-  }, [])
+    getUser();
+  }, []);
 
   // sync form data
   useEffect(() => {
@@ -72,14 +84,13 @@ const AccountEdit = () => {
       birthDate: user?.dob || null,
       phone: user?.phone || "",
       gmail: user?.gmail || "",
-      bloodType: user?.bloodType || ""
-    })
-    setDefautlFormData(formData)
-  }, [user])
+      bloodType: user?.bloodType || "",
+    });
+    setDefautlFormData(formData);
+  }, [user]);
 
   // default form data to compare changes
-  const [defaultFormData, setDefautlFormData] = useState<FormData | null>(null)
-
+  const [defaultFormData, setDefautlFormData] = useState<FormData | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -99,33 +110,35 @@ const AccountEdit = () => {
     bloodType: "",
   });
 
-  // compare form data 
+  // compare form data
   useEffect(() => {
-    if (!defaultFormData) return
+    if (!defaultFormData) return;
 
-    const isEqual = formData.name === defaultFormData.name &&
+    const isEqual =
+      formData.name === defaultFormData.name &&
       formData.gender === defaultFormData.gender &&
       String(formData.birthDate) === String(defaultFormData.birthDate) &&
       formData.phone === defaultFormData.phone &&
       formData.bloodType === defaultFormData.bloodType &&
-      formData.gmail === defaultFormData.gmail
+      formData.gmail === defaultFormData.gmail;
 
-    setHasNotChanged(isEqual)
-  }, [formData, defaultFormData])
+    setHasNotChanged(isEqual);
+  }, [formData, defaultFormData]);
 
   const FeedbackModal = ({
     isOpen,
     onClose,
     title,
     message,
-    type = "info" }: {
-      isOpen: boolean;
-      onClose: () => void;
-      title: string;
-      message: string;
-      type?: "info" | "success" | "error" | "warning";
-      children?: React.ReactNode;
-    }) => {
+    type = "info",
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    message: string;
+    type?: "info" | "success" | "error" | "warning";
+    children?: React.ReactNode;
+  }) => {
     const typeColors = {
       info: "bg-blue-500",
       success: "bg-green-500",
@@ -150,7 +163,9 @@ const AccountEdit = () => {
               className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className={`w-16 h-16 rounded-full ${typeColors[type]} flex items-center justify-center mx-auto mb-4`}>
+              <div
+                className={`w-16 h-16 rounded-full ${typeColors[type]} flex items-center justify-center mx-auto mb-4`}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-8 w-8 text-white"
@@ -159,11 +174,26 @@ const AccountEdit = () => {
                   stroke="currentColor"
                 >
                   {type === "success" ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   ) : type === "error" ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   )}
                 </svg>
               </div>
@@ -172,7 +202,15 @@ const AccountEdit = () => {
               <div className="flex justify-center">
                 <button
                   onClick={onClose}
-                  className={`px-6 py-2 ${type === "error" ? "bg-red-500" : type === "success" ? "bg-green-500" : type === "warning" ? "bg-yellow-500" : "bg-blue-500"} text-white rounded-md hover:opacity-90`}
+                  className={`px-6 py-2 ${
+                    type === "error"
+                      ? "bg-red-500"
+                      : type === "success"
+                      ? "bg-green-500"
+                      : type === "warning"
+                      ? "bg-yellow-500"
+                      : "bg-blue-500"
+                  } text-white rounded-md hover:opacity-90`}
                 >
                   Đóng
                 </button>
@@ -226,7 +264,11 @@ const AccountEdit = () => {
         }
         break;
       case "gmail":
-        if (value && typeof value === "string" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        if (
+          value &&
+          typeof value === "string" &&
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+        ) {
           error = "gmail không hợp lệ";
         }
         break;
@@ -246,7 +288,6 @@ const AccountEdit = () => {
     return error;
   };
 
-
   const handleChange = (name: FormField, value: string | Date) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Validate on change
@@ -255,24 +296,45 @@ const AccountEdit = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate all fields
     const newErrors = {} as FormErrors;
     (Object.keys(formData) as FormField[]).forEach((key) => {
       newErrors[key] = validateField(key, formData[key]);
     });
 
     setErrors(newErrors);
-
-    // Check if there are any errors
     const isValid = Object.values(newErrors).every((error) => !error);
 
     if (isValid) {
-      // Submit form
-      console.log("Form submitted:", formData);
-      setShowSuccessModal(true);
+      try {
+        const payload = {
+          lastName: formData.name.split(" ")[0] || "",
+          firstName: formData.name.split(" ").slice(1).join(" ") || "",
+          gender: formData.gender === "male",
+          dob: formData.birthDate?.toISOString().split("T")[0],
+          phone: formData.phone,
+          gmail: formData.gmail,
+          password: "",
+          bloodTypeId: getTypeId(formData.bloodType),
+        };
+
+        console.log(payload);
+
+        const res = await authenApi.put("/api/users/profile", payload);
+
+        if (res.data?.isSuccess) {
+          setShowSuccessModal(true);
+          setHasNotChanged(true);
+          setDefautlFormData(formData); // update the default reference
+          console.log("Profile updated successfully:", res.data.data);
+        } else {
+          console.error("Update failed", res.data?.message);
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+      }
     }
   };
 
@@ -291,7 +353,10 @@ const AccountEdit = () => {
       <form onSubmit={handleSubmit} className="space-y-6 p-8 md:p-10">
         {/* Name */}
         <div>
-          <label className="block text-gray-800 font-semibold mb-2" htmlFor="name">
+          <label
+            className="block text-gray-800 font-semibold mb-2"
+            htmlFor="name"
+          >
             Họ và tên <span className="text-red-500">*</span>
           </label>
           <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
@@ -301,18 +366,22 @@ const AccountEdit = () => {
               type="text"
               name="name"
               value={formData.name}
-              onChange={e => handleChange("name", e.target.value)}
+              onChange={(e) => handleChange("name", e.target.value)}
               placeholder="Họ và tên người dùng"
               className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
             />
           </div>
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+          {errors.name && (
+            <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+          )}
         </div>
 
         {/* Gender */}
         <div>
           <div className="flex items-center mb-2">
-            <span className="flex items-center text-[#C14B53] text-[22px] mr-3"><FaVenusMars /></span>
+            <span className="flex items-center text-[#C14B53] text-[22px] mr-3">
+              <FaVenusMars />
+            </span>
             <label className="block text-gray-800 font-semibold">
               Giới tính <span className="text-red-500">*</span>
             </label>
@@ -339,12 +408,17 @@ const AccountEdit = () => {
               <span className="ml-2">Nữ</span>
             </label>
           </div>
-          {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
+          {errors.gender && (
+            <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
+          )}
         </div>
 
         {/* Birth Date */}
         <div>
-          <label className="block text-gray-800 font-semibold mb-2" htmlFor="birthDate">
+          <label
+            className="block text-gray-800 font-semibold mb-2"
+            htmlFor="birthDate"
+          >
             Ngày tháng năm sinh <span className="text-red-500">*</span>
           </label>
           <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
@@ -359,12 +433,17 @@ const AccountEdit = () => {
               maxDate={new Date()}
             />
           </div>
-          {errors.birthDate && <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>}
+          {errors.birthDate && (
+            <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>
+          )}
         </div>
 
         {/* Phone */}
         <div>
-          <label className="block text-gray-800 font-semibold mb-2" htmlFor="phone">
+          <label
+            className="block text-gray-800 font-semibold mb-2"
+            htmlFor="phone"
+          >
             Số điện thoại <span className="text-red-500">*</span>
           </label>
           <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
@@ -374,17 +453,24 @@ const AccountEdit = () => {
               type="text"
               name="phone"
               value={formData.phone}
-              onChange={e => handleChange("phone", e.target.value)}
+              onChange={(e) => handleChange("phone", e.target.value)}
               placeholder="Số điện thoại người dùng"
               className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
             />
           </div>
-          {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+          {errors.phone && (
+            <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+          )}
         </div>
 
         {/* Gmail */}
         <div>
-          <label className="block text-gray-800 font-semibold mb-2" htmlFor="gmail">Email</label>
+          <label
+            className="block text-gray-800 font-semibold mb-2"
+            htmlFor="gmail"
+          >
+            Email
+          </label>
           <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
             <FaEnvelope className="text-[#C14B53] text-[22px] mr-4" />
             <input
@@ -392,36 +478,45 @@ const AccountEdit = () => {
               type="gmail"
               name="gmail"
               value={formData.gmail}
-              onChange={e => handleChange("gmail", e.target.value)}
+              onChange={(e) => handleChange("gmail", e.target.value)}
               placeholder="Vd: aboxyz69@gmail.com"
               className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
             />
           </div>
-          {errors.gmail && <p className="text-red-500 text-sm mt-1">{errors.gmail}</p>}
+          {errors.gmail && (
+            <p className="text-red-500 text-sm mt-1">{errors.gmail}</p>
+          )}
         </div>
 
         {/* Blood Type */}
         <div>
-          <label className="block text-gray-800 font-semibold mb-2" htmlFor="bloodType">
+          <label
+            className="block text-gray-800 font-semibold mb-2"
+            htmlFor="bloodType"
+          >
             Nhóm máu <span className="text-red-500">*</span>
           </label>
           <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
             <FaTint className="text-[#C14B53] text-[22px] mr-4" />
             <Select
               value={formData.bloodType}
-              onValueChange={value => handleChange("bloodType", value)}
+              onValueChange={(value) => handleChange("bloodType", value)}
             >
               <SelectTrigger className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0">
                 <SelectValue placeholder="Chọn nhóm máu" />
               </SelectTrigger>
               <SelectContent>
-                {bloodTypeOptions.map(type => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                {bloodTypeOptions.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          {errors.bloodType && <p className="text-red-500 text-sm mt-1">{errors.bloodType}</p>}
+          {errors.bloodType && (
+            <p className="text-red-500 text-sm mt-1">{errors.bloodType}</p>
+          )}
         </div>
 
         <div className="pt-4">
@@ -429,10 +524,11 @@ const AccountEdit = () => {
             type="submit"
             whileHover={!hasNotChanged ? { scale: 1.01 } : undefined}
             whileTap={!hasNotChanged ? { scale: 0.99 } : undefined}
-            className={`w-full px-8 py-3 rounded-xl font-semibold text-lg shadow transition cursor-pointer ${hasNotChanged
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-[#C14B53] text-white hover:bg-[#a83a42] shadow-lg'
-              }`}
+            className={`w-full px-8 py-3 rounded-xl font-semibold text-lg shadow transition cursor-pointer ${
+              hasNotChanged
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-[#C14B53] text-white hover:bg-[#a83a42] shadow-lg"
+            }`}
             disabled={hasNotChanged}
           >
             Lưu thay đổi
