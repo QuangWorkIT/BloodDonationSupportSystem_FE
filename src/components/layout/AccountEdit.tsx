@@ -9,7 +9,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 
 type FormData = {
   name: string;
-  gender: string;
+  gender: boolean; // Use boolean
   birthDate: Date | null;
   phone: string;
   gmail: string;
@@ -64,18 +64,21 @@ const AccountEdit = () => {
     getUser()
   }, [])
 
-  // sync form data
+  // --- useEffect for initial form data from user ---
   useEffect(() => {
-    setFormData({
-      name: user?.unique_name || "",
-      gender: user?.gender ? "male" : "female",
-      birthDate: user?.dob || null,
-      phone: user?.phone || "",
-      gmail: user?.gmail || "",
-      bloodType: user?.bloodType || ""
-    })
-    setDefautlFormData(formData)
-  }, [user])
+    if (user) {
+      const initialFormData = {
+        name: user?.unique_name || "",
+        gender: user?.gender ?? true,
+        birthDate: user?.dob || null,
+        phone: user?.phone || "",
+        gmail: user?.gmail || "",
+        bloodType: user?.bloodType || ""
+      };
+      setFormData(initialFormData);
+      setDefautlFormData(initialFormData);
+    }
+  }, [user]);
 
   // default form data to compare changes
   const [defaultFormData, setDefautlFormData] = useState<FormData | null>(null)
@@ -83,7 +86,7 @@ const AccountEdit = () => {
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
-    gender: "",
+    gender: false,
     birthDate: null,
     phone: "",
     gmail: "",
@@ -202,7 +205,7 @@ const AccountEdit = () => {
         }
         break;
       case "gender":
-        if (value !== "male" && value !== "female") {
+        if (typeof value !== "boolean") {
           error = "Vui lòng chọn giới tính";
         }
         break;
@@ -246,8 +249,23 @@ const AccountEdit = () => {
     return error;
   };
 
+  // Utility to map blood type string to ID
+  const bloodTypeStringToId = (bloodType: string): number => {
+    const map: { [key: string]: number } = {
+      "A+": 1,
+      "A-": 2,
+      "B+": 3,
+      "B-": 4,
+      "AB+": 5,
+      "AB-": 6,
+      "O+": 7,
+      "O-": 8,
+    };
+    return map[bloodType] || 0;
+  };
 
-  const handleChange = (name: FormField, value: string | Date) => {
+
+  const handleChange = (name: FormField, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Validate on change
     if (errors[name]) {
@@ -255,7 +273,7 @@ const AccountEdit = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate all fields
@@ -270,9 +288,39 @@ const AccountEdit = () => {
     const isValid = Object.values(newErrors).every((error) => !error);
 
     if (isValid) {
-      // Submit form
-      console.log("Form submitted:", formData);
-      setShowSuccessModal(true);
+      const [firstName, ...lastNameArr] = formData.name.trim().split(' ');
+      const lastName = lastNameArr.join(' ');
+      const body = {
+        firstName: firstName || '',
+        lastName: lastName || '',
+        phone: formData.phone,
+        gmail: formData.gmail,
+        password: '', // Not editable in this form
+        longitude: 0, // Not editable in this form
+        latitude: 0,  // Not editable in this form
+        bloodTypeId: bloodTypeStringToId(formData.bloodType),
+        dob: formData.birthDate ? formData.birthDate.toISOString().split('T')[0] : '',
+        gender: formData.gender,
+      };
+      try {
+        const response = await authenApi.put(
+          '/api/users/profile',
+          body,
+          {
+            headers: {
+              'Content-Type': 'application/json-patch+json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+        if (response.data.isSuccess) {
+          setShowSuccessModal(true);
+        } else {
+          alert(response.data.message || 'Cập nhật thông tin thất bại!');
+        }
+      } catch (error) {
+        alert('Cập nhật thông tin thất bại!');
+      }
     }
   };
 
@@ -301,7 +349,7 @@ const AccountEdit = () => {
               type="text"
               name="name"
               value={formData.name}
-              onChange={e => handleChange("name", e.target.value)}
+              onChange={e => handleChange("name", e.target.value as string)}
               placeholder="Họ và tên người dùng"
               className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
             />
@@ -322,8 +370,8 @@ const AccountEdit = () => {
               <input
                 type="radio"
                 name="gender"
-                checked={formData.gender === "male"}
-                onChange={() => handleChange("gender", "male")}
+                checked={formData.gender === true}
+                onChange={() => handleChange("gender", true)}
                 className="text-[#C14B53] focus:ring-[#C14B53]"
               />
               <span className="ml-2">Nam</span>
@@ -332,8 +380,8 @@ const AccountEdit = () => {
               <input
                 type="radio"
                 name="gender"
-                checked={formData.gender === "female"}
-                onChange={() => handleChange("gender", "female")}
+                checked={formData.gender === false}
+                onChange={() => handleChange("gender", false)}
                 className="text-[#C14B53] focus:ring-[#C14B53]"
               />
               <span className="ml-2">Nữ</span>
@@ -374,7 +422,7 @@ const AccountEdit = () => {
               type="text"
               name="phone"
               value={formData.phone}
-              onChange={e => handleChange("phone", e.target.value)}
+              onChange={e => handleChange("phone", e.target.value as string)}
               placeholder="Số điện thoại người dùng"
               className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
             />
@@ -392,7 +440,7 @@ const AccountEdit = () => {
               type="gmail"
               name="gmail"
               value={formData.gmail}
-              onChange={e => handleChange("gmail", e.target.value)}
+              onChange={e => handleChange("gmail", e.target.value as string)}
               placeholder="Vd: aboxyz69@gmail.com"
               className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
             />
@@ -409,7 +457,7 @@ const AccountEdit = () => {
             <FaTint className="text-[#C14B53] text-[22px] mr-4" />
             <Select
               value={formData.bloodType}
-              onValueChange={value => handleChange("bloodType", value)}
+              onValueChange={value => handleChange("bloodType", value as string)}
             >
               <SelectTrigger className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0">
                 <SelectValue placeholder="Chọn nhóm máu" />

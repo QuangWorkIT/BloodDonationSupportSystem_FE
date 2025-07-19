@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Trash2 } from "lucide-react";
+import { Trash2, Bell } from "lucide-react";
 import { BloodUnit } from "./BloodUnit";
 import { authenApi } from "@/lib/instance";
 import LoadingSpinner from "@/components/layout/Spinner";
@@ -38,6 +38,15 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true);
   const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Mock critical alert data (replace with real data as needed)
+  const criticalAlerts = {
+    lowStock: [
+      { type: 'O', stock: 5, threshold: 10 },
+      { type: 'A', stock: 7, threshold: 10 },
+    ],
+    // lowEventRegistration: [], // Not used for staff
+  };
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -93,11 +102,27 @@ export default function Inventory() {
         <Input className="p-3 w-[530px] rounded-md border border-red-700 mr-4" placeholder="Tìm kiếm nhóm máu, người hiến,..." />
         <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tìm kiếm</button>
       </div>
-      <div className="bg-red-200 px-4 py-2 rounded-md font-semibold mb-6 flex justify-between items-center w-full">
-        <p className="text-lg text-red-600">Lưu ý: Nhóm máu O- sắp hết</p>
-        <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tạo yêu cầu khẩn cấp</button>
-      </div>
-
+      {/* Critical Alerts Section */}
+      {(criticalAlerts.lowStock.length > 0) && (
+        <div className="mb-6 w-full">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Bell className="w-5 h-5 text-red-500 animate-pulse" /> Cảnh báo quan trọng
+          </h2>
+          <div className="space-y-4 mb-4">
+            {criticalAlerts.lowStock.map((item) => (
+              <div key={`low-stock-${item.type}`} className="flex items-center bg-red-50 border-l-4 border-red-400 shadow-sm rounded-lg px-5 py-4 text-sm text-red-900">
+                <div className="flex items-center justify-center w-8 h-8 bg-red-100 rounded-full mr-4">
+                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21c-4.418 0-8-3.582-8-8 0-3.866 2.857-7.163 6.65-7.876a1 1 0 01.7 0C17.143 5.837 20 9.134 20 13c0 4.418-3.582 8-8 8z" /></svg>
+                </div>
+                <span className="font-bold mr-2">Kho máu:</span> Nhóm máu <span className="font-extrabold text-red-600 mx-1">{item.type}</span> chỉ còn <span className="font-extrabold text-red-600 mx-1">{item.stock}</span> đơn vị <span className="text-xs text-red-400">(ngưỡng an toàn: {item.threshold})</span>
+              </div>
+            ))}
+          </div>
+          <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tạo yêu cầu khẩn cấp</button>
+        </div>
+      )}
+      {/* End Critical Alerts Section */}
+      {/* Remove old red alert bar and keep the create event button in the alert section above */}
       {/* Still hardcoding */}
       <div className="grid grid-cols-2 sm:grid-cols-4 w-fit gap-x-[87px] gap-y-[45px] mb-8 justify-items-center items-center">
         {bloodTypes.map((bt, i) => (

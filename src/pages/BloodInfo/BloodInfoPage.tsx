@@ -8,11 +8,13 @@ function BloodInfoPage() {
     window.scrollTo(0, 0)
   }, [])
   return (
-    <>
+    <div className="overflow-x-hidden">
       <BloodDonationNavbar />
-      <BloodInformation />
+      <div className="mt-[120px]">
+        <BloodInformation />
+      </div>
       <Footer />
-    </>
+    </div>
   )
 }
 

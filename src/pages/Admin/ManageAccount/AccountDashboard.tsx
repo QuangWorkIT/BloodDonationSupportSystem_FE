@@ -317,17 +317,36 @@ const csvExportData = useMemo(() => {
   const handleSaveEdit = async (account: Account) => {
     try {
       setLoading(true);
-      const updatedUser = {
-        name: editFormData.name || account.name,
-        email: editFormData.email || account.email,
-        dob: editFormData.dob || account.dob,
-        phone: editFormData.phone || account.phone,
+
+      // Split name into firstName and lastName
+      const [firstName, ...lastNameArr] = (editFormData.name ?? account.name).split(" ");
+      const lastName = lastNameArr.join(" ");
+
+      // Prepare the request body
+      const body = {
+        dob: editFormData.dob ?? account.dob,
+        firstName,
+        lastName,
       };
 
-      // API call would go here in a real implementation
-      setAccounts(accounts.map((a) => (a.userId === account.userId ? { ...a, ...updatedUser } : a)));
-      setEditingId(null);
-      setEditFormData({});
+      const response = await authenApi.put<ApiResponse<null>>(
+        `/api/users?id=${account.userId}`,
+        body,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.data.isSuccess) {
+        setAccounts(accounts.map((a) => (a.userId === account.userId ? { ...a, ...editFormData } : a)));
+        setEditingId(null);
+        setEditFormData({});
+      } else {
+        setError(response.data.message || "Failed to update account");
+      }
     } catch (err) {
       const error = err as AxiosError<ApiResponse<null>>;
       setError(error.response?.data?.message || error.message || "Error updating account");
