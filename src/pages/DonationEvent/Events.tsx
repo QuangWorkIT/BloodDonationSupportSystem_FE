@@ -32,7 +32,12 @@ const Events = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await api.get("/api/events");
+        const response = await api.get("/api/events", {
+          params: {
+            pageNumber: 1,
+            pageSize: 20,
+          }
+        });
         const data = response.data;
 
         if (data.isSuccess) {
@@ -100,9 +105,8 @@ const Events = () => {
           whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          className={`w-10 h-10 rounded-md flex items-center justify-center ${
-            currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-          }`}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+            }`}
         >
           <FaChevronLeft />
         </motion.button>
@@ -118,11 +122,10 @@ const Events = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentPage(parseInt(page.toString()))}
-              className={`w-10 h-10 rounded-md ${
-                currentPage === parseInt(page.toString())
+              className={`w-10 h-10 rounded-md ${currentPage === parseInt(page.toString())
                   ? "bg-[#C14B53] text-white cursor-pointer"
                   : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-              }`}
+                }`}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
@@ -136,9 +139,8 @@ const Events = () => {
           whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className={`w-10 h-10 rounded-md flex items-center justify-center ${
-            currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-          }`}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+            }`}
         >
           <FaChevronRight />
         </motion.button>
@@ -160,9 +162,8 @@ const Events = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("donation-events")}
-            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
-              activeTab === "donation-events" ? "text-white" : "text-gray-700 hover:bg-gray-50"
-            }`}
+            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${activeTab === "donation-events" ? "text-white" : "text-gray-700 hover:bg-gray-50"
+              }`}
           >
             {activeTab === "donation-events" && (
               <motion.div
@@ -179,9 +180,8 @@ const Events = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("register-volunteer")}
-            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
-              activeTab === "register-volunteer" ? "text-white" : "text-gray-700 hover:bg-gray-50"
-            }`}
+            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${activeTab === "register-volunteer" ? "text-white" : "text-gray-700 hover:bg-gray-50"
+              }`}
           >
             {activeTab === "register-volunteer" && (
               <motion.div
