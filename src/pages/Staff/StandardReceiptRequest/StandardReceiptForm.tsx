@@ -1,12 +1,29 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -22,11 +39,12 @@ const formSchema = z.object({
   fullName: z.string().min(1, "Không được để trống"),
   address: z.string().min(1, "Không được để trống"),
   bloodVolume: z.string().min(1, "Vui lòng chọn lượng máu"),
-  maxOfDonor: z.coerce.number({
-    required_error: "Không được để trống",
-    invalid_type_error: "Tổng người hiến không phù hợp"
-  })
-    .min(10, { message: 'Tổng người hiến không phù hợp' }),
+  maxOfDonor: z.coerce
+    .number({
+      required_error: "Không được để trống",
+      invalid_type_error: "Tổng người hiến không phù hợp",
+    })
+    .min(10, { message: "Tổng người hiến không phù hợp" }),
   donationDate: z.date({
     required_error: "Vui lòng chọn ngày hiến máu",
   }),
@@ -36,9 +54,9 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [date, setDate] = useState<Date>();
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,34 +69,33 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
     },
   });
 
-    const onSubmit = async (data: FormData) => {
-      try {
-        setIsSubmitting(true)
-        const payload = {
-          title: data.fullName,
-          maxOfDonor: data.maxOfDonor,
-          estimatedVolume: data.bloodVolume,
-          eventTime: data.donationDate.toISOString().split('T')[0]
-        }
-        console.log(payload)
-        const response = await authenApi.post('/api/events', payload)
-        if (response.status === 200) {
-          console.log('Create event successfully')
-          form.reset()
-          setDate(undefined)
-          toast.success('Tạo sự kiện hiến máu thành công!')
-        }
-      } catch (error) {
-        toast.error('Tạo sự kiện hiến máu thất bại!')
-        const err = error as AxiosError
-        if (err.message)
-          console.log('Error message: ', err.message)
-        else
-          console.log('Failed to post event ', error)
-      } finally {
-        setIsSubmitting(false)
+  const onSubmit = async (data: FormData) => {
+    console.log("Form data: ", data);
+    try {
+      setIsSubmitting(true);
+      const payload = {
+        title: data.fullName,
+        maxOfDonor: data.maxOfDonor,
+        estimatedVolume: data.bloodVolume,
+        eventTime: data.donationDate.toLocaleDateString("en-CA"),
+      };
+      console.log(payload);
+      const response = await authenApi.post("/api/events", payload);
+      if (response.status === 200) {
+        console.log("Create event successfully");
+        form.reset();
+        setDate(undefined);
+        toast.success("Tạo sự kiện hiến máu thành công!");
       }
-    };
+    } catch (error) {
+      toast.error("Tạo sự kiện hiến máu thất bại!");
+      const err = error as AxiosError;
+      if (err.message) console.log("Error message: ", err.message);
+      else console.log("Failed to post event ", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="w-[800px] mx-auto mt-10 px-8 py-6 bg-white rounded-lg shadow-md border">
@@ -93,7 +110,11 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
           stroke="currentColor"
           className="size-5 mt-4 cursor-pointer"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18 18 6M6 6l12 12"
+          />
         </svg>
       </div>
 
@@ -112,7 +133,11 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
                 </FormLabel>
                 <div className="flex flex-col items-start gap-2">
                   <FormControl>
-                    <Input className="w-[600px] h-[50px]" placeholder="Nhập tên cơ sở y tế" {...field} />
+                    <Input
+                      className="w-[550px] h-[50px]"
+                      placeholder="Nhập tên cơ sở y tế"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </div>
@@ -127,11 +152,15 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
             render={({ field }) => (
               <FormItem className="flex justify-between">
                 <FormLabel className="text-gray-500 font-normal text-nowrap">
-                  Địa chỉ <span className="text-red-600">*</span>
+                  Địa chỉ <span className="text-red55">*</span>
                 </FormLabel>
                 <div className="flex flex-col items-start gap-2">
                   <FormControl>
-                    <Input className="w-[600px] h-[50px]" placeholder="Nhập địa chỉ" {...field} />
+                    <Input
+                      className="w-[550px] h-[50px]"
+                      placeholder="Nhập địa chỉ"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </div>
@@ -146,9 +175,15 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
               name="maxOfDonor"
               render={({ field }) => (
                 <FormItem className="flex justify-between flex-1">
-                  <FormLabel className="text-gray-500 font-normal w-[200px]">Tổng người hiến</FormLabel>
+                  <FormLabel className="text-gray-500 font-normal w-[330px]">
+                    Tổng người hiến
+                  </FormLabel>
                   <div className="flex flex-col items-start gap-2 w-full">
-                    <Input type="number" placeholder="Nhập tổng người hiến" {...field} ></Input>
+                    <Input
+                      type="number"
+                      placeholder="Nhập tổng người hiến"
+                      {...field}
+                    ></Input>
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -159,7 +194,9 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
               name="bloodVolume"
               render={({ field }) => (
                 <FormItem className="flex justify-between w-80">
-                  <FormLabel className="text-gray-500 font-normal w-[150px]">Lượng máu cần</FormLabel>
+                  <FormLabel className="text-gray-500 font-normal w-[150px]">
+                    Lượng máu cần
+                  </FormLabel>
                   <div className="flex flex-col items-start gap-2 w-full">
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl className="h-[50px] w-full">
@@ -186,13 +223,25 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
             name="donationDate"
             render={({ field }) => (
               <FormItem className="flex justify-between">
-                <FormLabel className="text-gray-500 font-normal">Ngày hiến</FormLabel>
+                <FormLabel className="text-gray-500 font-normal">
+                  Ngày hiến
+                </FormLabel>
                 <div className="flex flex-col items-start gap-2">
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
-                        <Button variant="outline" className={cn("w-[600px] h-[50px] pl-3 text-left font-normal", !date && "text-muted-foreground")}>
-                          {date ? date.toLocaleDateString() : <span>dd/MM/yyyy</span>}
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-[550px] h-[50px] pl-3 text-left font-normal",
+                            !date && "text-muted-foreground"
+                          )}
+                        >
+                          {date ? (
+                            date.toLocaleDateString()
+                          ) : (
+                            <span>dd/MM/yyyy</span>
+                          )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -221,10 +270,16 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
             name="staffName"
             render={({ field }) => (
               <FormItem className="flex justify-between">
-                <FormLabel className="text-gray-500 font-normal">Tên / ID nhân viên y tế</FormLabel>
+                <FormLabel className="text-gray-500 font-normal">
+                  Tên / ID nhân viên y tế
+                </FormLabel>
                 <div className="flex flex-col items-start gap-2">
                   <FormControl>
-                    <Input className="w-[600px] h-[50px]" placeholder="Tên hoặc ID của nhân viên y tế thực hiện yêu cầu" {...field} />
+                    <Input
+                      className="w-[550px] h-[50px]"
+                      placeholder="Tên hoặc ID của nhân viên y tế thực hiện yêu cầu"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </div>
@@ -237,7 +292,8 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
             <Button
               disabled={isSubmitting}
               type="submit"
-              className="w-[160px] text-[16px] h-[40px] bg-red-600 text-white hover:bg-red-800 rounded-full cursor-pointer">
+              className="w-[160px] text-[16px] h-[40px] bg-red-600 text-white hover:bg-red-800 rounded-full cursor-pointer"
+            >
               Gửi
             </Button>
           </div>

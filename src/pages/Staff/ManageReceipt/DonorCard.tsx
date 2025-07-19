@@ -6,12 +6,15 @@ export interface DonorCardProps {
     memberName: string,
     phone: string,
     dob: string,
-    type: string,
+    bloodType: string,
     eventTime: string,
-    handleHeathCheckout: () => void
+    isApproved: boolean | null,
+    handleHeathCheckout: () => void,
+    setCurrentDonorId: (id: number) => void,
+    setIsShowModal: (isShow:boolean) => void
 }
 
-function DonorCard({  memberName, phone, type, eventTime, handleHeathCheckout }: DonorCardProps) {
+function DonorCard({id, memberName, phone, bloodType, eventTime, isApproved, handleHeathCheckout, setCurrentDonorId, setIsShowModal }: DonorCardProps) {
     return (
         <div className='w-full rounded-[7px] shadow-md flex bg-white p-5 gap-10'>
             <div className="p-3 mx-auto my-auto">
@@ -29,20 +32,40 @@ function DonorCard({  memberName, phone, type, eventTime, handleHeathCheckout }:
                     </div>
                 </div>
                 <p className='text-[#7D7D7F] text-[18px]'>Số điện thoại:<span className='text-black font-semibold'> {phone}</span></p>
-                <p className='text-[#7D7D7F] text-[18px]'>Loại máu:<span className='text-black font-semibold'> {type}</span></p>
+                <p className='text-[#7D7D7F] text-[18px]'>Loại máu:<span className='text-black font-semibold'> {bloodType}</span></p>
                 <div className="flex justify-between">
                     <p className='text-[#7D7D7F] text-[18px]'>Lịch hẹn: <span className='text-black font-semibold'> {eventTime}</span></p>
                     <div className="flex gap-3">
-                        <Button 
-                        className='bg-[#C14B53] hover:cursor-pointer hover:bg-[#C14B53] hover:scale-110 font-semibold text-[16px] w-[100px] transition duration-150 '>
-                            Từ chối
-                        </Button>
+                        {
+                            isApproved === null ? (
+                                <>
+                                    <Button
+                                        onClick={() => {
+                                            setIsShowModal(true)
+                                            setCurrentDonorId(id)
+                                        }}
+                                        className='bg-[#C14B53] hover:cursor-pointer hover:bg-[#C14B53] hover:scale-110 font-semibold text-[16px] w-[100px] transition duration-150 '>
+                                        Từ chối
+                                    </Button>
 
-                        <Button 
-                        onClick={handleHeathCheckout}
-                        className='bg-[#FFC107] hover:cursor-pointer hover:bg-[#FFC107] hover:scale-110 text-black font-bold text-[16px] w-[100px] transition duration-150 '>
-                            Check-in
-                        </Button>
+                                    <Button
+                                        onClick={handleHeathCheckout}
+                                        className='bg-[#FFC107] hover:cursor-pointer hover:bg-[#FFC107] hover:scale-110 text-black font-bold text-[16px] w-[100px] transition duration-150 '>
+                                        Check-in
+                                    </Button></>
+                            ) : (
+                                isApproved ? (
+                                    <Button
+                                        className='bg-[#14AF18] hover:cursor-pointer hover:bg-[#14AF18] hover:scale-110 font-semibold text-[16px] w-[100px] transition duration-150 '>
+                                        Đã duyệt
+                                    </Button>) : (
+                                    <Button
+                                        className='bg-[#C14B53] hover:cursor-pointer hover:bg-[#C14B53] hover:scale-110 font-semibold text-[16px] w-[100px] transition duration-150 '>
+                                        Đã từ chối
+                                    </Button>
+                                )
+                            )
+                        }
                     </div>
                 </div>
             </div>

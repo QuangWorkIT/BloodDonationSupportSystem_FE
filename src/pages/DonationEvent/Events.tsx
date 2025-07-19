@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { FaHeart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import VolunteerForm from "./VolunteerForm";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/instance";
-import DonationRegisterForm from './DonationRegisterForm'
+import DonationRegisterForm from "./DonationRegisterForm";
+import logo from "@/assets/images/image12.png";
+
 interface Event {
   id: number;
   title: string;
@@ -16,16 +18,17 @@ interface Event {
   isUrgent: boolean;
   estimateVolume: number;
 }
+
 const Events = () => {
   const [activeTab, setActiveTab] = useState("donation-events");
   const [currentPage, setCurrentPage] = useState(1);
   const eventsPerPage = 3;
   const [events, setEvents] = useState<Event[]>([]);
-  const [currentEventId, setCurrentEventId] = useState(0)
-  const [currentEventTime, setCurrentEventTime] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const [isRegistrationFormOpen, setRegistraionFormOpen] = useState(false)
+  const [currentEventId, setCurrentEventId] = useState(0);
+  const [currentEventTime, setCurrentEventTime] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [isRegistrationFormOpen, setRegistraionFormOpen] = useState(false);
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -46,20 +49,19 @@ const Events = () => {
     fetchEvents();
   }, []);
 
-
   // handle search event
   const handleSearchEventClick = () => {
-    const dateFromDate = new Date(dateFrom)
-    const dateToDate = new Date(dateTo)
+    const dateFromDate = new Date(dateFrom);
+    const dateToDate = new Date(dateTo);
 
     const searchEvents: Event[] = events.filter((event: Event) => {
-      const currentEventDate = new Date(event.eventTime)
-      return dateFromDate <= currentEventDate && currentEventDate <= dateToDate
-    })
+      const currentEventDate = new Date(event.eventTime);
+      return dateFromDate <= currentEventDate && currentEventDate <= dateToDate;
+    });
 
-    console.log(searchEvents)
-    setEvents(searchEvents)
-  }
+    console.log(searchEvents);
+    setEvents(searchEvents);
+  };
 
   // Pagination logic
   const indexOfLastEvent = currentPage * eventsPerPage;
@@ -98,8 +100,9 @@ const Events = () => {
           whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          className={`w-10 h-10 rounded-md flex items-center justify-center ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-            }`}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${
+            currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+          }`}
         >
           <FaChevronLeft />
         </motion.button>
@@ -115,10 +118,11 @@ const Events = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentPage(parseInt(page.toString()))}
-              className={`w-10 h-10 rounded-md ${currentPage === parseInt(page.toString())
-                ? "bg-[#C14B53] text-white cursor-pointer"
-                : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-                }`}
+              className={`w-10 h-10 rounded-md ${
+                currentPage === parseInt(page.toString())
+                  ? "bg-[#C14B53] text-white cursor-pointer"
+                  : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+              }`}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
@@ -132,8 +136,9 @@ const Events = () => {
           whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className={`w-10 h-10 rounded-md flex items-center justify-center ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
-            }`}
+          className={`w-10 h-10 rounded-md flex items-center justify-center ${
+            currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+          }`}
         >
           <FaChevronRight />
         </motion.button>
@@ -141,7 +146,6 @@ const Events = () => {
     );
   };
 
-  
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Navigation Toggle with animation */}
@@ -156,8 +160,9 @@ const Events = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("donation-events")}
-            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${activeTab === "donation-events" ? "text-white" : "text-gray-700 hover:bg-gray-50"
-              }`}
+            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
+              activeTab === "donation-events" ? "text-white" : "text-gray-700 hover:bg-gray-50"
+            }`}
           >
             {activeTab === "donation-events" && (
               <motion.div
@@ -174,8 +179,9 @@ const Events = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("register-volunteer")}
-            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${activeTab === "register-volunteer" ? "text-white" : "text-gray-700 hover:bg-gray-50"
-              }`}
+            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
+              activeTab === "register-volunteer" ? "text-white" : "text-gray-700 hover:bg-gray-50"
+            }`}
           >
             {activeTab === "register-volunteer" && (
               <motion.div
@@ -210,21 +216,13 @@ const Events = () => {
                   <div className="w-full flex max-sm:gap-5 gap-3 items-center">
                     <p className="font-semibold">Từ ngày</p>
                     <div className="relative flex items-center border rounded-md p-2 flex-1">
-                      <input
-                        type="date"
-                        value={dateFrom}
-                        onChange={(e) => setDateFrom(e.target.value)}
-                        className="w-full focus:outline-none" />
+                      <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full focus:outline-none" />
                     </div>
                   </div>
                   <div className="w-full flex gap-3 items-center">
                     <p className="font-semibold">đến ngày</p>
                     <div className="flex items-center border rounded-md p-2 flex-1">
-                      <input
-                        type="date"
-                        value={dateTo}
-                        onChange={(e) => setDateTo(e.target.value)}
-                        className="w-full focus:outline-none" />
+                      <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full focus:outline-none" />
                     </div>
                   </div>
                   <motion.button
@@ -240,61 +238,55 @@ const Events = () => {
 
               {/* Events List with shadow boxing */}
               <div className="space-y-6 mb-8">
-                {
-                currentEvents.map((event: Event, index) => (
-                <motion.div
-                  data-testid="event-item"
-                  key={event.id}
-                  className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.3 }}
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="flex flex-col md:flex-row p-6">
-                    {/* Logo */}
-                    <motion.div
-                      className="w-16 h-16 bg-[#C14B53] rounded-full flex items-center justify-center mr-6 mb-4 md:mb-0 shadow-sm"
-                      whileHover={{ rotate: 10 }}
-                    >
-                      <FaHeart className="text-white text-xl" />
-                    </motion.div>
+                {currentEvents.map((event: Event, index) => (
+                  <motion.div
+                    data-testid="event-item"
+                    key={event.id}
+                    className="bg-white rounded-md shadow-md overflow-hidden border border-gray-200"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <div className="flex flex-col md:flex-row p-6">
+                      {/* Logo */}
+                      <img src={logo} className="size-24 mr-3" />
 
-                    {/* Event Details */}
-                    <div className="flex-1">
-                      <h3 className="text-red-700 text-lg font-medium mb-2">{event.title}</h3>
-                      <p className="text-gray-600 mb-1">Địa chỉ của cơ sở y tế</p>
-                      <p className="text-gray-600 mb-1">
-                        Thời gian hoạt động: <span className="font-semibold text-black">{event.eventTime}</span>, từ 7:00 đến 17:00
-                      </p>
-                      <p className="text-gray-600">
-                        Ưu tiên người hiến có nhóm máu: <span className="font-semibold text-black">{event.bloodType ? event.bloodType : "A, B, AB, O"}</span>
-                      </p>
-                    </div>
-
-                    {/* Registration */}
-                    <div className="flex flex-col items-end mt-4 md:mt-0">
-                      <div className="text-sm font-semibold mb-2">
-                        Số người đã đăng ký:{" "}
-                        <span className="text-red-700 text-[16px]">
-                          {event.bloodRegisCount ? event.bloodRegisCount : 0} / {event.maxOfDonor}
-                        </span>
+                      {/* Event Details */}
+                      <div className="flex-1">
+                        <h3 className="text-red-700 text-lg font-medium mb-2">{event.title}</h3>
+                        <p className="text-gray-600 mb-1">Địa chỉ của cơ sở y tế</p>
+                        <p className="text-gray-600 mb-1">
+                          Thời gian hoạt động: <span className="font-semibold text-black">{event.eventTime}</span>, từ 7:00 đến 17:00
+                        </p>
+                        <p className="text-gray-600">
+                          Ưu tiên người hiến có nhóm máu: <span className="font-semibold text-black">{event.bloodType ? event.bloodType : "A, B, AB, O"}</span>
+                        </p>
                       </div>
-                      <motion.button
-                        className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                          setCurrentEventTime(event.eventTime)
-                          setCurrentEventId(event.id)
-                          setRegistraionFormOpen(true)
-                        }}
-                      >
-                        Đăng ký
-                      </motion.button>
+
+                      {/* Registration */}
+                      <div className="flex flex-col items-end mt-4 md:mt-0">
+                        <div className="font-semibold mb-2">
+                          Số người đã đăng ký:{" "}
+                          <span className="text-red-700 text-lg">
+                            {event.bloodRegisCount ? event.bloodRegisCount : 0} / {event.maxOfDonor}
+                          </span>
+                        </div>
+                        <motion.button
+                          className="bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => {
+                            setCurrentEventTime(event.eventTime);
+                            setCurrentEventId(event.id);
+                            setRegistraionFormOpen(true);
+                          }}
+                        >
+                          Đăng ký
+                        </motion.button>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
                 ))}
               </div>
 

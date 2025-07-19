@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
-import type { DonorCardProps } from "@/pages/Staff/ManageReceipt/DonorCard"
+import type { DonorCardProps } from "@/pages/Staff/ManageReceipt/DonorCard";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";
 import { toast } from "react-toastify";
@@ -14,9 +14,9 @@ interface HealthCheckData {
   weight: string;
   bloodPressure: string;
   temperature: string;
-  hbvYes: boolean,
-  hbvNo: boolean,
-  hb: string,
+  hbvYes: boolean;
+  hbvNo: boolean;
+  hb: string;
   hasReceivedBloodYes: boolean;
   hasReceivedBloodNo: boolean;
   additionalNotes: string;
@@ -24,16 +24,21 @@ interface HealthCheckData {
   processCompleted: boolean;
 }
 interface HealthCheckoutProps {
-  currentDonor: DonorCardProps | null
-  handleCancle: () => void
+  currentDonor: DonorCardProps | null;
+  handleCancle: () => void;
+  refetchDonors: () => void;
 }
 interface FormErrors {
   [key: string]: string;
 }
 
-export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCheckoutProps) {
-  const { user } = useAuth()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export default function HealthCheckForm({
+  currentDonor,
+  handleCancle,
+  refetchDonors,
+}: HealthCheckoutProps) {
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<HealthCheckData>({
     fullName: currentDonor?.memberName || "",
     birthDate: currentDonor?.dob || "",
@@ -53,16 +58,18 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const target = e.target as HTMLInputElement;
     const { id, type, value } = target;
     const checked = target.checked;
 
-    if (id === 'hbvYes') {
+    if (id === "hbvYes") {
       setFormData({ ...formData, hbvYes: true, hbvNo: false });
       return;
     }
-    if (id === 'hbvNo') {
+    if (id === "hbvNo") {
       setFormData({ ...formData, hbvYes: false, hbvNo: true });
       return;
     }
@@ -85,7 +92,6 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
 
     setFormData({ ...formData, [id]: type === "checkbox" ? checked : value });
   };
-
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
@@ -158,7 +164,9 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
       if (!bpRegex.test(formData.bloodPressure)) {
         newErrors.bloodPressure = "Huyết áp phải có định dạng như 120/80.";
       } else {
-        const [systolic, diastolic] = formData.bloodPressure.split('/').map(Number);
+        const [systolic, diastolic] = formData.bloodPressure
+          .split("/")
+          .map(Number);
         if (systolic <= 0 || diastolic <= 0) {
           newErrors.bloodPressure = "Giá trị huyết áp phải dương.";
         } else if (systolic > 300 || diastolic > 200) {
@@ -176,7 +184,7 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
       const temp = parseFloat(formData.temperature);
       if (isNaN(temp)) {
         newErrors.temperature = "Nhiệt độ phải là số.";
-      } else if (temp < 34) {
+      } else if (temp < 36) {
         newErrors.temperature = "Nhiệt độ quá thấp.";
       } else if (temp > 38) {
         newErrors.temperature = "Nhiệt độ quá cao.";
@@ -207,7 +215,7 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
     } else {
       setErrors({});
       console.log("Form submitted successfully:", formData);
-      const pressure = formData.bloodPressure.split('/')
+      const pressure = formData.bloodPressure.split("/");
       const payload = {
         systolic: Number(pressure[0]),
         diastolic: Number(pressure[1]),
@@ -217,25 +225,26 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
         weight: Number(formData.weight),
         height: Number(formData.height),
         isHealth: formData.hasReceivedBloodYes,
-        description: formData.additionalNotes
-      }
+        description: formData.additionalNotes,
+      };
 
       try {
-        setIsSubmitting(true)
-        const response = await authenApi.post(`/api/blood-registrations/${currentDonor?.id}/health-procedures`,
+        setIsSubmitting(true);
+        const response = await authenApi.post(
+          `/api/blood-registrations/${currentDonor?.id}/health-procedures`,
           payload
-        )
+        );
         if (response.status === 200) {
-          console.log('Checkout success')
-          toast.success('Đã khám sức khỏe thành công!')
-          handleCancle()
+          console.log("Checkout success");
+          toast.success("Đã khám sức khỏe thành công!");
+          handleCancle();
+          refetchDonors();
         }
-
       } catch (error) {
-        toast.error('Gửi đơn thất bại!')
-        console.log("Submit checkout donor fail", error)
-      }finally{
-        setIsSubmitting(false)
+        toast.error("Gửi đơn thất bại!");
+        console.log("Submit checkout donor fail", error);
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -244,10 +253,13 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
     <div className="max-w-3xl mx-auto mt-6 border rounded-lg shadow-lg p-8 space-y-6 bg-white">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-normal text-black">Đơn đánh giá tình trạng bệnh</h1>
+        <h1 className="text-2xl font-normal text-black">
+          Đơn đánh giá tình trạng bệnh
+        </h1>
         <button
           onClick={handleCancle}
-          className="text-gray-500 hover:text-gray-700 cursor-pointer">
+          className="text-gray-500 hover:text-gray-700 cursor-pointer"
+        >
           <X size={20} />
         </button>
       </div>
@@ -266,7 +278,9 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
               value={formData.fullName}
               onChange={handleChange}
             />
-            {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
+            {errors.fullName && (
+              <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+            )}
           </div>
         </div>
 
@@ -282,9 +296,11 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
               className="py-4 text-base h-[40px] border-none"
               value={formData.birthDate}
               onChange={handleChange}
-              max={new Date().toISOString().split('T')[0]} // Prevent future dates
+              max={new Date().toISOString().split("T")[0]} // Prevent future dates
             />
-            {errors.birthDate && <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>}
+            {errors.birthDate && (
+              <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>
+            )}
           </div>
         </div>
 
@@ -305,7 +321,9 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
               value={formData.height}
               onChange={handleChange}
             />
-            {errors.height && <p className="text-red-500 text-sm mt-1">{errors.height}</p>}
+            {errors.height && (
+              <p className="text-red-500 text-sm mt-1">{errors.height}</p>
+            )}
           </div>
           <Label htmlFor="weight" className="text-base w-1/4">
             Cân nặng (kg) <span className="text-red-500">*</span>
@@ -321,7 +339,9 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
               value={formData.weight}
               onChange={handleChange}
             />
-            {errors.weight && <p className="text-red-500 text-sm mt-1">{errors.weight}</p>}
+            {errors.weight && (
+              <p className="text-red-500 text-sm mt-1">{errors.weight}</p>
+            )}
           </div>
         </div>
 
@@ -338,7 +358,11 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
               value={formData.bloodPressure}
               onChange={handleChange}
             />
-            {errors.bloodPressure && <p className="text-red-500 text-sm mt-1">{errors.bloodPressure}</p>}
+            {errors.bloodPressure && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.bloodPressure}
+              </p>
+            )}
           </div>
           <Label htmlFor="temperature" className="text-base w-1/4">
             Nhiệt độ cơ thể (°C) <span className="text-red-500">*</span>
@@ -355,7 +379,9 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
               value={formData.temperature}
               onChange={handleChange}
             />
-            {errors.temperature && <p className="text-red-500 text-sm mt-1">{errors.temperature}</p>}
+            {errors.temperature && (
+              <p className="text-red-500 text-sm mt-1">{errors.temperature}</p>
+            )}
           </div>
         </div>
 
@@ -395,7 +421,9 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
               </div>
             </div>
             {errors.hbvYes && (
-              <p className="text-red-500 text-sm mt-1 w-full">{errors.hbvYes}</p>
+              <p className="text-red-500 text-sm mt-1 w-full">
+                {errors.hbvYes}
+              </p>
             )}
           </div>
         </div>
@@ -412,7 +440,9 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
               value={formData.hb}
               onChange={handleChange}
             />
-            {errors.hb && <p className="text-red-500 text-sm mt-1">{errors.hb}</p>}
+            {errors.hb && (
+              <p className="text-red-500 text-sm mt-1">{errors.hb}</p>
+            )}
           </div>
         </div>
 
@@ -454,7 +484,9 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
             </div>
           </div>
           {errors.hasReceivedBloodYes && (
-            <p className="text-red-500 text-sm mt-1 w-full pl-[25%]">{errors.hasReceivedBloodYes}</p>
+            <p className="text-red-500 text-sm mt-1 w-full pl-[25%]">
+              {errors.hasReceivedBloodYes}
+            </p>
           )}
         </div>
 
@@ -491,7 +523,10 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
 
         {/* Process Completion Confirmation */}
         <div className="space-y-3">
-          <label htmlFor="processCompleted" className="flex items-center gap-2 cursor-pointer select-none">
+          <label
+            htmlFor="processCompleted"
+            className="flex items-center gap-2 cursor-pointer select-none"
+          >
             <input
               id="processCompleted"
               type="checkbox"
@@ -501,23 +536,28 @@ export default function HealthCheckForm({ currentDonor, handleCancle }: HealthCh
               required
             />
             <span className="text-base">
-              Xác nhận hoàn tất quy trình khám đối với bệnh nhân này<span className="text-red-500">*</span>
+              Xác nhận hoàn tất quy trình khám đối với bệnh nhân này
+              <span className="text-red-500">*</span>
             </span>
           </label>
-          {errors.processCompleted && <p className="text-red-500 text-sm mt-1">{errors.processCompleted}</p>}
+          {errors.processCompleted && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.processCompleted}
+            </p>
+          )}
         </div>
 
         {/* Buttons */}
         <div className="flex gap-4 pt-6">
           <Button
-            disabled = {!formData.processCompleted || isSubmitting}
+            disabled={!formData.processCompleted || isSubmitting}
             type="submit"
             className="px-12 py-2 text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer"
           >
             Gửi
           </Button>
           <Button
-            disabled = {isSubmitting}
+            disabled={isSubmitting}
             type="button"
             variant="outline"
             className="px-12 py-2 text-base rounded-full bg-[#FBA3A5] hover:bg-[#E99294] text-white border-[#FBA3A5] cursor-pointer"

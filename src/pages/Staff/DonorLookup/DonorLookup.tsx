@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion";
-
+import { ChevronDown } from "lucide-react";
 import {
     Form,
     FormControl,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import maleImg from '@/assets/images/male icon.png'
 import { useState } from "react"
@@ -22,6 +23,8 @@ import { authenApi } from "@/lib/instance";
 import type { AxiosError } from "axios";
 import UrgencyReceiptForm from "../UrgencyReceiptRequest/UrgencyReceiptForm";
 import LoadingSpinner from "@/components/layout/Spinner";
+import DonorMap from "./DonorMap";
+
 // import DonorMap from "./DonorMap";
 
 export interface VolunteerProps {
@@ -33,12 +36,11 @@ export interface VolunteerProps {
     distance: number,
     startVolunteerDate: Date,
     endVolunteerDate: Date,
-    lat: number,
-    lon: number
+    latitude: number,
+    longitude: number
 }
 const formSchema = z.object({
     facility: z.string()
-        .min(1, "Hãy nhập tên cơ sở y tế")
         .max(200, "Tên cơ sở không phù hợp")
 })
 
@@ -51,6 +53,7 @@ function DonorLookup() {
     const [donorFound, setDonorFound] = useState<VolunteerProps[]>([])
     const [isUrgentReceiptFormOpen, setIsUrgentReceiptFormOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [isOpen, setIsOpen] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -59,7 +62,7 @@ function DonorLookup() {
     })
 
     const onSearchVolunteers = async (values: z.infer<typeof formSchema>) => {
-        console.log(values)
+        if (!values.facility) return;
         const facilityId = 1
         try {
             setIsLoading(true)
@@ -80,13 +83,15 @@ function DonorLookup() {
     }
 
     const foundDonor = (filterCriterias: string[]) => {
-        const filterListFound: VolunteerProps[] = []
-        donorFound.forEach(donor => {
-            if (filterCriterias.some(filter => filter === donor.bloodTypeName.substring(0, 1))) {
-                filterListFound.push(donor)
-            }
-        })
-        setDisplayrDonorList(filterListFound)
+        const criteriaSet = new Set(filterCriterias.map(item => item.toUpperCase()));
+        const filtered = donorFound.filter(donor => {
+            const bloodPrefix = donor.bloodTypeName.startsWith("AB")
+                ? "AB"
+                : donor.bloodTypeName[0]; // "A", "B", "O"
+
+            return criteriaSet.has(bloodPrefix.toUpperCase());
+        });
+        setDisplayrDonorList(filtered)
     }
     const handleSelectFilter = (item: string) => {
         const filterCriterias: string[] = filterList.includes(item)
@@ -136,7 +141,7 @@ function DonorLookup() {
         setIsUrgentReceiptFormOpen(true)
     }
     return (
-        <div className="flex flex-col items-center bg-gray-200 shadow-md rounded-xl w-full m-4 p-6">
+        <div className="flex flex-col items-center bg-[#F0EFF4] shadow-md rounded-xl w-full m-4 p-6">
             {
                 isUrgentReceiptFormOpen ? (
                     <AnimatePresence>
@@ -153,9 +158,42 @@ function DonorLookup() {
                         </motion.div>
                     </AnimatePresence>
                 ) : (
-                    <>
+                    <div className="flex flex-col items-center w-full">
                         {/* search engine */}
-                        <div className="flex flex-col  p-10 h-[190px]">
+                        <div className="relative h-[95px] mt-10">
+                            <div className="flex gap-2 mb-2 absolute top-[-40px] left-10">
+                                <AnimatePresence>
+                                    {filterList.map((item, index) => (
+                                        <motion.div
+                                            key={item + index}
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <Button className="bg-[#14AF18] hover:bg-[#129916] relative group px-2 text-[12px]">
+                                                <div
+                                                    onClick={() => handleRemoveFilter(item)}
+                                                    className="hover:cursor-pointer hover:scale-110 absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 backdrop-blur-sm bg-white/30 p-1.5 rounded-full transition-all duration-200"
+                                                >
+                                                    <svg
+                                                        className="w-4 h-4 text-black"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={2}
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                    </svg>
+                                                </div>
+                                                Nhóm máu {item}
+                                            </Button>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+
                             <Form {...form}>
                                 <form className="w-[640px]" onSubmit={form.handleSubmit(onSearchVolunteers)}>
                                     <FormField
@@ -165,13 +203,14 @@ function DonorLookup() {
                                             <FormItem className="flex">
                                                 <div className="flex-1">
                                                     <FormControl>
-                                                        <div className="relative">
+                                                        <div className="relative hover:scale-101 transition-all duration-200 ease-in-out">
                                                             <Input
-                                                                className="h-[50px] bg-white border border-[#C14B53]"
+                                                                className="h-[45px] bg-white border-2 border-[#f25a64] hover:shadow-lg 
+                                                                hover:border-[#f5989e] transition-all duration-200 ease-in-out"
                                                                 placeholder="Nhập địa chỉ của cơ sở ý tế" {...field} />
                                                             <Button
                                                                 type="submit"
-                                                                className="absolute right-3 top-2 rounded-[10px] hover:cursor-pointer hover:bg-white hover:scale-110"
+                                                                className="absolute right-3 top-1.25 rounded-[10px] hover:cursor-pointer hover:bg-white hover:scale-110"
                                                                 variant="ghost"
                                                             >
 
@@ -211,55 +250,15 @@ function DonorLookup() {
                                 </form>
                             </Form>
 
-                            <AnimatePresence>
-                                <div className="flex gap-2 mt-2">
-                                    {filterList.length > 0 && (
-                                        filterList.map((item, index) => {
-                                            return (
-                                                <motion.div
-                                                    initial={{ opacity: 0, x: -20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    exit={{ opacity: 0, x: -20 }}
-                                                    transition={{ duration: 0.3 }}
-                                                    key={index}
-                                                >
-                                                    <Button
-                                                        className="bg-[#14AF18] hover:bg-[#129916] relative group">
-                                                        <div
-                                                            onClick={() => handleRemoveFilter(item)}
-                                                            className="hover:cursor-pointer hover:scale-110 absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100
-                                                            backdrop-blur-sm bg-white/30 p-1.5 rounded-full transition-all duration-200"
-                                                        >
-                                                            <svg
-                                                                className="w-4 h-4 text-black"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={2}
-                                                                stroke="currentColor"
-                                                            >
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </div>
-                                                        Nhóm máu {item}
-                                                    </Button>
-                                                </motion.div>
-                                            )
-                                        })
-                                    )}
-                                </div>
-                            </AnimatePresence>
                         </div>
 
-                        {/* <div className="w-[200px] h-[200px]">
-                            <DonorMap volunteers={donorFound}></DonorMap>
-                        </div> */}
+
                         {/* Donor list */}
                         {
                             isLoading ? (<LoadingSpinner />) : (
-                                <div className="">
+                                <div className="overflow-x-hidden">
                                     {displayrDonorList?.length > 0 ? (
-                                        <AnimatePresence>
+                                        <AnimatePresence >
                                             <motion.div
                                                 initial={{ opacity: 0, y: -20 }}
                                                 animate={{ opacity: 1, y: 0 }}
@@ -267,78 +266,137 @@ function DonorLookup() {
                                                 transition={{ duration: 0.4 }}
                                             >
                                                 {/* list header */}
-                                                <section className="flex justify-between ">
+                                                <section className="flex justify-between items-center mb-5">
                                                     <h1 className="text-[30px] font-semibold">Danh sách tìm được</h1>
-                                                    <Select value={selectedValue} onValueChange={handleSelectFilter}>
-                                                        <SelectTrigger className="bg-white hover:cursor-pointer hover:bg-[#f2f2f2] transition-colors duration-200 ease-in-out">
-                                                            <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path d="M8.75273 20.5C8.39948 20.5 8.10359 20.38 7.86504 20.14C7.6265 19.9 7.50681 19.6033 7.50598 19.25V11.75L0.274804 2.5C-0.0368848 2.08333 -0.0834302 1.64583 0.135167 1.1875C0.353765 0.729167 0.732778 0.5 1.27221 0.5H18.7268C19.267 0.5 19.6464 0.729167 19.865 1.1875C20.0836 1.64583 20.0367 2.08333 19.7242 2.5L12.493 11.75V19.25C12.493 19.6042 12.3733 19.9012 12.1339 20.1412C11.8945 20.3812 11.5987 20.5008 11.2462 20.5H8.75273Z" fill="black" />
-                                                            </svg>
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="A">A</SelectItem>
-                                                            <SelectItem value="B">B</SelectItem>
-                                                            <SelectItem value="AB">AB</SelectItem>
-                                                            <SelectItem value="O">O</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </section>
-                                                {/* list found */}
-                                                <section className="relative flex flex-col  items-end">
-                                                    <div className="py-5 flex items-center gap-2">
-                                                        <label htmlFor="selectall">Chọn tất cả</label>
-                                                        <Input type="checkbox" className="w-[22px]" onChange={toggleSelectAll} checked={donorFound.length === selectedDonor.length} />
+
+                                                    <div className="flex gap-4 items-center z-10">
+                                                        <Select value={selectedValue} onValueChange={handleSelectFilter}>
+                                                            <SelectTrigger className="bg-white hover:cursor-pointer hover:bg-[#f2f2f2] transition-colors duration-200 ease-in-out">
+                                                                <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M8.75273 20.5C8.39948 20.5 8.10359 20.38 7.86504 20.14C7.6265 19.9 7.50681 19.6033 7.50598 19.25V11.75L0.274804 2.5C-0.0368848 2.08333 -0.0834302 1.64583 0.135167 1.1875C0.353765 0.729167 0.732778 0.5 1.27221 0.5H18.7268C19.267 0.5 19.6464 0.729167 19.865 1.1875C20.0836 1.64583 20.0367 2.08333 19.7242 2.5L12.493 11.75V19.25C12.493 19.6042 12.3733 19.9012 12.1339 20.1412C11.8945 20.3812 11.5987 20.5008 11.2462 20.5H8.75273Z" fill="black" />
+                                                                </svg>
+                                                            </SelectTrigger>
+                                                            <SelectContent className="z-10">
+                                                                <SelectItem value="A">A</SelectItem>
+                                                                <SelectItem value="B">B</SelectItem>
+                                                                <SelectItem value="AB">AB</SelectItem>
+                                                                <SelectItem value="O">O</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <Button
+                                                            disabled={selectedDonor.length === 0}
+                                                            onClick={handleCreateUrgent}
+                                                            className="bg-[#4F81E5] text-[16px] text-white rounded-[7px] hover:bg-[#2c54a3] hover:cursor-pointer">
+                                                            Tạo yêu cầu cần máu
+                                                        </Button>
                                                     </div>
-                                                    <div className="flex flex-col gap-10 pb-10 items-center">
-                                                        {(
-                                                            displayrDonorList.map((donor, index) => {
-                                                                return (
-                                                                    <div key={index} className="relative flex bg-white rounded-[7px] gap-10 items-center  w-[859px] p-5 shadow-[0_4px_4px_rgba(0,0,0,0.25)]">
-                                                                        <div className="">
+                                                </section>
+                                                {donorFound.length > 0 && (
+                                                    <div className="w-full h-[500px] mb-5 z-0 relative">
+                                                        <DonorMap
+                                                            selectedDonor={selectedDonor}
+                                                            volunteers={displayrDonorList}
+                                                            toggleSelectDonor={toggleSelectDonor}
+                                                        />
+                                                        <div className="py-1 px-2 rounded-[5px] flex items-center gap-2 absolute top-5 right-5 z-10 bg-white text-sm border-2 border-gray-300">
+                                                            <label htmlFor="selectall">Chọn tất cả</label>
+                                                            <Checkbox
+                                                                checked={donorFound.length === selectedDonor.length}
+                                                                onCheckedChange={toggleSelectAll}
+                                                                className="border-2 border-gray-500" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {/* list found */}
+                                                <div className="w-[859px] overflow-x-hidden">
+                                                    {/* trigger collapse */}
+                                                    <div
+                                                        onClick={() => setIsOpen(!isOpen)}
+                                                        className="relative bg-white text-black rounded-[7px] p-3 mb-5
+                                                        font-semibold select-none hover:bg-[#c9c9c9] transition-all duration-300 ease-in-out"
+                                                    >
+                                                        Danh sách tình nguyện viên gần cơ sở y tế
+                                                        <ChevronDown
+                                                            className={`absolute right-5 top-3.5 transition-transform duration-300 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
+                                                        />
+                                                    </div>
+
+                                                    {/* collapse content */}
+                                                    <AnimatePresence initial={false}>
+                                                        {isOpen && (
+                                                            <motion.section
+                                                                className="flex flex-col gap-5 pb-5 items-center"
+                                                                initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                                                                animate={{ opacity: 1, height: "auto", overflow: 'hidden' }}
+                                                                exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                                                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                            >
+                                                                {displayrDonorList.map((donor, index) => (
+                                                                    <div
+                                                                        key={index}
+                                                                        className="relative flex bg-white rounded-[7px] w-full gap-10 items-center p-5 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
+                                                                    >
+                                                                        <div>
                                                                             <img src={maleImg} alt="male avartar" />
                                                                         </div>
                                                                         <div className="flex flex-col gap-2">
                                                                             <div className="flex gap-5">
                                                                                 <p className="text-[22px] font-bold">{donor.fullName}</p>
-                                                                                <Button variant={"outline"}>
-                                                                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                                        <path fillRule="evenodd" clipRule="evenodd" d="M2.25999 0.628316C2.40399 0.4843 2.57697 0.372548 2.76745 0.300477C2.95793 0.228405 3.16156 0.19766 3.36482 0.210281C3.56809 0.222902 3.76635 0.278601 3.94645 0.373683C4.12655 0.468764 4.28438 0.601055 4.40946 0.76178L5.88546 2.66012C6.15677 3.00783 6.25248 3.46178 6.14536 3.88939L5.69492 5.69202C5.67149 5.78556 5.67269 5.88357 5.69838 5.97651C5.72408 6.06945 5.77341 6.15415 5.84155 6.22236L7.86458 8.24451C7.9328 8.31266 8.0175 8.36198 8.11044 8.38768C8.20337 8.41338 8.30138 8.41457 8.39492 8.39114L10.1967 7.94071C10.408 7.88793 10.6286 7.8839 10.8417 7.92892C11.0548 7.97395 11.2549 8.06685 11.4268 8.20061L13.3252 9.67661C14.0074 10.2069 14.0706 11.2158 13.4595 11.8261L12.6078 12.6778C11.9993 13.2863 11.0888 13.5541 10.2397 13.2555C8.06777 12.4911 6.0958 11.2474 4.47004 9.6169C2.83919 7.99123 1.59526 6.01926 0.83053 3.84724C0.531993 2.99817 0.799798 2.08763 1.40829 1.47827L2.25999 0.627438V0.628316Z" fill="black" />
+                                                                                <Button variant="outline">
+                                                                                    {/* icon */}
+                                                                                    <svg
+                                                                                        width="14"
+                                                                                        height="14"
+                                                                                        viewBox="0 0 14 14"
+                                                                                        fill="none"
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                    >
+                                                                                        <path
+                                                                                            fillRule="evenodd"
+                                                                                            clipRule="evenodd"
+                                                                                            d="M2.25999 0.628316C2.40399 0.4843 2.57697 0.372548 2.76745 0.300477C2.95793 0.228405 3.16156 0.19766 3.36482 0.210281C3.56809 0.222902 3.76635 0.278601 3.94645 0.373683C4.12655 0.468764 4.28438 0.601055 4.40946 0.76178L5.88546 2.66012C6.15677 3.00783 6.25248 3.46178 6.14536 3.88939L5.69492 5.69202C5.67149 5.78556 5.67269 5.88357 5.69838 5.97651C5.72408 6.06945 5.77341 6.15415 5.84155 6.22236L7.86458 8.24451C7.9328 8.31266 8.0175 8.36198 8.11044 8.38768C8.20337 8.41338 8.30138 8.41457 8.39492 8.39114L10.1967 7.94071C10.408 7.88793 10.6286 7.8839 10.8417 7.92892C11.0548 7.97395 11.2549 8.06685 11.4268 8.20061L13.3252 9.67661C14.0074 10.2069 14.0706 11.2158 13.4595 11.8261L12.6078 12.6778C11.9993 13.2863 11.0888 13.5541 10.2397 13.2555C8.06777 12.4911 6.0958 11.2474 4.47004 9.6169C2.83919 7.99123 1.59526 6.01926 0.83053 3.84724C0.531993 2.99817 0.799798 2.08763 1.40829 1.47827L2.25999 0.627438V0.628316Z"
+                                                                                            fill="black"
+                                                                                        />
                                                                                     </svg>
                                                                                 </Button>
                                                                             </div>
-                                                                            <p><span className="text-[#7D7D7F]">Loại máu:</span> {donor.bloodTypeName}</p>
-                                                                            <p><span className="text-[#7D7D7F]">Số điện thoại:</span> {donor.phone}</p>
-                                                                            <p><span className="text-[#7D7D7F]">Gmail: </span>{donor.gmail}</p>
+                                                                            <p>
+                                                                                <span className="text-[#7D7D7F]">Loại máu:</span>{" "}
+                                                                                {donor.bloodTypeName}
+                                                                            </p>
+                                                                            <p>
+                                                                                <span className="text-[#7D7D7F]">Số điện thoại:</span>{" "}
+                                                                                {donor.phone}
+                                                                            </p>
+                                                                            <p>
+                                                                                <span className="text-[#7D7D7F]">Gmail: </span>
+                                                                                {donor.gmail}
+                                                                            </p>
                                                                         </div>
 
                                                                         <div className="absolute right-5 top-5 flex flex-col items-center gap-2">
                                                                             <p>Khoảng {donor.distance} km</p>
-                                                                            <Input
-                                                                                type="checkbox"
-                                                                                className="w-[20px]"
-                                                                                checked={selectedDonor.some(selected => selected.id === donor.id)}
-                                                                                onChange={() => toggleSelectDonor(donor)}
+                                                                            <Checkbox
+                                                                                className="border-2 border-gray-500 h-6 w-6 hover:scale-110 hover:bg-gray-200 transition-all duration-100"
+                                                                                checked={selectedDonor.some(
+                                                                                    (selected) => selected.id === donor.id
+                                                                                )}
+                                                                                onCheckedChange={() => toggleSelectDonor(donor)}
                                                                             />
                                                                         </div>
                                                                     </div>
-                                                                )
-                                                            })
+                                                                ))}
+                                                            </motion.section>
                                                         )}
-                                                    </div>
-                                                    <Button
-                                                        disabled={selectedDonor.length === 0}
-                                                        onClick={handleCreateUrgent}
-                                                        className="bg-[#4F81E5] text-[16px] text-white rounded-[7px] h-[50px] hover:bg-[#2c54a3] hover:cursor-pointer">
-                                                        Tạo yêu cầu cần máu
-                                                    </Button>
-                                                </section>
+                                                    </AnimatePresence>
+                                                </div>
                                             </motion.div>
                                         </AnimatePresence>
-                                    ) : <>Không tìm thấy tình nguyện viên phù hợp</>}
+                                    ) : <div className="mt-10">Không tìm thấy tình nguyện viên phù hợp</div>}
                                 </div>
                             )
                         }
-                    </>
+                    </div>
                 )
             }
         </div>
