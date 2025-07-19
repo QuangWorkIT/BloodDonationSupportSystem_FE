@@ -66,18 +66,16 @@ const AccountEdit = () => {
 
   // --- useEffect for initial form data from user ---
   useEffect(() => {
-    if (user) {
-      const initialFormData = {
-        name: user?.unique_name || "",
-        gender: user?.gender ?? true,
-        birthDate: user?.dob || null,
-        phone: user?.phone || "",
-        gmail: user?.gmail || "",
-        bloodType: user?.bloodType || ""
-      };
-      setFormData(initialFormData);
-      setDefautlFormData(initialFormData);
-    }
+
+    setFormData({
+      name: user?.unique_name || "",
+      gender: user?.gender === null ? "" : (user?.gender ? "male" : "female"),
+      birthDate: user?.dob || null,
+      phone: user?.phone || "",
+      gmail: user?.gmail || "",
+      bloodType: user?.bloodType || "",
+    });
+    setDefautlFormData(formData);
   }, [user]);
 
   // default form data to compare changes
@@ -175,7 +173,14 @@ const AccountEdit = () => {
               <div className="flex justify-center">
                 <button
                   onClick={onClose}
-                  className={`px-6 py-2 ${type === "error" ? "bg-red-500" : type === "success" ? "bg-green-500" : type === "warning" ? "bg-yellow-500" : "bg-blue-500"} text-white rounded-md hover:opacity-90`}
+                  className={`px-6 py-2 ${type === "error"
+                    ? "bg-red-500"
+                    : type === "success"
+                      ? "bg-green-500"
+                      : type === "warning"
+                        ? "bg-yellow-500"
+                        : "bg-blue-500"
+                    } text-white rounded-md hover:opacity-90`}
                 >
                   Đóng
                 </button>
@@ -336,6 +341,18 @@ const AccountEdit = () => {
         <h2 className="text-xl font-bold text-white">Chỉnh sửa thông tin</h2>
       </div>
       <div className="border-b border-gray-200 my-0" />
+      {
+        user?.phone === null && (
+          <div
+            className="flex gap-2 items-center rounded-[10px] bg-[#332701] border-2 border-[#FFDA4B] text-[#FFDA4B] p-4 mx-2 mt-2 text-sm sm:text-base">
+            <svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11.0002 0.669922C11.9552 0.669922 12.8452 1.13692 13.3902 1.91692L13.4952 2.07692L21.6092 15.6249C21.8558 16.052 21.9899 16.5347 21.9991 17.0277C22.0083 17.5208 21.8922 18.0081 21.6617 18.4441C21.4311 18.8801 21.0938 19.2504 20.6811 19.5204C20.2684 19.7904 19.794 19.9513 19.3022 19.9879L19.1072 19.9959H2.88219C2.38989 19.9904 1.90702 19.8602 1.47866 19.6175C1.05029 19.3749 0.690393 19.0276 0.432555 18.6082C0.174717 18.1888 0.0273465 17.7109 0.00419944 17.2191C-0.0189476 16.7273 0.0828832 16.2377 0.300187 15.7959L0.399187 15.6109L8.50919 2.07292C8.76856 1.64447 9.13412 1.29021 9.57051 1.04443C10.0069 0.79864 10.4993 0.669645 11.0002 0.669922ZM11.0102 13.9999L10.8832 14.0069C10.6401 14.0358 10.4161 14.1529 10.2536 14.3359C10.0911 14.5189 10.0013 14.7552 10.0013 14.9999C10.0013 15.2447 10.0911 15.4809 10.2536 15.664C10.4161 15.847 10.6401 15.964 10.8832 15.9929L11.0002 15.9999L11.1272 15.9929C11.3702 15.964 11.5942 15.847 11.7568 15.664C11.9193 15.4809 12.0091 15.2447 12.0091 14.9999C12.0091 14.7552 11.9193 14.5189 11.7568 14.3359C11.5942 14.1529 11.3702 14.0358 11.1272 14.0069L11.0102 13.9999ZM11.0002 6.99992C10.7553 6.99995 10.5188 7.08988 10.3358 7.25264C10.1528 7.4154 10.0358 7.63967 10.0072 7.88292L10.0002 7.99992V11.9999L10.0072 12.1169C10.0361 12.36 10.1531 12.584 10.3362 12.7465C10.5192 12.909 10.7554 12.9988 11.0002 12.9988C11.2449 12.9988 11.4812 12.909 11.6642 12.7465C11.8472 12.584 11.9643 12.36 11.9932 12.1169L12.0002 11.9999V7.99992L11.9932 7.88292C11.9645 7.63967 11.8476 7.4154 11.6646 7.25264C11.4815 7.08988 11.2451 6.99995 11.0002 6.99992Z" fill="#FFDA4B" />
+            </svg>
+
+            <p>Bạn cần cập nhật thông tin cá nhân để sử dụng các tính năng của hệ thống.</p>
+          </div>
+        )
+      }
       <form onSubmit={handleSubmit} className="space-y-6 p-8 md:p-10">
         {/* Name */}
         <div>
@@ -478,8 +495,8 @@ const AccountEdit = () => {
             whileHover={!hasNotChanged ? { scale: 1.01 } : undefined}
             whileTap={!hasNotChanged ? { scale: 0.99 } : undefined}
             className={`w-full px-8 py-3 rounded-xl font-semibold text-lg shadow transition cursor-pointer ${hasNotChanged
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-[#C14B53] text-white hover:bg-[#a83a42] shadow-lg'
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-[#C14B53] text-white hover:bg-[#a83a42] shadow-lg"
               }`}
             disabled={hasNotChanged}
           >

@@ -21,6 +21,7 @@ export default function OTPForm() {
   const [phone, setPhone] = useState<string>('')
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
   const [registerUser, setRegisterUser] = useState<FormData | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate()
   const handleChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return; //only number or null input
@@ -91,6 +92,7 @@ export default function OTPForm() {
       return
     }
     try {
+      setIsSubmitting(true)
       const credential = await confirmationResult?.confirm(enteredOtp)
       console.log("otp correct: ", credential)
       if (!registerUser) {
@@ -106,16 +108,18 @@ export default function OTPForm() {
       toast.success('Đăng ký thành công!')
       navigate('/login', { replace: true })
     } catch (error) {
-      const err = error as AxiosError<{message: string}>
+      const err = error as AxiosError<{ message: string }>
       const errMsg = err.response?.data?.message
 
-      if(errMsg) {
+      if (errMsg) {
         console.log('Register failed', errMsg)
-        toast.error('Tài khoản đã tồn tại!')  
-      }else {
+        toast.error('Tài khoản đã tồn tại!')
+      } else {
         console.log('OTP verify failed', error)
         toast.error('OTP không khớp')
       }
+    }finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -143,7 +147,10 @@ export default function OTPForm() {
             ))}
           </div>
 
-          <Button className="w-full cursor-pointer bg-red-700 hover:bg-red-800" onClick={verifyOtp}>
+          <Button
+            disabled={isSubmitting}
+            className="w-full cursor-pointer bg-red-700 hover:bg-red-800"
+            onClick={verifyOtp}>
             Xác nhận
           </Button>
 
