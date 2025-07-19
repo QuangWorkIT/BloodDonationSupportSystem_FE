@@ -72,7 +72,7 @@ export default function LoginForm() {
 
   // handle google response
   const handleCredentialResponse = async (response: google.accounts.id.CredentialResponse) => {
-    console.log("Google JWT Token:", response.credential);
+    // console.log("Google JWT Token:", response.credential);
     try {
       const res = await api.post("/api/google", { credential: response.credential });
       const data = res.data;
@@ -113,7 +113,7 @@ export default function LoginForm() {
       container, {
       theme: 'outline',
       size: 'large',
-      width: 400,
+      width: Math.min(window.innerWidth - 64, 500),
       type: 'standard',
       logo_alignment: 'center'
     })
@@ -153,7 +153,7 @@ export default function LoginForm() {
           animate={{ opacity: 1, x: 0, y: 0 }}
           exit={{ opacity: 0, x: -20, y: 10 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="w-[430px] h-[393px] bg-[#d94545] absolute top-[-150px] left-[-150px]"
+          className="hidden md:block  w-[430px] h-[393px] bg-[#d94545] absolute top-[-150px] left-[-150px]"
           style={{ borderRadius: "38% 62% 50% 50% / 58% 61% 39% 42%" }}
         >
         </motion.div>
@@ -164,7 +164,7 @@ export default function LoginForm() {
           animate={{ opacity: 1, x: 0, y: 0 }}
           exit={{ opacity: 0, x: -20, y: 10 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="w-[430px] h-[393px] bg-[#d94545] absolute bottom-[-120px] right-[-150px]"
+          className="hidden md:block w-[430px] h-[393px] bg-[#d94545] absolute bottom-[-120px] right-[-150px]"
           style={{ borderRadius: "38% 62% 50% 50% / 58% 61% 39% 42%" }}>
         </motion.div>
       </AnimatePresence>
@@ -178,8 +178,8 @@ export default function LoginForm() {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="w-full"
             >
-              <div className="max-w-md h-max w-200 mx-auto min-sm:mt-0 min-sm:border rounded-lg min-sm:shadow p-6 space-y-6 bg-white max-sm:h-screen max-sm:flex max-sm:flex-col max-sm:justify-center">
-                <h2 className="text-2xl max-sm:text-3xl max-sm:text-center font-semibold text-red-600">Đăng nhập</h2>
+              <div className="w-full max-w-md mx-auto p-6 space-y-6 bg-white rounded-lg shadow-md sm:mt-10 sm:border sm:shadow-lg sm:h-auto h-screen flex flex-col justify-center">
+                <h2 className="text-2xl sm:text-3xl text-center font-semibold text-red-600">Đăng nhập</h2>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
@@ -202,7 +202,7 @@ export default function LoginForm() {
                         <FormItem>
                           <FormLabel>Mật khẩu</FormLabel>
                           <FormControl>
-                            <Input type="password" data-testid="phone-input" placeholder="Mật khẩu" {...field} className="bg-[#F0EFF4]" />
+                            <Input type="password" placeholder="Mật khẩu" {...field} className="bg-[#F0EFF4]" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -211,8 +211,10 @@ export default function LoginForm() {
                     <Button type="submit" className="w-full bg-red-700 hover:bg-red-800 cursor-pointer" disabled={isLogin}>
                       Đăng nhập
                     </Button>
-                    <div className="text-center text-black text-sm ">Hoặc tiếp tục với</div>
-                    <div id="googleSignInDiv" className="flex justify-center" />
+                    <div className="text-center text-black text-sm">Hoặc tiếp tục với</div>
+                    <div className="px-4 py-2 flex justify-center">
+                      <div id="googleSignInDiv" />
+                    </div>
                     <div className="text-center text-sm">
                       Chưa có tài khoản?{" "}
                       <Link to="/register" className="text-blue-600">

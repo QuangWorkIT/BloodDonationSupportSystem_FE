@@ -87,12 +87,12 @@ const UrgencyReceiptForm = ({ volunteerIds, setIsUrgentReceiptFormOpen }: Urgent
       )
       const data = response.data
 
-      if (data.data?.[0].isSucceded) {
+      if (data.isSuccess) {
         toast.success('Tạo sự kiện khẩn cấp và liên lạc với tình nguyện viên thành công!')
         // setIsUrgentReceiptFormOpen()
         navigate('/staff/receipt', {replace: true})
       } else {
-        console.log('Error urgent creation ', data.data?.[0])
+        console.log('Error urgent creation ', data.message)
         toast.error('Tạo sự kiện khẩn cấp thất bại!')
       }
     } catch (error) {

@@ -13,8 +13,18 @@ export interface JwtPayload {
 // decode jwt to get payload
 export const decodeJwt = (token: string): JwtPayload | null => {
     try {
-        const payload = token.split('.')[1]
-        return JSON.parse(atob(payload))
+        const payload = token.split('.')[1];
+
+        const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+                .split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+
+        return JSON.parse(jsonPayload);
     } catch (error) {
         console.log("can not decode jwt: ", error)
         return null
