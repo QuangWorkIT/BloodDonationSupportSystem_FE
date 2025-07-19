@@ -6,6 +6,8 @@ import Footer from "@/components/layout/Footer";
 import { Link } from "react-router-dom";
 import UrgentEvents from "../DonationEvent/UrgentEvents";
 import { motion, AnimatePresence } from "framer-motion";
+import vector1 from '@/assets/images/Vector1.png';
+import vector2 from '@/assets/images/Vector2.png';
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -300,8 +302,8 @@ export default function HomePage() {
             >
               <div className={`bg-red-100 p-4 rounded-full min-w-[80px] ${expandedIndex === 0 ? "animate-pulse" : ""}`}>
                 <img
-                  src="src/assets/images/Vector1.png"
-                  alt=""
+                  src={vector1}
+                  alt="Buổi hiến máu đầu tiên"
                   className="w-12 h-12 object-contain"
                   style={{ aspectRatio: "1/1" }}
                 />
@@ -330,8 +332,8 @@ export default function HomePage() {
             >
               <div className={`bg-red-100 p-4 rounded-full min-w-[80px] ${expandedIndex === 1 ? "animate-pulse" : ""}`}>
                 <img
-                  src="src/assets/images/Vector2.png"
-                  alt=""
+                  src={vector2}
+                  alt="Quy trình hiến máu"
                   className="w-12 h-12 object-contain"
                   style={{ aspectRatio: "1/1" }}
                 />
