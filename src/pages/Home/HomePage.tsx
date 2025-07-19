@@ -8,6 +8,15 @@ import UrgentEvents from "../DonationEvent/UrgentEvents";
 import { motion, AnimatePresence } from "framer-motion";
 import vector1 from '@/assets/images/Vector1.png';
 import vector2 from '@/assets/images/Vector2.png';
+import image7 from '@/assets/images/image7.png';
+import image6 from '@/assets/images/image6.png';
+import image5 from '@/assets/images/image5.png';
+import frame1 from '@/assets/images/Frame1.png';
+import frame2 from '@/assets/images/Frame2.png';
+import img18plus from '@/assets/images/18+.png';
+import heart from '@/assets/images/heart.png';
+import schedule from '@/assets/images/schedule.png';
+import virus from '@/assets/images/virus.png';
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -19,21 +28,21 @@ export default function HomePage() {
       title: "Tham gia hiến máu lần đầu tiên, bạn cần biết những gì?",
       description: "",
       buttonText: "Xem tại đây",
-      imageUrl: "src/assets/images/image7.png",
+      imageUrl: image7,
       bgGradient: "bg-gradient-to-r from-red-700 to-red-500",
     },
     {
       title: "Tham gia hiến máu KHẨN",
       description: "Để phục vụ cho nhu cầu truyền máu của người bệnh",
       buttonText: "Tham gia ngay",
-      imageUrl: "src/assets/images/image6.png",
+      imageUrl: image6,
       bgGradient: "bg-gradient-to-r from-red-800 to-red-600",
     },
     {
       title: "TP.HCM hiện đang cần\n2000+ ĐƠN VỊ MÁU",
       description: "Để phục vụ cho cấp cứu và điều trị",
       buttonText: "Đăng kí hiến máu tại đây",
-      imageUrl: "src/assets/images/image5.png",
+      imageUrl: image5,
       bgGradient: "bg-gradient-to-r from-red-900 to-red-700",
     },
   ];
@@ -68,32 +77,32 @@ export default function HomePage() {
   const criterias = [
     {
       text: "Cân nặng: Nam > 45 kg và Nữ > 42 kg",
-      image: "src/assets/images/Frame1.png",
+      image: frame1,
       iconColor: "text-red-500",
     },
     {
       text: "Không nghiện ma túy, rượu bia và các chất kích thích",
-      image: "src/assets/images/Frame2.png",
+      image: frame2,
       iconColor: "text-red-600",
     },
     {
       text: "Người khỏe mạnh trong độ tuổi từ 18 đến 60 tuổi",
-      image: "src/assets/images/18+.png",
+      image: img18plus,
       iconColor: "text-red-700",
     },
     {
       text: "Không mắc bệnh mãn tính hoặc cấp tính về tim mạch, huyết áp, hô hấp, dạ dày...",
-      image: "src/assets/images/heart.png",
+      image: heart,
       iconColor: "text-red-500",
     },
     {
       text: "Thời gian tối thiểu giữa 2 lần hiến máu là 12 tuần đối với cả Nam và Nữ",
-      image: "src/assets/images/schedule.png",
+      image: schedule,
       iconColor: "text-red-600",
     },
     {
       text: "Không mắc hoặc không có các hành vi nguy cơ lây nhiễm HIV, viêm gan B, viêm gan C, và các virus lây qua đường truyền máu",
-      image: "src/assets/images/virus.png",
+      image: virus,
       iconColor: "text-red-700",
     },
   ];
