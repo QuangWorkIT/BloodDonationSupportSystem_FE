@@ -69,7 +69,7 @@ const AccountEdit = () => {
 
     setFormData({
       name: user?.unique_name || "",
-      gender: user?.gender === null ? "" : (user?.gender ? "male" : "female"),
+      gender: user?.gender || false,
       birthDate: user?.dob || null,
       phone: user?.phone || "",
       gmail: user?.gmail || "",
