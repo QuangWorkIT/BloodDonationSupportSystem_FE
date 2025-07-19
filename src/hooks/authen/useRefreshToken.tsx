@@ -5,8 +5,10 @@ function useRefreshToken(): () => Promise<string | null> {
     const refresh = async (): Promise<string | null> => {
         try {
             const res = await authenApi.post('/api/refresh-token');
-            if(res.data)
-                return res.data.token;
+            if(res.data){
+                console.log("Refresh token successfully", res.data);
+                return res.data;
+            } 
             else
                 return null
         } catch (error) {

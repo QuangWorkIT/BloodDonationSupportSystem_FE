@@ -144,7 +144,7 @@ export default function RegisterForm() {
                 </div>
 
                 {/* Contact Info */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-6 py-5">
                   <div className="space-y-3">
                     <Label htmlFor="phone" className="text-base">
                       Số điện thoại<span className="text-red-500"> *</span>
@@ -205,7 +205,7 @@ export default function RegisterForm() {
                 </div>
 
                 {/* Personal Info */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-6 pt-5">
                   <div className="space-y-3">
                     <Label htmlFor="bloodType" className="text-base">
                       Nhóm máu<span className="text-red-500"> *</span>
@@ -255,7 +255,7 @@ export default function RegisterForm() {
                 </div>
 
                 {/* Gender */}
-                <div className="space-y-3">
+                <div className="space-y-3 py-5">
                   <Label className="text-base">
                     Giới tính<span className="text-red-500"> *</span>
                   </Label>
