@@ -43,10 +43,10 @@ export default function BlogPage() {
   }, [sort]);
 
   return (
-    <div className="min-h-screen flex flex-col gap-[50px] bg-linear-to-b from-[#F24333] to-[#DEA2A4]">
+    <div className="min-h-screen flex flex-col gap-[50px] bg-linear-to-b from-[#F24333] to-[#DEA2A4] overflow-x-hidden">
       <BloodDonationNavbar />
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto mt-[120px]">
         {/* Header */}
         <div className="flex flex-col gap-4 justify-center items-center mb-8">
           <motion.h1
