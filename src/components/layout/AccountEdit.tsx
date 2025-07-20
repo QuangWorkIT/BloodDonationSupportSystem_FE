@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";
 import { FaUser, FaVenusMars, FaBirthdayCake, FaPhone, FaEnvelope, FaTint } from "react-icons/fa";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { toast } from "react-toastify";
+import type { AxiosError } from "axios";
 
 
 type FormData = {
@@ -25,10 +27,22 @@ type FormErrors = {
   bloodType: string;
 };
 
+interface UpdateBody {
+  firstName: string,
+  lastName: string,
+  phone: string,
+  gmail: string,
+  password: string,
+  longitude: number,
+  latitude: number,
+  bloodTypeId: number,
+  dob: string,
+  gender: boolean,
+}
 type FormField = keyof FormData;
 
 const AccountEdit = () => {
-  const { user, setUser} = useAuth()
+  const { user, setUser } = useAuth()
   const [hasNotChanged, setHasNotChanged] = useState(true)
 
   //fetch user 
@@ -37,7 +51,7 @@ const AccountEdit = () => {
       try {
         const response = await authenApi.get('/api/users/profile')
         const data = response.data
-                
+
         if (!user)
           return
 
@@ -278,6 +292,50 @@ const AccountEdit = () => {
     }
   };
 
+  const updateGoogleProfile = async (body: UpdateBody) => {
+    try {
+      console.log('Submitting form google with data:', body);
+      const endpoint = '/api/google-update-login';
+      const response = await authenApi.put(
+        endpoint,
+        body,
+      );
+      if (response.data.token) {
+        setShowSuccessModal(true);
+        toast.success('Cập nhật thông tin thành công!');
+      } else {
+        toast.error(response.data.message || 'Cập nhật thông tin thất bại!')
+      }
+    } catch (error) {
+      toast.error('Cập nhật thông tin thất bại!');
+      const err = error as AxiosError
+      if (err) console.log('Error updating profile:', err);
+      else console.log('Error updating profile:', error);
+    }
+  }
+
+  const updateProfile = async (body: UpdateBody) => {
+    try {
+      console.log('Submitting form google with data:', body);
+      const endpoint = '/api/users/profile';
+      const response = await authenApi.put(
+        endpoint,
+        body,
+      );
+      if (response.data.isSuccess) {
+        setShowSuccessModal(true);
+        toast.success('Cập nhật thông tin thành công!');
+      } else {
+        toast.error(response.data.message || 'Cập nhật thông tin thất bại!')
+      }
+    } catch (error) {
+      toast.error('Cập nhật thông tin thất bại!');
+      const err = error as AxiosError
+      if (err) console.log('Error updating profile:', err);
+      else console.log('Error updating profile:', error);
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -307,25 +365,9 @@ const AccountEdit = () => {
         dob: formData.birthDate ? formData.birthDate.toISOString().split('T')[0] : '',
         gender: formData.gender,
       };
-      try {
-        const response = await authenApi.put(
-          '/api/users/profile',
-          body,
-          {
-            headers: {
-              'Content-Type': 'application/json-patch+json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
-        );
-        if (response.data.isSuccess) {
-          setShowSuccessModal(true);
-        } else {
-          alert(response.data.message || 'Cập nhật thông tin thất bại!');
-        }
-      } catch (error) {
-        alert('Cập nhật thông tin thất bại!');
-      }
+
+      user?.phone === null ? updateGoogleProfile(body) : updateProfile(body);
+
     }
   };
 
