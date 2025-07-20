@@ -116,6 +116,9 @@ const RegistrationComponent = () => {
   const [showCancelSuccess, setShowCancelSuccess] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [showDateError, setShowDateError] = useState(false);
+  const [showCancelError, setShowCancelError] = useState(false);
+  const [cancelErrorMessage, setCancelErrorMessage] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [tempVolunteerDate, setTempVolunteerDate] = useState<Date | null>(null);
@@ -217,11 +220,31 @@ const RegistrationComponent = () => {
     }
   };
 
-  const handleConfirmCancel = () => {
-    if (registrationToCancel) {
-      setRegistrations((prev) => prev.filter((reg) => reg.id !== registrationToCancel));
-      closeAllModals();
-      setShowCancelSuccess(true);
+  const handleConfirmCancel = async () => {
+    if (!registrationToCancel) return;
+
+    try {
+      setIsCancelling(true);
+      const response = await authenApi.put<ApiResponse<null>>(
+        `/api/blood-registrations/${registrationToCancel}/cancel-own`
+      );
+
+      if (response.data.isSuccess) {
+        // Remove from local state
+        setRegistrations((prev) => prev.filter((reg) => reg.id !== registrationToCancel));
+        closeAllModals();
+        setShowCancelSuccess(true);
+      } else {
+        setCancelErrorMessage(response.data.message || "Hủy đăng ký thất bại");
+        setShowCancelError(true);
+      }
+    } catch (err) {
+      const error = err as AxiosError<ApiResponse<null>>;
+      const errorMessage = error.response?.data?.message || error.message || "Lỗi khi hủy đăng ký";
+      setCancelErrorMessage(errorMessage);
+      setShowCancelError(true);
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -400,10 +423,15 @@ const RegistrationComponent = () => {
                   <button
                     type="button"
                     onClick={handleConfirmCancel}
-                    className="px-8 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 active:scale-95 transition-all duration-200 flex items-center gap-2"
+                    disabled={isCancelling}
+                    className="px-8 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 active:scale-95 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <FaTrash />
-                    Xác nhận
+                    {isCancelling ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                    ) : (
+                      <FaTrash />
+                    )}
+                    {isCancelling ? "Đang hủy..." : "Xác nhận"}
                   </button>
                 </div>
               </div>
@@ -425,6 +453,13 @@ const RegistrationComponent = () => {
         title="Hủy đăng ký thành công"
         message="Bạn đã hủy đăng ký sự kiện thành công."
         type="success"
+      />
+      <FeedbackModal
+        isOpen={showCancelError}
+        onClose={() => setShowCancelError(false)}
+        title="Hủy đăng ký thất bại"
+        message={cancelErrorMessage}
+        type="error"
       />
     </motion.div>
   );
