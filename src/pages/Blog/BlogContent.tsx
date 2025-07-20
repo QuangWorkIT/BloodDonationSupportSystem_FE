@@ -1,6 +1,6 @@
 import Footer from "@/components/layout/Footer";
 import BloodDonationNavbar from "@/components/layout/Navbar";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FaPaperPlane, FaArrowLeft, FaUser, FaCalendar, FaEdit, FaHeart, FaShare, FaBookmark } from "react-icons/fa";
