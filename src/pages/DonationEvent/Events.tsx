@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/instance";
 import DonationRegisterForm from "./DonationRegisterForm";
 import logo from "@/assets/images/image12.png";
+import { Button } from "@/components/ui/button";
 
 interface Event {
   id: number;
@@ -123,8 +124,8 @@ const Events = () => {
               whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentPage(parseInt(page.toString()))}
               className={`w-10 h-10 rounded-md ${currentPage === parseInt(page.toString())
-                  ? "bg-[#C14B53] text-white cursor-pointer"
-                  : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
+                ? "bg-[#C14B53] text-white cursor-pointer"
+                : "bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer"
                 }`}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -254,8 +255,15 @@ const Events = () => {
 
                       {/* Event Details */}
                       <div className="flex-1">
-                        <h3 className="text-red-700 text-lg font-medium mb-2">{event.title}</h3>
-                        <p className="text-gray-600 mb-1">Địa chỉ của cơ sở y tế</p>
+                        <div className="flex gap-5 items-center mb-2">
+                          <h3 className="text-red-700 text-lg font-medium mb-2">{event.title}</h3>
+                          {event.isUrgent && (
+                            <Button className="bg-[#AA3939] hover:bg-[#ba3f3f] font-bold">
+                              Nguy cấp
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-gray-600 mb-1">Địa chỉ: 387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh</p>
                         <p className="text-gray-600 mb-1">
                           Thời gian hoạt động: <span className="font-semibold text-black">{event.eventTime}</span>, từ 7:00 đến 17:00
                         </p>
