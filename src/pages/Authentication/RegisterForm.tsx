@@ -100,9 +100,13 @@ export default function RegisterForm() {
           copyForm.longitude = geoCoding.longitude;
           copyForm.latitude = geoCoding.latitude;
         } else {
+          copyForm.longitude = 0;
+          copyForm.latitude = 0;
           console.log("Address not found");
         }
       } catch (error) {
+        copyForm.longitude = 0;
+        copyForm.latitude = 0;
         console.log("Geocoding register failed ", error);
       }
       localStorage.setItem('tempUser', JSON.stringify(copyForm))
