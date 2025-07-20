@@ -7,6 +7,7 @@ import { Trash2, Bell } from "lucide-react";
 import { BloodUnit } from "./BloodUnit";
 import { authenApi } from "@/lib/instance";
 import LoadingSpinner from "@/components/layout/Spinner";
+import { Link } from "react-router-dom";
 
 const bloodTypes = [
   { type: "A-", units: 112 },
@@ -118,7 +119,9 @@ export default function Inventory() {
               </div>
             ))}
           </div>
-          <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tạo yêu cầu khẩn cấp</button>
+          <Link to={'/staff/donorsearch'}>
+            <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tạo yêu cầu khẩn cấp</button>
+          </Link>
         </div>
       )}
       {/* End Critical Alerts Section */}
@@ -234,9 +237,8 @@ export default function Inventory() {
           <Button
             key={page}
             variant={page === currentPage ? "outline" : "ghost"}
-            className={`rounded-lg w-10 h-10 p-0 cursor-pointer ${
-              page === currentPage ? "border border-blue-500 text-blue-600 bg-white" : "border border-gray-300 text-gray-600 bg-white"
-            }`}
+            className={`rounded-lg w-10 h-10 p-0 cursor-pointer ${page === currentPage ? "border border-blue-500 text-blue-600 bg-white" : "border border-gray-300 text-gray-600 bg-white"
+              }`}
             onClick={() => handlePageChange(page)}
           >
             {page}

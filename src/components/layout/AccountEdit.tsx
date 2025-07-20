@@ -359,8 +359,8 @@ const AccountEdit = () => {
         phone: formData.phone,
         gmail: formData.gmail,
         password: '', // Not editable in this form
-        longitude: 0, // Not editable in this form
-        latitude: 0,  // Not editable in this form
+        longitude: user?.longitude || 0, // Not editable in this form
+        latitude: user?.latitude || 0,  // Not editable in this form
         bloodTypeId: bloodTypeStringToId(formData.bloodType),
         dob: formData.birthDate ? formData.birthDate.toISOString().split('T')[0] : '',
         gender: formData.gender,

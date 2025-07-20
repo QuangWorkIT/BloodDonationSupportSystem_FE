@@ -12,6 +12,7 @@ import api from '@/lib/instance'
 import type { RecaptchaVerifier } from "firebase/auth";
 import { toast } from 'react-toastify';
 import { AnimatePresence, motion } from "framer-motion";
+import type { AxiosError } from "axios";
 
 const formSchema = z.object({
   phone: z.string().min(10, "Số điện thoại không hợp lệ"),
@@ -89,8 +90,10 @@ export default function LoginForm() {
       navigate(path, { replace: true })
 
     } catch (error) {
-      console.log("Login error:", error);
       toast.error('Đăng nhập thất bại!')
+      const err = error as AxiosError
+      if(err) console.error('Error details:', err);
+      else console.log("Login error:", error);
     }
   };
 
