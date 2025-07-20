@@ -33,6 +33,18 @@ import { getBloodTypeRh, type bloodType } from "@/types/BloodCompatibility"
 interface DonationRegistrationProps {
   eventId: number
   eventTime: string
+  event?: {
+    id: number;
+    title: string;
+    address: string;
+    eventTime: string;
+    bloodType: string;
+    bloodComponent: string;
+    bloodRegisCount: number;
+    maxOfDonor: number;
+    isUrgent: boolean;
+    estimateVolume: number;
+  } | null
   setRegistraionFormOpen: (isOpen: boolean) => void
 }
 
@@ -73,11 +85,13 @@ type FormType = z.infer<typeof formSchema>
 export function DonationRegisterForm({
   eventId,
   eventTime,
+  event,
   setRegistraionFormOpen
 }: DonationRegistrationProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [currentBloodType, setCurrentBloodType] = useState<bloodType | null>(null)
   const [isRegister, setIsRegister] = useState(false)
+  const [registrationError, setRegistrationError] = useState<string | null>(null)
   const navigate = useNavigate()
 
   // Get user data
@@ -142,7 +156,52 @@ export function DonationRegisterForm({
     })
   }, [currentUser, currentBloodType, reset])
 
+  // Check if user's blood type is compatible with urgent event
+  const isBloodTypeCompatible = () => {
+    if (!event?.isUrgent || !currentBloodType || !event.bloodType) {
+      return true; // Not urgent or no blood type info, allow registration
+    }
+
+    const userBloodType = currentBloodType.bloodType + currentBloodType.rh;
+    const eventBloodType = event.bloodType;
+    
+    // If event specifies a specific blood type, user must match
+    if (eventBloodType && eventBloodType !== "A, B, AB, O") {
+      return userBloodType === eventBloodType;
+    }
+    
+    return true; // Event accepts all blood types
+  };
+
+  const getBloodTypeCompatibilityMessage = () => {
+    if (!event?.isUrgent || !currentBloodType || !event.bloodType) {
+      return null;
+    }
+
+    const userBloodType = currentBloodType.bloodType + currentBloodType.rh;
+    const eventBloodType = event.bloodType;
+    
+    if (eventBloodType && eventBloodType !== "A, B, AB, O") {
+      if (userBloodType === eventBloodType) {
+        return `✅ Nhóm máu của bạn (${userBloodType}) phù hợp với yêu cầu (${eventBloodType})`;
+      } else {
+        return `❌ Nhóm máu của bạn (${userBloodType}) không phù hợp với yêu cầu (${eventBloodType})`;
+      }
+    }
+    
+    return `✅ Sự kiện chấp nhận tất cả nhóm máu`;
+  };
+
   const onSubmit = async (values: FormType) => {
+    // Clear previous errors
+    setRegistrationError(null);
+
+    // Check blood type compatibility for urgent events
+    if (!isBloodTypeCompatible()) {
+      setRegistrationError("Bạn không thể đăng ký sự kiện khẩn cấp này vì nhóm máu không phù hợp.");
+      return;
+    }
+
     try {
       setIsRegister(true)
       const response = await authenApi.post(
@@ -155,13 +214,35 @@ export function DonationRegisterForm({
       const data = response.data
       if (data.isSuccess) {
         toast.success('Đăng ký hiến máu thành công!')
+      } else {
+        setRegistrationError(data.message || 'Đăng ký hiến máu thất bại!')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error register ', error)
-      toast.error('Đăng ký hiến máu thất bại!')
+      
+      // Extract specific error message from API response
+      let errorMessage = 'Đăng ký hiến máu thất bại!';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 400) {
+        errorMessage = 'Dữ liệu đăng ký không hợp lệ. Vui lòng kiểm tra lại thông tin.';
+      } else if (error.response?.status === 409) {
+        errorMessage = 'Bạn đã đăng ký sự kiện này rồi.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Bạn không có quyền đăng ký sự kiện này.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Sự kiện không tồn tại hoặc đã bị hủy.';
+      } else if (error.response?.status >= 500) {
+        errorMessage = 'Lỗi hệ thống. Vui lòng thử lại sau.';
+      }
+      
+      setRegistrationError(errorMessage);
     } finally {
       setIsRegister(false)
-      navigate('/home', { replace: true })
+      if (!registrationError) {
+        navigate('/home', { replace: true })
+      }
     }
   }
 
@@ -187,6 +268,48 @@ export function DonationRegisterForm({
       {/* Form content */}
       <Form {...form}>
         <form className="px-2 md:px-[20px]" onSubmit={form.handleSubmit(onSubmit)}>
+          {/* Blood Type Compatibility Warning for Urgent Events */}
+          {event?.isUrgent && currentBloodType && (
+            <div className="mb-4 p-3 rounded-lg border-l-4 bg-blue-50 border-blue-400">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800">
+                    Sự kiện khẩn cấp - Yêu cầu nhóm máu cụ thể
+                  </h3>
+                  <div className="mt-1 text-sm text-blue-700">
+                    {getBloodTypeCompatibilityMessage()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Registration Error Display */}
+          {registrationError && (
+            <div className="mb-4 p-3 rounded-lg border-l-4 bg-red-50 border-red-400">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    Lỗi đăng ký
+                  </h3>
+                  <div className="mt-1 text-sm text-red-700">
+                    {registrationError}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <FormField
             control={form.control}
             name="donorName"
@@ -379,13 +502,31 @@ export function DonationRegisterForm({
             )}
           />
 
-          <div className="flex justify-center md:justify-start">
+          {/* Submit Button */}
+          <div className="flex justify-end gap-4 mt-8">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setRegistraionFormOpen(false)}
+              className="px-6 py-2"
+            >
+              Hủy
+            </Button>
             <Button
               type="submit"
-              disabled={isRegister}
-              className="text-[15px] font-bold bg-[#BA1B1D] rounded-[10px] w-[120px] mb-4 md:mb-[20px] hover:cursor-pointer hover:bg-[#9F1214]"
+              disabled={isRegister || !isBloodTypeCompatible()}
+              className={`px-6 py-2 ${!isBloodTypeCompatible() ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#C14B53] hover:bg-[#a83a42]'}`}
             >
-              {isRegister ? "Đang gửi..." : "Gửi"}
+              {isRegister ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  Đang đăng ký...
+                </div>
+              ) : !isBloodTypeCompatible() ? (
+                'Nhóm máu không phù hợp'
+              ) : (
+                'Đăng ký hiến máu'
+              )}
             </Button>
           </div>
         </form>
