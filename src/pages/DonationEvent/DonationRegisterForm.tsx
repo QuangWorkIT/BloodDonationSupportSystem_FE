@@ -241,7 +241,7 @@ export function DonationRegisterForm({
     } finally {
       setIsRegister(false)
       if (!registrationError) {
-        navigate('/home', { replace: true })
+      navigate('/home', { replace: true })
       }
     }
   }
