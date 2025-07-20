@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaTint } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
 type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
@@ -202,74 +202,77 @@ const BloodInformation = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Navigation Toggle */}
-      <div className="flex justify-center mb-8">
-        <motion.div
-          className="flex bg-white rounded-full shadow-sm border border-gray-200 overflow-hidden"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setActiveTab("blood-types")}
-            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
-              activeTab === "blood-types" ? "text-white" : "text-gray-700 hover:bg-gray-50"
-            }`}
+      {/* Animated Gradient Card for Toggles */}
+      <div className="max-w-3xl mx-auto -mt-12">
+        <div className="flex justify-center">
+          <motion.div
+            className="flex rounded-full overflow-hidden border border-gray-300 bg-white"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            {activeTab === "blood-types" && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
-                initial={false}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
-            )}
-            <span className="relative z-10">Nhóm Máu</span>
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setActiveTab("blood-types")}
+              className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative transition-colors ${
+                activeTab === "blood-types" ? "text-white" : "text-gray-700 bg-[#f5d6d7] hover:bg-white/30 hover:backdrop-blur-sm"
+              }`}
+            >
+              {activeTab === "blood-types" && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">Nhóm Máu</span>
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setActiveTab("compatibility")}
-            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
-              activeTab === "compatibility" ? "text-white" : "text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            {activeTab === "compatibility" && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
-                initial={false}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
-            )}
-            <span className="relative z-10">Tương Thích</span>
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setActiveTab("compatibility")}
+              className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative transition-colors ${
+                activeTab === "compatibility" ? "text-white" : "text-gray-700 bg-[#f5d6d7] hover:bg-white/30 hover:backdrop-blur-sm"
+              }`}
+            >
+              {activeTab === "compatibility" && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">Tương Thích</span>
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setActiveTab("donation-process")}
-            className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
-              activeTab === "donation-process" ? "text-white" : "text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            {activeTab === "donation-process" && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
-                initial={false}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
-            )}
-            <span className="relative z-10">Quy Trình Hiến</span>
-          </motion.button>
-        </motion.div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setActiveTab("donation-process")}
+              className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative transition-colors ${
+                activeTab === "donation-process" ? "text-white" : "text-gray-700 bg-[#f5d6d7] hover:bg-white/30 hover:backdrop-blur-sm"
+              }`}
+            >
+              {activeTab === "donation-process" && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">Quy Trình Hiến</span>
+            </motion.button>
+          </motion.div>
+        </div>
       </div>
 
       {/* Conditional Rendering of Content */}
+      <div className="mt-8">
       <AnimatePresence mode="wait">
         {/* Blood types */}
         {activeTab === "blood-types" && (
@@ -315,18 +318,32 @@ const BloodInformation = () => {
             </div>
 
             <h3 className="text-xl font-semibold mb-6 text-[#C14B53]">Phân Bố Nhóm Máu</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {bloodTypeDistribution.map((item) => (
-                <motion.div
-                  key={item.type}
-                  whileHover={{ y: -5, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }}
-                  className="bg-white rounded-lg shadow-md p-6 border border-gray-100 text-center"
-                >
-                  <div className="text-3xl font-bold text-[#C14B53] mb-2">{item.type}</div>
-                  <div className="text-2xl font-semibold mb-1">{item.percentage}</div>
-                  <div className="text-gray-600 text-sm">{item.description}</div>
-                </motion.div>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {bloodTypeDistribution.map((item, idx) => {
+                // Highlight rare/important types
+                const isRare = ["AB-", "B-", "O-"].includes(item.type);
+                const isUniversal = item.type === "O-";
+                const isUniversalRecipient = item.type === "AB+";
+                return (
+                  <motion.div
+                    key={item.type}
+                    whileHover={{ y: -8, scale: 1.04, boxShadow: "0 8px 32px 0 rgba(193,75,83,0.15)" }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.07 }}
+                    className={`relative bg-white rounded-2xl shadow-lg p-6 border border-gray-100 text-center flex flex-col items-center gap-2 ${isRare ? 'ring-2 ring-[#C14B53]/40' : ''}`}
+                  >
+                    <span className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-2 ${isUniversal ? 'bg-[#C14B53]/90' : isUniversalRecipient ? 'bg-blue-200' : 'bg-gray-100'}`}>
+                      <FaTint className={`text-2xl ${isUniversal ? 'text-white' : isUniversalRecipient ? 'text-[#C14B53]' : 'text-[#C14B53]/70'}`} />
+                    </span>
+                    <span className={`px-4 py-1 rounded-full font-bold text-lg mb-1 ${isUniversal ? 'bg-[#C14B53] text-white' : isUniversalRecipient ? 'bg-blue-100 text-[#C14B53]' : 'bg-gray-50 text-[#C14B53]'}`}>{item.type}</span>
+                    <span className="text-2xl font-extrabold text-gray-900 mb-1">{item.percentage}</span>
+                    <span className="text-gray-500 text-sm font-medium">{item.description}</span>
+                    {isUniversal && <span className="absolute top-2 right-2 bg-[#C14B53] text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow">Phổ quát</span>}
+                    {isUniversalRecipient && <span className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow">Nhận mọi loại</span>}
+                  </motion.div>
+                );
+              })}
             </div>
           </motion.div>
         )}
@@ -350,8 +367,8 @@ const BloodInformation = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setCompatibilityType("whole-blood")}
-                  className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
-                    compatibilityType === "whole-blood" ? "text-white" : "text-gray-700 hover:bg-gray-50"
+                  className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative transition-colors ${
+                    compatibilityType === "whole-blood" ? "text-white" : "text-gray-700 hover:bg-white/30 hover:backdrop-blur-sm"
                   }`}
                 >
                   {compatibilityType === "whole-blood" && (
@@ -369,8 +386,8 @@ const BloodInformation = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setCompatibilityType("blood-component")}
-                  className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative ${
-                    compatibilityType === "blood-component" ? "text-white" : "text-gray-700 hover:bg-gray-50"
+                  className={`flex-1 px-6 py-2 text-sm font-medium cursor-pointer relative transition-colors ${
+                    compatibilityType === "blood-component" ? "text-white" : "text-gray-700 hover:bg-white/30 hover:backdrop-blur-sm"
                   }`}
                 >
                   {compatibilityType === "blood-component" && (
@@ -711,6 +728,7 @@ const BloodInformation = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 };
