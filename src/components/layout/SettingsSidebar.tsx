@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { FaUser, FaBell, FaSync, FaSignOutAlt, FaTrash, FaCog } from "react-icons/fa";
+import { FaUser, FaBell, FaSync, FaSignOutAlt, FaTrash, FaCog, FaUndo } from "react-icons/fa";
 
 // Types for Feedback Modal
 type FeedbackType = "info" | "success" | "error" | "warning";
@@ -249,6 +249,13 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
       {/* Actions Card */}
       <div className={`${isMobile ? 'px-4 pb-4' : 'px-8 pb-8'}`}>
         <div className="flex flex-col gap-3">
+          <button
+            onClick={() => navigate('/home')}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 transition cursor-pointer text-base"
+            aria-label="Quay lại trang chủ"
+          >
+            <FaUndo /> Quay lại trang chủ
+          </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#C14B53] text-white font-semibold hover:bg-[#a83a42] focus:outline-none focus:ring-2 focus:ring-[#C14B53] transition cursor-pointer text-base"

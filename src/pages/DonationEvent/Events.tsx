@@ -27,6 +27,7 @@ const Events = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [currentEventId, setCurrentEventId] = useState(0);
   const [currentEventTime, setCurrentEventTime] = useState("");
+  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [isRegistrationFormOpen, setRegistraionFormOpen] = useState(false);
@@ -199,7 +200,12 @@ const Events = () => {
 
       {/* Conditional Rendering of Events List or Volunteer Form */}
       {isRegistrationFormOpen ? (
-        <DonationRegisterForm eventId={currentEventId} eventTime={currentEventTime} setRegistraionFormOpen={setRegistraionFormOpen} />
+        <DonationRegisterForm 
+          eventId={currentEventId} 
+          eventTime={currentEventTime} 
+          event={currentEvent}
+          setRegistraionFormOpen={setRegistraionFormOpen} 
+        />
       ) : (
         <AnimatePresence mode="wait">
           {activeTab === "donation-events" ? (
@@ -270,6 +276,13 @@ const Events = () => {
                         <p className="text-gray-600">
                           Ưu tiên người hiến có nhóm máu: <span className="font-semibold text-black">{event.bloodType ? event.bloodType : "A, B, AB, O"}</span>
                         </p>
+                        {event.isUrgent && event.bloodType && event.bloodType !== "A, B, AB, O" && (
+                          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                            <p className="text-red-700 text-sm font-medium">
+                              ⚠️ Sự kiện khẩn cấp chỉ chấp nhận nhóm máu: <span className="font-bold">{event.bloodType}</span>
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Registration */}
@@ -287,6 +300,7 @@ const Events = () => {
                           onClick={() => {
                             setCurrentEventTime(event.eventTime);
                             setCurrentEventId(event.id);
+                            setCurrentEvent(event);
                             setRegistraionFormOpen(true);
                           }}
                         >
