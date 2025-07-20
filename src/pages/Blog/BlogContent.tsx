@@ -3,7 +3,16 @@ import BloodDonationNavbar from "@/components/layout/Navbar";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { FaPaperPlane, FaArrowLeft, FaUser, FaCalendar, FaEdit, FaHeart, FaShare, FaBookmark } from "react-icons/fa";
+import {
+  FaPaperPlane,
+  FaArrowLeft,
+  FaUser,
+  FaCalendar,
+  FaEdit,
+  FaHeart,
+  FaShare,
+  FaBookmark,
+} from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/instance";
 import LoadingSpinner from "@/components/layout/Spinner";
@@ -25,15 +34,21 @@ interface Blog {
 interface Comment {
   userId: number;
   text: string;
-  createdAt: string;
+  createAt: string;
   member: string;
 }
 
 // Helper function to safely format dates
 function safeFormatDate(dateString: string | undefined, formatStr: string) {
-  if (!dateString) return "Ngày không hợp lệ";
+  if (!dateString) {
+    console.log(dateString);
+    return "Ngày không hợp lệ";
+  }
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "Ngày không hợp lệ";
+  if (isNaN(date.getTime())) {
+    console.log(date);
+    return "Ngày không hợp lệ";
+  }
   return format(date, formatStr);
 }
 
@@ -159,8 +174,12 @@ export default function BlogContent() {
           <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <FaUser className="w-12 h-12 text-red-500" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Bài viết không tồn tại</h1>
-          <p className="text-gray-600 mb-8">Bài viết này có thể đã bị xóa hoặc không tồn tại.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Bài viết không tồn tại
+          </h1>
+          <p className="text-gray-600 mb-8">
+            Bài viết này có thể đã bị xóa hoặc không tồn tại.
+          </p>
           <Link to="/blogs">
             <Button className="bg-[#C14B53] hover:bg-[#a83a42] text-white px-6 py-3 rounded-xl">
               <FaArrowLeft className="mr-2" />
@@ -183,7 +202,10 @@ export default function BlogContent() {
           transition={{ duration: 0.5 }}
         >
           <Link to="/blogs">
-            <Button variant="ghost" className="text-gray-600 hover:text-[#C14B53] mb-6 cursor-pointer">
+            <Button
+              variant="ghost"
+              className="text-gray-600 hover:text-[#C14B53] mb-6 cursor-pointer"
+            >
               <FaArrowLeft className="mr-2" />
               Quay lại trang blog
             </Button>
@@ -200,9 +222,9 @@ export default function BlogContent() {
         >
           {/* Hero Image */}
           <div className="relative h-64 md:h-80 overflow-hidden">
-            <img 
-              src={image} 
-              alt={blog.title} 
+            <img
+              src={image}
+              alt={blog.title}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
@@ -222,18 +244,27 @@ export default function BlogContent() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-6 border-b border-gray-100">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
-                  <img src={avatar} alt="Author" className="w-10 h-10 rounded-full" />
+                  <img
+                    src={avatar}
+                    alt="Author"
+                    className="w-10 h-10 rounded-full"
+                  />
                   <div>
                     <p className="font-medium text-gray-900">{blog.author}</p>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <FaCalendar className="w-3 h-3" />
-                        <span>{safeFormatDate(blog.createAt, "dd/MM/yyyy")}</span>
+                        <span>
+                          {safeFormatDate(blog.createAt, "dd/MM/yyyy")}
+                        </span>
                       </div>
                       {blog.lastUpdate && (
                         <div className="flex items-center gap-1">
                           <FaEdit className="w-3 h-3" />
-                          <span>Cập nhật: {safeFormatDate(blog.lastUpdate, "dd/MM/yyyy")}</span>
+                          <span>
+                            Cập nhật:{" "}
+                            {safeFormatDate(blog.lastUpdate, "dd/MM/yyyy")}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -247,18 +278,30 @@ export default function BlogContent() {
                   variant="ghost"
                   size="sm"
                   onClick={handleLike}
-                  className={`flex items-center gap-2 ${isLiked ? 'text-red-500' : 'text-gray-500'} cursor-pointer`}
+                  className={`flex items-center gap-2 ${
+                    isLiked ? "text-red-500" : "text-gray-500"
+                  } cursor-pointer`}
                 >
-                  <FaHeart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''} cursor-pointer`} />
+                  <FaHeart
+                    className={`w-4 h-4 ${
+                      isLiked ? "fill-current" : ""
+                    } cursor-pointer`}
+                  />
                   <span className="hidden sm:inline cursor-pointer">Thích</span>
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleBookmark}
-                  className={`flex items-center gap-2 ${isBookmarked ? 'text-blue-500' : 'text-gray-500'} cursor-pointer`}
+                  className={`flex items-center gap-2 ${
+                    isBookmarked ? "text-blue-500" : "text-gray-500"
+                  } cursor-pointer`}
                 >
-                  <FaBookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''} cursor-pointer`} />
+                  <FaBookmark
+                    className={`w-4 h-4 ${
+                      isBookmarked ? "fill-current" : ""
+                    } cursor-pointer`}
+                  />
                   <span className="hidden sm:inline cursor-pointer">Lưu</span>
                 </Button>
                 <Button
@@ -268,7 +311,9 @@ export default function BlogContent() {
                   className="flex items-center gap-2 text-gray-500 cursor-pointer"
                 >
                   <FaShare className="w-4 h-4 cursor-pointer" />
-                  <span className="hidden sm:inline cursor-pointer">Chia sẻ</span>
+                  <span className="hidden sm:inline cursor-pointer">
+                    Chia sẻ
+                  </span>
                 </Button>
               </div>
             </div>
@@ -276,7 +321,7 @@ export default function BlogContent() {
             {/* Article Body */}
             <div className="prose prose-lg max-w-none">
               <div className="text-gray-700 leading-relaxed text-base md:text-lg space-y-6">
-                {blog.content.split('\n').map((paragraph, index) => (
+                {blog.content.split("\n").map((paragraph, index) => (
                   <p key={index} className="mb-4">
                     {paragraph}
                   </p>
@@ -304,9 +349,15 @@ export default function BlogContent() {
 
           {/* Comment Form */}
           <div className="mb-8 p-6 bg-gray-50 rounded-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Thêm bình luận</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Thêm bình luận
+            </h3>
             <div className="flex gap-4">
-              <img src={avatar} alt="Your avatar" className="w-12 h-12 rounded-full flex-shrink-0 cursor-pointer" />
+              <img
+                src={avatar}
+                alt="Your avatar"
+                className="w-12 h-12 rounded-full flex-shrink-0 cursor-pointer"
+              />
               <div className="flex-1">
                 <textarea
                   value={newComment}
@@ -339,15 +390,23 @@ export default function BlogContent() {
                   transition={{ duration: 0.3, delay: idx * 0.1 }}
                   className="flex gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200"
                 >
-                  <img src={avatar} alt="User avatar" className="w-10 h-10 rounded-full flex-shrink-0 cursor-pointer" />
+                  <img
+                    src={avatar}
+                    alt="User avatar"
+                    className="w-10 h-10 rounded-full flex-shrink-0 cursor-pointer"
+                  />
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-semibold text-gray-900">{comment.member}</h4>
+                      <h4 className="font-semibold text-gray-900">
+                        {comment.member}
+                      </h4>
                       <span className="text-sm text-gray-500">
-                        {safeFormatDate(comment.createdAt, "dd/MM/yyyy HH:mm")}
+                        {safeFormatDate(comment.createAt, "dd/MM/yyyy HH:mm")}
                       </span>
                     </div>
-                    <p className="text-gray-700 leading-relaxed">{comment.text}</p>
+                    <p className="text-gray-700 leading-relaxed">
+                      {comment.text}
+                    </p>
                   </div>
                 </motion.div>
               ))
@@ -356,8 +415,12 @@ export default function BlogContent() {
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FaUser className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Chưa có bình luận nào</h3>
-                <p className="text-gray-600">Hãy là người đầu tiên chia sẻ suy nghĩ của bạn!</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Chưa có bình luận nào
+                </h3>
+                <p className="text-gray-600">
+                  Hãy là người đầu tiên chia sẻ suy nghĩ của bạn!
+                </p>
               </div>
             )}
           </div>
