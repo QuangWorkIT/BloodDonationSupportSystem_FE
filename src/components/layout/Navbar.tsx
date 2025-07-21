@@ -65,10 +65,10 @@ export default function BloodDonationNavbar() {
   return (
     <nav
       className={`fixed left-1/2 top-6 z-50 transition-all duration-300 mb-10
-        bg-white/10 backdrop-blur-xl border border-white/20
+        bg-[radial-gradient(circle,_hsla(0,_0%,_77%,_1)_0%,_hsla(352,_53%,_54%,_1)_100%)] backdrop-blur-xl border border-white/20
         ${scrolled
           ? 'max-w-5xl w-[98vw] py-2 px-6 h-[60px] shadow-xl bg-white/80 border-gray-100'
-          : 'max-w-6xl w-[99vw] py-8 px-16 h-[100px] shadow-md'}
+          : 'max-w-6xl w-[99vw] py-8 px-16 h-[70px] shadow-md'}
         rounded-2xl -translate-x-1/2 flex items-center justify-between
       `}
       style={{
@@ -78,10 +78,10 @@ export default function BloodDonationNavbar() {
     >
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 focus:outline-none cursor-pointer" tabIndex={0} aria-label="Trang chủ">
-        <div className="w-10 h-10 bg-[#C14B53] rounded-full flex items-center justify-center">
+        <div className="w-10 h-10 bg-[#C14B53] rounded-full flex items-center justify-center border-2 border-white/30">
             <span className="text-white font-bold text-xs">BD</span>
           </div>
-        <span className={`ml-2 text-[#C14B53] font-bold text-lg drop-shadow-sm transition-all duration-300 ${scrolled ? 'hidden' : 'hidden md:inline'}`}>Blood Donation</span>
+        <span className={`ml-2 text-white font-bold text-lg drop-shadow-sm transition-all duration-300 ${scrolled ? 'hidden' : 'hidden md:inline'}`}>Blood Donation</span>
         </Link>
       {/* Nav Links */}
       <div className={`hidden md:flex flex-1 justify-center items-center gap-2 transition-all duration-300 ${scrolled ? 'gap-6' : ''}`}>
@@ -89,10 +89,10 @@ export default function BloodDonationNavbar() {
           <Link
             key={item.id}
             to={item.href}
-            className={`transition font-semibold text-base flex items-center justify-center cursor-pointer drop-shadow-sm
+            className={`transition-all duration-200 font-semibold text-base flex items-center justify-center cursor-pointer drop-shadow-sm
               ${scrolled
-                ? `w-14 h-14 rounded-full ${activeItem === item.id ? 'bg-[#C14B53] text-white' : 'bg-[#F8E6E9] text-[#C14B53]'}`
-                : `px-4 py-2 rounded-full ${activeItem === item.id ? 'bg-[#C14B53] text-white shadow-lg ring-2 ring-[#C14B53]/40' : 'text-[#C14B53] hover:bg-[#C14B53]/10 hover:text-[#a83a42]'}`
+                ? `px-3 py-2 rounded-[10px] hover:scale-110 ${activeItem === item.id ? 'bg-[#C14B53] text-white' : 'bg-[#F8E6E9] text-[#C14B53]'}`
+                : `px-4 py-2 rounded-[10px] text-white ${activeItem === item.id ? 'bg-[#C14B53] text-white shadow-lg ring-2 ring-[#C14B53]/40' : 'text-[#C14B53] hover:bg-white/30 hover:text-[#a83a42]'}`
             }`}
             style={{ textShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
             tabIndex={0}
@@ -108,7 +108,7 @@ export default function BloodDonationNavbar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-              className="w-10 h-10 bg-[#C14B53] rounded-full flex items-center justify-center hover:bg-[#a83a42] focus:outline-none focus:ring-2 focus:ring-[#C14B53] relative group cursor-pointer transition drop-shadow-sm"
+              className="w-10 h-10 bg-[#C14B53] border-2 border-white/30 rounded-full flex items-center justify-center hover:bg-[#a83a42] focus:outline-none focus:ring-2 focus:ring-[#C14B53] relative group cursor-pointer transition drop-shadow-sm"
                   aria-label={profileLabel}
                   tabIndex={0}
                 >
@@ -133,7 +133,7 @@ export default function BloodDonationNavbar() {
                         </div>
                         <div className="flex flex-col">
                       <span className="font-semibold text-[#C14B53] text-base">{user?.unique_name || 'Tài khoản'}</span>
-                      {user?.gmail && <span className="text-xs text-gray-500">{user.gmail}</span>}
+                      {user?.gmail && <span className="text-xs text-gray-500 break-words w-[150px]">{user.gmail}</span>}
                         </div>
                       </div>
                       <Link

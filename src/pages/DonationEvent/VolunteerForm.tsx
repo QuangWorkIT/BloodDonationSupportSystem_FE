@@ -2,7 +2,6 @@ import { useState, type ChangeEvent, type FormEvent } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { X } from "lucide-react"
 import { authenApi } from "@/lib/instance"
 import { toast } from "react-toastify"
 import type { AxiosError } from "axios"
@@ -162,12 +161,6 @@ export default function VolunteerForm() {
         <h1 className="text-xl md:text-2xl font-normal text-black">
           Đơn đăng ký hiến máu tình nguyện
         </h1>
-        <button
-          className="text-gray-500 hover:text-gray-700 cursor-pointer"
-          aria-label="Đóng form"
-        >
-          <X size={20} />
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
@@ -195,7 +188,7 @@ export default function VolunteerForm() {
         {/* Height and Weight */}
         <div className="flex flex-col md:flex-row gap-4 mb-4 md:mb-[40px]">
           <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <Label htmlFor="height" className="text-sm md:text-base w-full md:w-1/4">
+            <Label htmlFor="height" className="text-sm md:text-base w-full">
               Chiều cao (m)
             </Label>
             <div className="flex-1">
@@ -204,7 +197,7 @@ export default function VolunteerForm() {
                 type="number"
                 step="0.01"
                 placeholder="Nhập chiều cao"
-                className="py-2 text-sm md:text-base bg-[#F4F5F8] h-10 md:h-[40px]"
+                className="py-2 text-sm md:text-base bg-[#F4F5F8] h-10 md:h-10 md:w-[200px]"
                 value={formData.height}
                 onChange={handleChange}
               />
@@ -212,7 +205,7 @@ export default function VolunteerForm() {
           </div>
 
           <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <Label htmlFor="weight" className="text-sm md:text-base w-full md:w-1/4">
+            <Label htmlFor="weight" className="text-sm md:text-base w-full">
               Cân nặng (kg)<span className="text-red-500"> *</span>
             </Label>
             <div className="flex-1">
@@ -220,7 +213,7 @@ export default function VolunteerForm() {
                 id="weight"
                 type="number"
                 placeholder="Nhập cân nặng"
-                className="py-2 text-sm md:text-base bg-[#F4F5F8] h-10 md:h-[40px]"
+                className="py-2 text-sm md:text-base bg-[#F4F5F8] h-10 md:h-10 md:w-[200px]"
                 value={formData.weight}
                 onChange={handleChange}
               />
@@ -268,8 +261,8 @@ export default function VolunteerForm() {
         {/* Available Dates */}
         <div className="space-y-3 mb-4 md:mb-[40px]">
           <div className="flex flex-col md:flex-row gap-2 md:gap-4">
-            <Label className="text-sm md:text-base w-full md:w-1/4">
-              Ngày có thể hiến
+            <Label className="text-sm md:text-base w-full md:w-1/4 flex flex-col items-start justify-center">
+              <p>Ngày có thể hiến</p>
               <p className="text-red-500 text-xs md:text-sm">*Tối đa 1 năm</p>
             </Label>
             <div className="flex-1 space-y-2">
@@ -394,20 +387,13 @@ export default function VolunteerForm() {
         </div>
 
         {/* Buttons */}
-        <div className="flex flex-col md:flex-row gap-2 md:gap-4 pt-4 md:pt-6">
+        <div className="flex flex-col md:flex-row md:gap-4 pt-4 md:pt-2">
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 md:px-8 py-2 text-sm md:text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer"
+            className="px-4 md:px-10 py-2 text-sm md:text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer"
           >
             {isSubmitting ? "Đang gửi..." : "Gửi"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="px-4 md:px-8 py-2 text-sm md:text-base rounded-full bg-[#FBA3A5] hover:bg-[#E99294] text-white border-[#FBA3A5] cursor-pointer"
-          >
-            Hủy
           </Button>
         </div>
       </form>

@@ -30,6 +30,7 @@ export default function HomePage() {
       buttonText: "Xem tại đây",
       imageUrl: image7,
       bgGradient: "bg-gradient-to-r from-red-700 to-red-500",
+      path: "/bloodinfo"
     },
     {
       title: "Tham gia hiến máu KHẨN",
@@ -37,6 +38,7 @@ export default function HomePage() {
       buttonText: "Tham gia ngay",
       imageUrl: image6,
       bgGradient: "bg-gradient-to-r from-red-800 to-red-600",
+      path: "/events"
     },
     {
       title: "TP.HCM hiện đang cần\n2000+ ĐƠN VỊ MÁU",
@@ -44,6 +46,7 @@ export default function HomePage() {
       buttonText: "Đăng kí hiến máu tại đây",
       imageUrl: image5,
       bgGradient: "bg-gradient-to-r from-red-900 to-red-700",
+      path: "/events"
     },
   ];
 
@@ -253,18 +256,19 @@ export default function HomePage() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ delay: 0.2, duration: 0.8, ease: [0.77, 0, 0.175, 1] }}
                 >
-                  <Button className="bg-white text-[#C14B53] hover:bg-gray-100 font-bold py-6 px-8 rounded-full shadow-2xl transition-all hover:scale-105 text-lg">
-                    {slides[currentSlide].buttonText}
-                  </Button>
+                  <Link to={slides[currentSlide].path}>
+                    <Button className="bg-white text-[#C14B53] hover:bg-gray-100 font-bold py-6 px-8 rounded-full shadow-2xl transition-all hover:scale-105 text-lg">
+                      {slides[currentSlide].buttonText}
+                    </Button>
+                  </Link>
                 </motion.div>
                 <div className="flex gap-3 mt-8">
                   {slides.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentSlide(index)}
-                      className={`h-2 w-2 sm:h-3 sm:w-3 rounded-full transition-all ${
-                        currentSlide === index ? "bg-white w-6" : "bg-white/50"
-                      }`}
+                      className={`h-2 w-2 sm:h-3 sm:w-3 rounded-full transition-all ${currentSlide === index ? "bg-white w-6" : "bg-white/50"
+                        }`}
                     />
                   ))}
                 </div>
@@ -403,7 +407,7 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.7 }}
         >
-          <UrgentEvents/>
+          <UrgentEvents />
         </motion.div>
 
         {/* Blood Donation Criteria Section - Responsive Improvements */}
@@ -477,9 +481,8 @@ export default function HomePage() {
                   >
                     <h3 className="text-base sm:text-lg font-semibold text-red-700">{note.title}</h3>
                     <ChevronDown
-                      className={`w-5 h-5 text-red-600 transition-transform duration-200 ${
-                        expandedIndex === index ? "rotate-180" : ""
-                      }`}
+                      className={`w-5 h-5 text-red-600 transition-transform duration-200 ${expandedIndex === index ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
 

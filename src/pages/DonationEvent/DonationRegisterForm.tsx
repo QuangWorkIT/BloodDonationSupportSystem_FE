@@ -29,6 +29,8 @@ import BloodTypeSelect, { BloodTypeSelectRh } from "../../components/layout/Bloo
 import type { User } from "@/types/User"
 import { authenApi } from "@/lib/instance"
 import { getBloodTypeRh, type bloodType } from "@/types/BloodCompatibility"
+import { useAuth } from "@/hooks/authen/AuthContext"
+import { reverseGeoCode } from "@/utils/gecoding"
 
 interface DonationRegistrationProps {
   eventId: number
@@ -54,9 +56,9 @@ const formSchema = z.object({
     .min(1, { message: "Tên người dùng không được để trống" })
     .max(50, { message: "Tên không hợp lệ" }),
 
-    address: z.string()
-        .min(1, { message: "Cần điền địa chỉ" })
-        .max(200, { message: "Địa chỉ không hợp lệ" }),
+  address: z.string()
+    .min(1, { message: "Cần điền địa chỉ" })
+    .max(200, { message: "Địa chỉ không hợp lệ" }),
 
   lastDonation: z.date({
     required_error: "Cần điền thời gian",
@@ -88,6 +90,7 @@ export function DonationRegisterForm({
   event,
   setRegistraionFormOpen
 }: DonationRegistrationProps) {
+  const { user } = useAuth()
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [currentBloodType, setCurrentBloodType] = useState<bloodType | null>(null)
   const [isRegister, setIsRegister] = useState(false)
@@ -97,24 +100,34 @@ export function DonationRegisterForm({
   // Get user data
   useEffect(() => {
     const getUser = async () => {
+      if(!user) return
       try {
         const response = await authenApi.get('/api/users/profile')
         const data = response.data
 
         if (data.isSuccess) {
-          const user: User = {
-              unique_name: data.data.name || "",
-              phone: data.data.phone || "",
-              gmail: data.data.gmail || "",
-              bloodType: data.data.bloodType || "",
-              // eslint-disable-next-line no-constant-binary-expression
-              dob: new Date(data.data.dob) || null,
-              gender: data.data.gender || false,
-              address: data.data.address || "",
-              id: "",
-              role: "Admin"
-          }
-          const bloodType = getBloodTypeRh(user.bloodType || "")
+          // const user: User = {
+          //   unique_name: data.data.name || "",
+          //   phone: data.data.phone || "",
+          //   gmail: data.data.gmail || "",
+          //   bloodType: data.data.bloodType || "",
+          //   // eslint-disable-next-line no-constant-binary-expression
+          //   dob: new Date(data.data.dob) || null,
+          //   gender: data.data.gender || false,
+          //   address: data.data.address || "",
+          //   id: "",
+          //   role: "Admin"
+          // }
+
+          user.unique_name = data.data.name
+          user.phone = data.data.phone
+          user.gmail = data.data.gmail
+          user.bloodType = data.data.bloodType
+          user.dob = data.data?.dob && new Date(data.data.dob)
+          user.gender = data.data.gender
+          user.address = await reverseGeoCode(data.data.latitude, data.data.longitude)
+
+          const bloodType = getBloodTypeRh(data.data.bloodType || "")
           setCurrentUser(user)
           setCurrentBloodType(bloodType)
         }
@@ -164,12 +177,12 @@ export function DonationRegisterForm({
 
     const userBloodType = currentBloodType.bloodType + currentBloodType.rh;
     const eventBloodType = event.bloodType;
-    
+
     // If event specifies a specific blood type, user must match
     if (eventBloodType && eventBloodType !== "A, B, AB, O") {
       return userBloodType === eventBloodType;
     }
-    
+
     return true; // Event accepts all blood types
   };
 
@@ -180,7 +193,7 @@ export function DonationRegisterForm({
 
     const userBloodType = currentBloodType.bloodType + currentBloodType.rh;
     const eventBloodType = event.bloodType;
-    
+
     if (eventBloodType && eventBloodType !== "A, B, AB, O") {
       if (userBloodType === eventBloodType) {
         return `✅ Nhóm máu của bạn (${userBloodType}) phù hợp với yêu cầu (${eventBloodType})`;
@@ -188,7 +201,7 @@ export function DonationRegisterForm({
         return `❌ Nhóm máu của bạn (${userBloodType}) không phù hợp với yêu cầu (${eventBloodType})`;
       }
     }
-    
+
     return `✅ Sự kiện chấp nhận tất cả nhóm máu`;
   };
 
@@ -219,10 +232,10 @@ export function DonationRegisterForm({
       }
     } catch (error: any) {
       console.error('Error register ', error)
-      
+
       // Extract specific error message from API response
       let errorMessage = 'Đăng ký hiến máu thất bại!';
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.status === 400) {
@@ -236,12 +249,12 @@ export function DonationRegisterForm({
       } else if (error.response?.status >= 500) {
         errorMessage = 'Lỗi hệ thống. Vui lòng thử lại sau.';
       }
-      
+
       setRegistrationError(errorMessage);
     } finally {
       setIsRegister(false)
       if (!registrationError) {
-      navigate('/home', { replace: true })
+        navigate('/home', { replace: true })
       }
     }
   }
@@ -315,7 +328,7 @@ export function DonationRegisterForm({
             name="donorName"
             render={({ field }) => (
               <FormItem className="flex flex-col md:flex-row mb-4 md:mb-5">
-                <FormLabel className="w-full md:w-[200px] text-base md:text-[18px] mb-1 md:mb-0 whitespace-nowrap">
+                <FormLabel className="w-full md:w-[200px] text-base md:text-[16px] mb-1 md:mb-0 whitespace-nowrap">
                   Tên người hiến
                 </FormLabel>
                 <div className="flex-1">
@@ -333,7 +346,7 @@ export function DonationRegisterForm({
             name="address"
             render={({ field }) => (
               <FormItem className="flex flex-col md:flex-row mb-4 md:mb-5">
-                <FormLabel className="w-full md:w-[200px] text-base md:text-[18px] mb-1 md:mb-0 whitespace-nowrap">
+                <FormLabel className="w-full md:w-[200px] text-base md:text-[16px] mb-1 md:mb-0 whitespace-nowrap">
                   Địa chỉ
                 </FormLabel>
                 <div className="flex-1">
@@ -351,7 +364,7 @@ export function DonationRegisterForm({
             name="lastDonation"
             render={({ field }) => (
               <FormItem className="flex flex-col md:flex-row mb-4 md:mb-5">
-                <FormLabel className="w-full md:w-[200px] text-base md:text-[18px] mb-1 md:mb-0 whitespace-nowrap">
+                <FormLabel className="w-full md:w-[200px] text-base md:text-[16px] mb-1 md:mb-0 whitespace-nowrap">
                   Lần cuối hiến máu
                 </FormLabel>
                 <div className="flex-1">
@@ -393,7 +406,7 @@ export function DonationRegisterForm({
             name="donationDate"
             render={({ field }) => (
               <FormItem className="flex flex-col md:flex-row mb-4 md:mb-5">
-                <FormLabel className="w-full md:w-[200px] text-base md:text-[18px] mb-1 md:mb-0 whitespace-nowrap">
+                <FormLabel className="w-full md:w-[200px] text-base md:text-[16px] mb-1 md:mb-0 whitespace-nowrap">
                   Ngày hiến
                 </FormLabel>
                 <div className="flex-1">
@@ -428,7 +441,7 @@ export function DonationRegisterForm({
           />
 
           <div className="flex flex-col md:flex-row mb-4 md:mb-5">
-            <FormLabel className="w-full md:w-[210px] text-base md:text-[18px] mb-1 md:mb-0 whitespace-nowrap">
+            <FormLabel className="w-full md:w-[210px] text-base md:text-[16px] mb-1 md:mb-0 whitespace-nowrap">
               Nhóm máu
             </FormLabel>
             <div className="flex flex-col md:flex-row flex-1 gap-4 md:gap-5">
@@ -438,9 +451,9 @@ export function DonationRegisterForm({
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormControl>
-                      <BloodTypeSelect 
-                        onValueChange={field.onChange} 
-                        defaultVal={field.value} 
+                      <BloodTypeSelect
+                        onValueChange={field.onChange}
+                        defaultVal={field.value}
                       />
                     </FormControl>
                     <FormMessage />
@@ -454,9 +467,9 @@ export function DonationRegisterForm({
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormControl>
-                      <BloodTypeSelectRh 
-                        onValueChange={field.onChange} 
-                        defaultVal={field.value} 
+                      <BloodTypeSelectRh
+                        onValueChange={field.onChange}
+                        defaultVal={field.value}
                       />
                     </FormControl>
                     <FormMessage />
@@ -471,7 +484,7 @@ export function DonationRegisterForm({
             name="phone"
             render={({ field }) => (
               <FormItem className="flex flex-col md:flex-row mb-4 md:mb-5">
-                <FormLabel className="w-full md:w-[200px] text-base md:text-[18px] mb-1 md:mb-0 whitespace-nowrap">
+                <FormLabel className="w-full md:w-[200px] text-base md:text-[16px] mb-1 md:mb-0 whitespace-nowrap">
                   Số điện thoại
                 </FormLabel>
                 <div className="flex-1">
@@ -489,7 +502,7 @@ export function DonationRegisterForm({
             name="email"
             render={({ field }) => (
               <FormItem className="flex flex-col md:flex-row mb-4 md:mb-5">
-                <FormLabel className="w-full md:w-[200px] text-base md:text-[18px] mb-1 md:mb-0 whitespace-nowrap">
+                <FormLabel className="w-full md:w-[200px] text-base md:text-[16px] mb-1 md:mb-0 whitespace-nowrap">
                   Email
                 </FormLabel>
                 <div className="flex-1">
@@ -503,7 +516,7 @@ export function DonationRegisterForm({
           />
 
           {/* Submit Button */}
-          <div className="flex justify-end gap-4 mt-8">
+          <div className="flex justify-end gap-4 my-8">
             <Button
               type="button"
               variant="outline"
