@@ -16,7 +16,7 @@ export interface DonorCardProps {
     setIsShowModal: (isShow:boolean) => void;
 }
 
-function DonorCard({ id, memberName, phone, dob, bloodType, eventTime, isApproved, handleHealthCheckout, setCurrentDonorId, setIsShowModal }: DonorCardProps) {
+function DonorCard({ id, memberName, phone, dob, bloodType, isApproved, handleHealthCheckout, setCurrentDonorId, setIsShowModal }: DonorCardProps) {
     
     const getStatus = () => {
         if (isApproved === true) {

@@ -6,7 +6,7 @@ interface SidebarProps {
   setActiveItem: (item: string) => void;
 }
 
-const StaffSidebar = ({ activeItem, setActiveItem }: SidebarProps) => {
+const StaffSidebar = ({ setActiveItem }: SidebarProps) => {
   const location = useLocation();
 
   const navItems = [

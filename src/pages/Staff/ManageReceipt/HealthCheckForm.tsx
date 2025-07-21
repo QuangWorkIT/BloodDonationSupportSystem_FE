@@ -2,7 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { X, ArrowLeft, HeartPulse, Thermometer, Ruler, Weight, Info } from "lucide-react";
+import { ArrowLeft} from "lucide-react";
 import type { DonorCardProps } from "@/pages/Staff/ManageReceipt/DonorCard";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";

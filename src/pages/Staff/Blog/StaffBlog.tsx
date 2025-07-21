@@ -4,11 +4,10 @@ import { Input } from "@/components/ui/input";
 import { authenApi } from "@/lib/instance";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
-import LoadingSpinner from "@/components/layout/Spinner";
 import StaffNavbar from "@/pages/Staff/StaffNavbar";
 import Footer from "@/components/layout/Footer";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Calendar, User, ArrowRight, Search, BookOpen, Edit, Trash2 } from "lucide-react";
+import { Filter, Calendar, User, Search, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import image from "@/assets/images/event1.png";
 
