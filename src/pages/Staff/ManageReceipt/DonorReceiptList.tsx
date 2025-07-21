@@ -1,7 +1,5 @@
 import DonorCard from "./DonorCard";
 import { motion, AnimatePresence } from "framer-motion";
-("use client");
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -14,13 +12,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { authenApi } from "@/lib/instance";
 import type { DonorCardProps } from "@/pages/Staff/ManageReceipt/DonorCard";
 import LoadingSpinner from "@/components/layout/Spinner";
 import HealthCheckForm from "./HealthCheckForm";
 import { toast } from "react-toastify";
+import { ArrowLeft, Search, UserPlus } from "lucide-react";
 
 const searchSchema = z.object({
   searchContent: z.string(),
@@ -31,24 +30,19 @@ function DonorReceiptList() {
   const [listOfDonor, setListOfDonor] = useState<DonorCardProps[]>([]);
   const [eventTime, setEventTime] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isHeathCheckout, setIsHealthCheckout] = useState(false);
+  const [isHealthCheckout, setIsHealthCheckout] = useState(false);
   const [currentDonor, setCurrentDonor] = useState<DonorCardProps | null>(null);
   const [isShowModal, setIsShowModal] = useState(false);
   const [currentDonorId, setCurrentDonorId] = useState<number | null>(null);
   const [isRejecting, setIsRejecting] = useState(false);
-  // fetch registration
+
   const getDonors = async () => {
+    setIsLoading(true);
     try {
-      const response = await authenApi.get(
-        `/api/events/${eventId}/blood-registrations`
-      );
-      const data = response.data;
-      if (data.isSuccess) {
-        console.log("data ", data);
-        setEventTime(data.data.eventTime);
-        setListOfDonor(data.data.items);
-      } else {
-        console.log("Donor list status failed");
+      const response = await authenApi.get(`/api/events/${eventId}/blood-registrations`);
+      if (response.data.isSuccess) {
+        setEventTime(response.data.data.eventTime);
+        setListOfDonor(response.data.data.items);
       }
     } catch (error) {
       console.log("Fail to fetch donors", error);
@@ -56,28 +50,21 @@ function DonorReceiptList() {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     getDonors();
-  }, []);
+  }, [eventId]);
 
   const handleReject = async () => {
-    if (currentDonorId == null) {
-      console.log("current donor id not found");
-      return;
-    }
+    if (currentDonorId == null) return;
+    setIsRejecting(true);
     try {
-      setIsRejecting(true);
-      const response = await authenApi.put(
-        `/api/blood-registrations/${currentDonorId}/reject`
-      );
-      const data = response.data;
-
-      if (data.isSuccess) {
+      const response = await authenApi.put(`/api/blood-registrations/${currentDonorId}/reject`);
+      if (response.data.isSuccess) {
         toast.success("Đã từ chối đơn đăng ký hiến máu!");
-        getDonors(); // Refetch the list of donors after rejection
+        getDonors();
       }
     } catch (error) {
-      console.error("Error rejecting donor registration:", error);
       toast.error("Lỗi từ chối đơn đăng ký hiến máu!");
     } finally {
       setIsRejecting(false);
@@ -88,82 +75,77 @@ function DonorReceiptList() {
 
   const searchForm = useForm<z.infer<typeof searchSchema>>({
     resolver: zodResolver(searchSchema),
+    defaultValues: { searchContent: "" },
   });
+
+  const filteredDonors = listOfDonor.filter(donor => 
+    donor.memberName.toLowerCase().includes(searchForm.watch('searchContent').toLowerCase())
+  );
+  
+  if (isHealthCheckout && currentDonor) {
+      return (
+          <AnimatePresence>
+              <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full"
+              >
+                  <HealthCheckForm
+                      currentDonor={currentDonor}
+                      handleCancel={() => setIsHealthCheckout(false)}
+                      refetchDonors={getDonors}
+                  />
+              </motion.div>
+          </AnimatePresence>
+      );
+  }
+
   return (
-    <div className="container flex flex-col gap-4 bg-gray-200 rounded-xl px-4 py-8 m-4">
-      <div className="flex justify-between items-center pb-4">
-        <p className="text-[26px] font-semibold text-red-700">
-          Sự kiện ngày <span className="italic font-semibold">{eventTime}</span>
-        </p>
+    <div className="bg-gray-50/50 min-h-screen p-4 sm:p-6 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+          <div>
+            <Link to="/staff/receipt" className="flex items-center text-sm text-gray-500 hover:text-gray-700 mb-2">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Quay lại danh sách sự kiện
+            </Link>
+            <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
+              Sự kiện ngày {eventTime ? new Date(eventTime).toLocaleDateString('vi-VN') : '...'}
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Danh sách các tình nguyện viên đã đăng ký.
+            </p>
+          </div>
+          <Form {...searchForm}>
+            <form className="relative mt-4 sm:mt-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                    {...searchForm.register("searchContent")}
+                    className="pl-10 w-64"
+                    placeholder="Tìm theo tên..."
+                />
+            </form>
+          </Form>
+        </header>
 
-        {/* search donor */}
-        <Form {...searchForm}>
-          <form className="w-100">
-            <FormField
-              control={searchForm.control}
-              name="searchContent"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        className="h-[45px] bg-white border-2 border-[#C14B53] shadow-md"
-                        placeholder="Tìm kiếm người hiến"
-                        {...field}
-                      />
-
-                      <Button
-                        className="absolute right-3 top-1 bg-transparent hover:bg-transparent hover:cursor-pointer transition duration-150 hover:scale-120"
-                        type="submit"
-                      >
-                        <svg
-                          width="30"
-                          height="30"
-                          viewBox="0 0 30 30"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M25.8222 28L16.0222 18.2C15.2444 18.8222 14.35 19.3148 13.3389 19.6778C12.3278 20.0407 11.2519 20.2222 10.1111 20.2222C7.28519 20.2222 4.89378 19.2433 2.93689 17.2853C0.980001 15.3274 0.00103786 12.936 8.23045e-07 10.1111C-0.00103621 7.28622 0.977927 4.89481 2.93689 2.93689C4.89585 0.978963 7.28726 0 10.1111 0C12.935 0 15.3269 0.978963 17.2869 2.93689C19.2469 4.89481 20.2253 7.28622 20.2222 10.1111C20.2222 11.2519 20.0407 12.3278 19.6778 13.3389C19.3148 14.35 18.8222 15.2444 18.2 16.0222L28 25.8222L25.8222 28ZM10.1111 17.1111C12.0556 17.1111 13.7086 16.4308 15.0702 15.0702C16.4319 13.7096 17.1122 12.0566 17.1111 10.1111C17.1101 8.16563 16.4298 6.51311 15.0702 5.15356C13.7107 3.794 12.0576 3.11319 10.1111 3.11111C8.16459 3.10904 6.51208 3.78985 5.15356 5.15356C3.79504 6.51726 3.11422 8.16978 3.11111 10.1111C3.108 12.0524 3.78882 13.7055 5.15356 15.0702C6.5183 16.435 8.17082 17.1153 10.1111 17.1111Z"
-                            fill="#C14B53"
-                          />
-                        </svg>
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
-      </div>
-
-      {/* waiting for fetching data */}
-      {isLoading && <LoadingSpinner />}
-
-      {/* display list of donor fetched */}
-      {!isLoading && !isHeathCheckout && (
-        <AnimatePresence>
-          {listOfDonor.length > 0 ? (
-            listOfDonor.map((donor, index) => (
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <LoadingSpinner />
+          </div>
+        ) : filteredDonors.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDonors.map((donor, index) => (
               <motion.div
                 key={donor.id}
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
                 <DonorCard
-                  key={donor.id}
-                  id={donor.id}
-                  memberName={donor.memberName}
-                  phone={donor.phone}
-                  dob={donor.dob}
-                  bloodType={donor.bloodType}
-                  eventTime={eventTime}
-                  isApproved={donor.isApproved}
-                  handleHeathCheckout={() => {
+                  {...donor}
+                  handleHealthCheckout={() => {
                     setCurrentDonor(donor);
                     setIsHealthCheckout(true);
                   }}
@@ -171,76 +153,48 @@ function DonorReceiptList() {
                   setCurrentDonorId={setCurrentDonorId}
                 />
               </motion.div>
-            ))
-          ) : (
-            <div className="w-full flex justify-center text-[20px] mt-10">
-              Chưa có đơn đăng ký nào!
-            </div>
-          )}
-        </AnimatePresence>
-      )}
-
-      {isHeathCheckout && (
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.5 }}
-          >
-            <HealthCheckForm
-              currentDonor={currentDonor}
-              handleCancle={() => setIsHealthCheckout(false)}
-              refetchDonors={getDonors} // Pass the refetch function
-            />
-          </motion.div>
-        </AnimatePresence>
-      )}
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+            <UserPlus className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-lg font-medium text-gray-900">Không có đơn đăng ký</h3>
+            <p className="mt-1 text-sm text-gray-500">Chưa có tình nguyện viên nào đăng ký cho sự kiện này.</p>
+          </div>
+        )}
+      </div>
 
       {isShowModal && (
-        <div className="fixed inset-0 bg-black/70 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-xl w-full relative top-20 left-[33%]">
-            <div className="flex justify-between mb-2">
-              <h2 className="ml-2 text-[27px] font-normal mb-2">
-                Xác nhận từ chối đơn đăng ký
-              </h2>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="text-gray-500 size-4 mt-3 cursor-pointer"
-                onClick={() => setIsShowModal(false)}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18 18 6M6 6l12 12"
-                />
-              </svg>
-            </div>
-
-            <div className="h-[1px] bg-gray-200 mb-4"></div>
-
-            <p className="text-lg text-gray-600 mb-4">
-              Nếu bạn xác nhận hủy sự kiện này, các đơn yêu cầu tiếp theo cũng
-              sẽ bị hủy.{" "}
-              <span className="text-red-700">
-                Không thể hoàn tác thao tác này.
-              </span>
+        <motion.div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.div
+            className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            initial={{ scale: 0.9, opacity: 0, y: -20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          >
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Xác nhận từ chối</h2>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn từ chối đơn đăng ký của tình nguyện viên này?
             </p>
-            <div className="flex justify-end">
-              <button
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                className="font-semibold"
+                onClick={() => setIsShowModal(false)}
                 disabled={isRejecting}
-                onClick={handleReject}
-                className="px-5 py-2 text-white bg-red-700 rounded-md hover:bg-red-800 cursor-pointer "
               >
-                Xác nhận
-              </button>
+                Hủy
+              </Button>
+              <Button variant="destructive" className="font-semibold" onClick={handleReject} disabled={isRejecting}>
+                {isRejecting ? "Đang xử lý..." : "Từ chối"}
+              </Button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );
