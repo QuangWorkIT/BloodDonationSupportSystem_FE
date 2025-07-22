@@ -9,18 +9,6 @@ import { authenApi } from "@/lib/instance";
 import LoadingSpinner from "@/components/layout/Spinner";
 import { Link } from "react-router-dom";
 
-// Mock data, will be replaced by API calls
-const bloodTypes = [
-  { type: "A-", units: 112 },
-  { type: "B-", units: 170 },
-  { type: "AB-", units: 82 },
-  { type: "O-", units: 32 },
-  { type: "A+", units: 142 },
-  { type: "B+", units: 78 },
-  { type: "AB+", units: 66 },
-  { type: "O+", units: 92 },
-];
-
 interface Entry {
   bloodUnitId: number;
   createAt: string;
@@ -33,21 +21,26 @@ interface Entry {
   description?: string | null;
 }
 
+interface BloodSummary {
+  bloodTypeName: string;
+  bloodUnitCount: number;
+}
+
+interface BloodAlert {
+  bloodComponentName: string;
+  bloodTypeName: string;
+  volume: number;
+}
+
 export default function Inventory() {
   const [bloodInventories, setBloodInventories] = useState<Entry[]>([]);
+  const [bloodSummary, setBloodSummary] = useState<BloodSummary[]>([]);
+  const [criticalAlerts, setCriticalAlerts] = useState<{lowStock: {type: string, stock: number, threshold: number}[]}>({lowStock: []});
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  // Mock critical alert data
-  const criticalAlerts = {
-    lowStock: [
-      { type: 'O', stock: 5, threshold: 10 },
-      { type: 'A', stock: 7, threshold: 10 },
-    ],
-  };
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -74,6 +67,51 @@ export default function Inventory() {
     };
     fetchInventories();
   }, [currentPage]);
+
+  useEffect(() => {
+    const fetchSummaryAndAlerts = async () => {
+      try {
+        // Fetch blood summary
+        const summaryResponse = await authenApi.get("/api/blood-inventories/summarize");
+        if (summaryResponse.data?.isSuccess) {
+          setBloodSummary(summaryResponse.data.data);
+        }
+
+        // Fetch alerts
+        const alertsResponse = await authenApi.get("/api/blood-inventories/alert");
+        if (alertsResponse.data?.isSuccess) {
+          // Process alerts data to match the expected format
+          const alertData = alertsResponse.data.data;
+          const lowStockTypes = new Set<string>();
+          const lowStockItems: {type: string, stock: number, threshold: number}[] = [];
+          
+          // Find blood types with low volume
+          alertData.forEach((item: BloodAlert) => {
+            if (item.volume === 0) {
+              // Extract just the blood type (A, B, AB, O) without the +/- for grouping
+              const baseType = item.bloodTypeName.replace(/[+-]/, '');
+              lowStockTypes.add(baseType);
+            }
+          });
+          
+          // Create the lowStock array
+          lowStockTypes.forEach(type => {
+            lowStockItems.push({
+              type,
+              stock: 0, // We don't have the exact count, but we know it's critical
+              threshold: 10 // Using a default threshold
+            });
+          });
+          
+          setCriticalAlerts({ lowStock: lowStockItems });
+        }
+      } catch (err) {
+        console.error("Failed to fetch summary or alerts:", err);
+      }
+    };
+    
+    fetchSummaryAndAlerts();
+  }, []);
 
   const handleDelete = async () => {
     if (!selectedDeleteId) return;
@@ -131,8 +169,8 @@ export default function Inventory() {
 
         {/* Blood Units Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
-          {bloodTypes.map((bt) => (
-            <BloodUnit key={bt.type} type={bt.type} unit={bt.units} maxUnit={200} />
+          {bloodSummary.map((bt) => (
+            <BloodUnit key={bt.bloodTypeName} type={bt.bloodTypeName} unit={bt.bloodUnitCount} maxUnit={200} />
           ))}
         </div>
 
@@ -183,7 +221,7 @@ export default function Inventory() {
                       </td>
                       <td className="px-6 py-4">{entry.bloodComponentName}</td>
                       <td className="px-6 py-4">{entry.bloodAge} ngày</td>
-                      <td className="px-6 py-4">{new Date(entry.expiredDate).toLocaleDateString()}</td>
+                      <td className="px-6 py-4">{entry.expiredDate}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                           ${entry.isAvailable ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
