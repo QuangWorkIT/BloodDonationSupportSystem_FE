@@ -34,7 +34,7 @@ interface MobileDonationItem {
   date: string;
   location: string;
   amount: string;
-  status: string;
+  status: "Hoàn thành" | "Đang diễn ra" | "Thất bại";
   description?: string;
 }
 
@@ -49,12 +49,23 @@ const formatMobileDate = (dateString: string): string => {
 
 // Helper function to transform API data to mobile display format
 const transformApiDonationToMobile = (apiDonation: ApiDonation): MobileDonationItem => {
+  let status: "Hoàn thành" | "Đang diễn ra" | "Thất bại";
+  if (apiDonation.status) {
+    if (apiDonation.volume !== null) {
+      status = "Hoàn thành";
+    } else {
+      status = "Đang diễn ra";
+    }
+  } else {
+    status = "Thất bại";
+  }
+
   return {
     registrationId: apiDonation.registrationId,
     date: formatMobileDate(apiDonation.donateDate),
     location: apiDonation.facilityName,
     amount: apiDonation.volume ? `${apiDonation.volume}ml` : "N/A",
-    status: apiDonation.status ? "Hoàn thành" : "Thất bại",
+    status,
     description: apiDonation.description,
   };
 };
@@ -143,8 +154,10 @@ const MobileDonationHistory: React.FC = () => {
                 <p className="text-xs text-gray-400">Mã: #{donation.registrationId}</p>
               </div>
               <span className={`px-2 py-1 text-xs rounded-full ${
-                donation.status === "Hoàn thành" 
-                  ? "bg-green-100 text-green-800" 
+                donation.status === "Hoàn thành"
+                  ? "bg-green-100 text-green-800"
+                  : donation.status === "Đang diễn ra"
+                  ? "bg-blue-100 text-blue-800"
                   : "bg-red-100 text-red-800"
               }`}>
                 {donation.status}
@@ -216,12 +229,15 @@ const MobileDonationHistory: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <FaCheckCircle className={`text-base ${selectedDonation.status === 'Hoàn thành' ? 'text-green-500' : 'hidden'}`} />
+                  <FaInfoCircle className={`text-base ${selectedDonation.status === 'Đang diễn ra' ? 'text-blue-500' : 'hidden'}`} />
                   <FaTimesCircle className={`text-base ${selectedDonation.status === 'Thất bại' ? 'text-red-500' : 'hidden'}`} />
                   <div>
                     <p className="text-sm text-gray-500">Trạng thái</p>
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                       selectedDonation.status === "Hoàn thành"
                         ? "bg-green-100 text-green-800"
+                        : selectedDonation.status === "Đang diễn ra"
+                        ? "bg-blue-100 text-blue-800"
                         : "bg-red-100 text-red-800"
                     }`}>
                       {selectedDonation.status}
@@ -279,30 +295,6 @@ const UserProfile: React.FC = () => {
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  // Touch event handlers for swipe gestures
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 50) {
-      // Swipe left
-      if (activeTab === "account-edit") setActiveTab("donation-history");
-      else if (activeTab === "donation-history") setActiveTab("registrations");
-    } else if (touchEnd - touchStart > 50) {
-      // Swipe right
-      if (activeTab === "registrations") setActiveTab("donation-history");
-      else if (activeTab === "donation-history") setActiveTab("account-edit");
-    }
-  };
 
   const tabIcons = {
     "account-edit": <FaUser className="mr-2" />,
@@ -418,9 +410,7 @@ const UserProfile: React.FC = () => {
 
           {/* Conditional Rendering with swipe support */}
           <div 
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            
             className="relative"
           >
             <AnimatePresence mode="wait">

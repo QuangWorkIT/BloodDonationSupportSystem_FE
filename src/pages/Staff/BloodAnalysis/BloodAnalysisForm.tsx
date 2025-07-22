@@ -27,7 +27,8 @@ import type { Donor } from "@/pages/Staff/BloodAnalysis/BloodAnalysisEventList"
 import { getComponentId, getTypeId } from "@/types/BloodCompatibility"
 import { authenApi } from "@/lib/instance"
 import { toast } from "react-toastify"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+
 interface BloodAnalysisProps {
     donor: Donor,
     setIsAnalysisFormOpen: () => void,
@@ -44,7 +45,7 @@ const formSchema = z.object({
             required_error: "Cần điền thơi gian",
             invalid_type_error: "Thời gian không hợp lệ"
         }),
-    bloodComponent: z.string({ required_error: "Hãy chọn loại máu" }),
+    bloodComponent: z.string({ required_error: "Hãy chọn thành phần máu" }),
     volume: z.coerce.number({
         invalid_type_error: "Thông số không phù hợp"
     })
@@ -69,12 +70,19 @@ const formSchema = z.object({
     isQualified: z.enum(["true", "false"], {
         required_error: "Thông tin bắt buộc"
     }),
+    // Add confirmation checkbox
+    confirmSubmission: z.boolean().refine(val => val === true, {
+        message: "Bạn phải xác nhận thông tin trước khi gửi"
+    }),
 })
 
 type formType = z.infer<typeof formSchema>
 type formTypeName = keyof formType
 function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodAnalysisProps) {
     const[isSubmitting, setIsSubmitting] = useState(false)
+    const[qualificationStatus, setQualificationStatus] = useState<"true" | "false">("true")
+    const[qualificationReasons, setQualificationReasons] = useState<string[]>([])
+    
     const criterias: { label: string, name: formTypeName }[] = [
         { label: "HIV", name: "hiv" },
         { label: "Viêm gan C", name: "hepatitisC" },
@@ -90,8 +98,44 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
             bloodComponent: undefined,
             volume: donor.volume,
             hematocrit: 0,
+            confirmSubmission: false, // Add default value for confirmation
         }
     })
+
+    // Add useEffect to calculate qualification status whenever form values change
+    useEffect(() => {
+        const formValues = form.getValues();
+        let isQualified = true;
+        const reasons: string[] = [];
+        
+        // Check hematocrit range (37%-52%)
+        const hematocrit = formValues.hematocrit;
+        if (hematocrit < 37 || hematocrit > 52) {
+            isQualified = false;
+            reasons.push(`Hàm lượng hematocrit (${hematocrit}%) nằm ngoài phạm vi cho phép (37%-52%)`)
+        }
+        
+        // Check for diseases
+        if (formValues.hiv === "true") {
+            isQualified = false;
+            reasons.push("Phát hiện HIV")
+        }
+        
+        if (formValues.hepatitisC === "true") {
+            isQualified = false;
+            reasons.push("Phát hiện Viêm gan C")
+        }
+        
+        if (formValues.syphilis === "true") {
+            isQualified = false;
+            reasons.push("Phát hiện Giang mai")
+        }
+        
+        // Update the qualification status and reasons
+        setQualificationStatus(isQualified ? "true" : "false");
+        setQualificationReasons(reasons);
+        form.setValue("isQualified", isQualified ? "true" : "false");
+    }, [form.watch("hematocrit"), form.watch("hiv"), form.watch("hepatitisC"), form.watch("syphilis")]);
 
     const onSubmit = async (values: formType) => {
         const bloodTypeId = getTypeId(values.bloodType + values.rhFactor) > 0 ? getTypeId(values.bloodType + values.rhFactor) : 1
@@ -153,7 +197,11 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
                                             <FormItem>
                                                 <FormLabel className="font-medium">Họ tên người hiến</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Nhập tên người hiến" {...field} />
+                                                    <Input 
+                                                        placeholder="Nhập tên người hiến" 
+                                                        {...field} 
+                                                        className="bg-white" 
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -241,7 +289,12 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
                                             <FormItem>
                                                 <FormLabel className="font-medium">Thể tích (ml)</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" placeholder="Vd: 250,300,350..." {...field} />
+                                                    <Input 
+                                                        type="number" 
+                                                        placeholder="Vd: 250,300,350..." 
+                                                        {...field} 
+                                                        className="bg-white" 
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -253,7 +306,7 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
                             {/* Clinical Results */}
                             <div className="bg-gray-50 rounded-xl p-6">
                                 <h2 className="text-lg font-semibold mb-4 text-gray-800">Kết quả kiểm định lâm sàn</h2>
-                                <div className="space-y-4">
+                                <div className="space-y-11"> {/* Changed from space-y-4 to space-y-6 */}
                                     {criterias.map((criteria, index) => (
                                         <FormField
                                             key={index}
@@ -265,7 +318,7 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
                                                     <FormControl>
                                                         <RadioGroup
                                                             onValueChange={field.onChange}
-                                                            className="flex gap-8 mt-2"
+                                                            className="flex gap-20 mt-2" // Changed from gap-8 to justify-between w-full
                                                             defaultValue={field.value === undefined || field.value === null ? '' : String(field.value)}
                                                         >
                                                             <FormItem className="flex items-center gap-2">
@@ -299,6 +352,7 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
                                                         placeholder="Vd: 41,43,..."
                                                         value={field.value === undefined || field.value === null ? '' : String(field.value)}
                                                         onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                                                        className="bg-white"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -315,41 +369,63 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
                                 control={form.control}
                                 name="isQualified"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-col md:flex-row mb-5 gap-5 items-center justify-center">
+                                    <FormItem className="flex flex-col mb-5 gap-3 items-center justify-center">
                                         <FormLabel className="w-auto text-[18px] font-semibold">Kết luận tổng thể</FormLabel>
-                                        <div className="flex gap-8">
-                                            <FormControl className="gap-5">
-                                                <RadioGroup
-                                                    onValueChange={field.onChange}
-                                                    defaultValue={field.value}
-                                                    className="flex gap-8"
-                                                >
-                                                    <FormItem className="flex items-center">
-                                                        <FormControl>
-                                                            <RadioGroupItem value="true" className="border-2 border-gray-500" />
-                                                        </FormControl>
-                                                        <FormLabel className="text-[16px] italic">Đạt chuẩn</FormLabel>
-                                                    </FormItem>
-
-                                                    <FormItem className="flex items-center">
-                                                        <FormControl>
-                                                            <RadioGroupItem value="false" className="border-2 border-gray-500" />
-                                                        </FormControl>
-                                                        <FormLabel className="text-[16px] italic text-red-600">Không đạt chuẩn</FormLabel>
-                                                    </FormItem>
-                                                </RadioGroup>
-                                            </FormControl>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            {qualificationStatus === "true" ? (
+                                                <div className="text-[16px] italic bg-green-100 px-3 py-2 rounded-md text-center">
+                                                    Đạt chuẩn
+                                                </div>
+                                            ) : (
+                                                <div className="text-[16px] italic text-red-600 bg-red-100 px-3 py-2 rounded-md text-center">
+                                                    Không đạt chuẩn
+                                                </div>
+                                            )}
+                                            
+                                            {qualificationReasons.length > 0 && (
+                                                <div className="bg-red-50 p-3 rounded-md">
+                                                    <p className="font-medium mb-1">Lý do không đạt chuẩn:</p>
+                                                    <ul className="list-disc pl-5 text-sm text-red-600">
+                                                        {qualificationReasons.map((reason, index) => (
+                                                            <li key={index}>{reason}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
                                         </div>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+                            
+                            {/* Add confirmation checkbox */}
+                            <FormField
+                                control={form.control}
+                                name="confirmSubmission"
+                                render={({ field }) => (
+                                    <FormItem className="flex items-center space-x-2 mb-4">
+                                        <FormControl>
+                                            <input
+                                                type="checkbox"
+                                                checked={field.value}
+                                                onChange={field.onChange}
+                                                className="h-4 w-4 border-gray-300 rounded text-red-600 focus:ring-red-500"
+                                            />
+                                        </FormControl>
+                                        <FormLabel className="text-sm font-medium text-gray-700">
+                                            Xác nhận hoàn tất quy trình phân tích mẫu máu
+                                        </FormLabel>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            
                             <Button
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !form.getValues().confirmSubmission}
                                 type="submit"
                                 className="text-[15px] font-bold bg-[#BA1B1D] rounded-[7px] w-[200px] h-[40px] mb-[20px] hover:cursor-pointer hover:bg-[#9F1214] mt-2"
                             >
-                                Xác nhận
+                                Gửi kết quả
                             </Button>
                         </div>
                     </form>

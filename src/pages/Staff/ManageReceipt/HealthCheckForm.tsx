@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -53,6 +53,7 @@ export default function HealthCheckForm({ currentDonor, handleCancel, refetchDon
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const [warnings, setWarnings] = useState<FormErrors>({});
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value, type } = e.target;
@@ -60,8 +61,76 @@ export default function HealthCheckForm({ currentDonor, handleCancel, refetchDon
     setFormData((prev) => ({ ...prev, [id]: type === 'checkbox' ? checked : value }));
   };
 
+  // Thêm useEffect để theo dõi thay đổi của formData
+  useEffect(() => {
+    // Tạo một phiên bản validateForm mới chỉ trả về warnings mà không cập nhật state
+    const validateFormData = () => {
+      const newWarnings: FormErrors = {};
+      let shouldSetNotQualified = false;
+      
+      // Kiểm tra chiều cao
+      const height = parseFloat(formData.height);
+      if (formData.height && !isNaN(height) && height > 2.5) {
+        newWarnings.height = "Chiều cao không hợp lệ (>2.5m).";
+        shouldSetNotQualified = true;
+      }
+      
+      // Kiểm tra cân nặng
+      const weight = parseFloat(formData.weight);
+      if (formData.weight && !isNaN(weight) && weight <= 42) {
+        newWarnings.weight = "Cân nặng dưới 42kg.";
+        shouldSetNotQualified = true;
+      }
+      
+      // Kiểm tra nhiệt độ
+      const temp = parseFloat(formData.temperature);
+      if (formData.temperature && !isNaN(temp) && (temp < 36.7 || temp > 37.2)) {
+        newWarnings.temperature = "Nhiệt độ ngoài khoảng 36.7°C đến 37.2°C.";
+        shouldSetNotQualified = true;
+      }
+      
+      // Kiểm tra hemoglobin
+      const hb = parseFloat(formData.hb);
+      if (formData.hb && !isNaN(hb) && hb < 12.0) {
+        newWarnings.hb = "Hemoglobin dưới 12.0 g/dL.";
+        shouldSetNotQualified = true;
+      }
+      
+      // Kiểm tra huyết áp
+      if (formData.bloodPressure) {
+        const bpMatch = formData.bloodPressure.match(/^(\d{2,3})\/(\d{2,3})$/);
+        if (bpMatch) {
+          const systolic = parseInt(bpMatch[1], 10);
+          const diastolic = parseInt(bpMatch[2], 10);
+          if (systolic < 90 || systolic > 120 || diastolic < 60 || diastolic > 80) {
+            newWarnings.bloodPressure = "Huyết áp ngoài khoảng 90/60 đến 120/80 mmHg.";
+            shouldSetNotQualified = true;
+          }
+        }
+      }
+      
+      // Kiểm tra viêm gan B
+      if (formData.hbv === 'yes') {
+        newWarnings.hbv = "Người hiến máu không được có lịch sử bị viêm gan B.";
+        shouldSetNotQualified = true;
+      }
+      
+      return { newWarnings, shouldSetNotQualified };
+    };
+    
+    // Thực hiện kiểm tra và cập nhật warnings
+    const { newWarnings, shouldSetNotQualified } = validateFormData();
+    setWarnings(newWarnings);
+    
+    // Nếu không đủ điều kiện, cập nhật hasReceivedBlood thành 'no'
+    if (shouldSetNotQualified && formData.hasReceivedBlood !== 'no') {
+      setFormData(prev => ({ ...prev, hasReceivedBlood: 'no' }));
+    }
+  }, [formData]); // Chạy lại mỗi khi formData thay đổi
+
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
+    const newWarnings: FormErrors = {};
     if (!formData.fullName.trim()) newErrors.fullName = "Đây là trường thông tin bắt buộc.";
     if (!formData.birthDate) newErrors.birthDate = "Đây là trường thông tin bắt buộc.";
     if (!formData.height) newErrors.height = "Đây là trường thông tin bắt buộc.";
@@ -72,6 +141,76 @@ export default function HealthCheckForm({ currentDonor, handleCancel, refetchDon
     if (formData.hbv === null) newErrors.hbv = "Vui lòng chọn một tùy chọn.";
     if (formData.hasReceivedBlood === null) newErrors.hasReceivedBlood = "Vui lòng chọn một tùy chọn.";
     if (!formData.processCompleted) newErrors.processCompleted = "Bạn phải xác nhận hoàn tất quy trình.";
+
+    // Strict input validation
+    // Weight must be a number
+    const weight = parseFloat(formData.weight);
+    if (formData.weight && (isNaN(weight) || weight <= 0)) {
+      newErrors.weight = "Cân nặng phải là số hợp lệ.";
+    }
+    // Temperature must be a number
+    const temp = parseFloat(formData.temperature);
+    if (formData.temperature && isNaN(temp)) {
+      newErrors.temperature = "Nhiệt độ phải là số hợp lệ.";
+    }
+    // Hemoglobin must be a number
+    const hb = parseFloat(formData.hb);
+    if (formData.hb && isNaN(hb)) {
+      newErrors.hb = "Hemoglobin phải là số hợp lệ.";
+    }
+    // Blood pressure format
+    if (formData.bloodPressure) {
+      const bpMatch = formData.bloodPressure.match(/^(\d{2,3})\/(\d{2,3})$/);
+      if (!bpMatch) {
+        newErrors.bloodPressure = "Huyết áp phải theo định dạng VD: 120/80.";
+      }
+    }
+    // Height must be a number
+    const height = parseFloat(formData.height);
+    if (formData.height && (isNaN(height) || height <= 0)) {
+      newErrors.height = "Chiều cao phải là số hợp lệ.";
+    }
+
+    // Business constraints (set hasReceivedBlood to 'no' if violated)
+    let shouldSetNotQualified = false;
+    // Height business constraint: height <= 2.5m
+    if (!newErrors.height && height > 2.5) {
+      newWarnings.height = "Chiều cao không hợp lệ (>2.5m).";
+      shouldSetNotQualified = true;
+    }
+    // Business constraint: weight <= 42kg
+    if (!newErrors.weight && weight <= 42) {
+      newWarnings.weight = "Cân nặng dưới 42kg.";
+      shouldSetNotQualified = true;
+    }
+    if (!newErrors.temperature && (temp < 36.7 || temp > 37.2)) {
+      newWarnings.temperature = "Nhiệt độ ngoài khoảng 36.7°C đến 37.2°C.";
+      shouldSetNotQualified = true;
+    }
+    if (!newErrors.hb && hb < 12.0) {
+      newWarnings.hb = "Hemoglobin dưới 12.0 g/dL.";
+      shouldSetNotQualified = true;
+    }
+    if (!newErrors.bloodPressure && formData.bloodPressure) {
+      const bpMatch = formData.bloodPressure.match(/^(\d{2,3})\/(\d{2,3})$/);
+      if (bpMatch) {
+        const systolic = parseInt(bpMatch[1], 10);
+        const diastolic = parseInt(bpMatch[2], 10);
+        if (systolic < 90 || systolic > 120 || diastolic < 60 || diastolic > 80) {
+          newWarnings.bloodPressure = "Huyết áp ngoài khoảng 90/60 đến 120/80 mmHg.";
+          shouldSetNotQualified = true;
+        }
+      }
+    }
+    if (formData.hbv === 'yes') {
+      newWarnings.hbv = "Người hiến máu không được có lịch sử bị viêm gan B.";
+      shouldSetNotQualified = true;
+    }
+    // If any business constraint is violated, set hasReceivedBlood to 'no'
+    if (shouldSetNotQualified && formData.hasReceivedBlood !== 'no') {
+      setFormData((prev) => ({ ...prev, hasReceivedBlood: 'no' }));
+    }
+    setWarnings(newWarnings);
     return newErrors;
   };
 
@@ -86,6 +225,7 @@ export default function HealthCheckForm({ currentDonor, handleCancel, refetchDon
     setIsSubmitting(true);
     
       const pressure = formData.bloodPressure.split("/");
+      const isHealth = !Object.values(warnings).some(Boolean);
       const payload = {
         systolic: Number(pressure[0]),
         diastolic: Number(pressure[1]),
@@ -94,7 +234,7 @@ export default function HealthCheckForm({ currentDonor, handleCancel, refetchDon
       hbv: formData.hbv === 'no',
         weight: Number(formData.weight),
         height: Number(formData.height),
-      isHealth: formData.hasReceivedBlood === 'yes',
+      isHealth,
         description: formData.additionalNotes,
       };
 
@@ -148,27 +288,32 @@ export default function HealthCheckForm({ currentDonor, handleCancel, refetchDon
                         <Label htmlFor="height">Chiều cao (m)</Label>
                         <Input id="height" type="number" step="0.01" placeholder="VD: 1.70" value={formData.height} onChange={handleChange} className="mt-1"/>
                         {errors.height && <p className="text-red-500 text-sm mt-1">{errors.height}</p>}
+                        {warnings.height && <p className="text-yellow-600 text-sm mt-1">{warnings.height}</p>}
           </div>
                      <div>
                         <Label htmlFor="weight">Cân nặng (kg)</Label>
                         <Input id="weight" type="number" placeholder="VD: 65" value={formData.weight} onChange={handleChange} className="mt-1"/>
                         {errors.weight && <p className="text-red-500 text-sm mt-1">{errors.weight}</p>}
+                        {warnings.weight && <p className="text-yellow-600 text-sm mt-1">{warnings.weight}</p>}
         </div>
                      <div>
                         <Label htmlFor="bloodPressure">Huyết áp (mmHg)</Label>
                         <Input id="bloodPressure" placeholder="VD: 120/80" value={formData.bloodPressure} onChange={handleChange} className="mt-1"/>
                         {errors.bloodPressure && <p className="text-red-500 text-sm mt-1">{errors.bloodPressure}</p>}
+                        {warnings.bloodPressure && <p className="text-yellow-600 text-sm mt-1">{warnings.bloodPressure}</p>}
           </div>
                      <div>
                         <Label htmlFor="temperature">Nhiệt độ (°C)</Label>
                         <Input id="temperature" type="number" step="0.1" placeholder="VD: 37.0" value={formData.temperature} onChange={handleChange} className="mt-1"/>
                         {errors.temperature && <p className="text-red-500 text-sm mt-1">{errors.temperature}</p>}
+                        {warnings.temperature && <p className="text-yellow-600 text-sm mt-1">{warnings.temperature}</p>}
           </div>
         </div>
                 <div>
                     <Label htmlFor="hb">Hemoglobin (g/dL)</Label>
                     <Input id="hb" type="number" step="0.1" placeholder="VD: 13.5" value={formData.hb} onChange={handleChange} className="mt-1"/>
                     {errors.hb && <p className="text-red-500 text-sm mt-1">{errors.hb}</p>}
+                    {warnings.hb && <p className="text-yellow-600 text-sm mt-1">{warnings.hb}</p>}
           </div>
 
                 {/* Health Questions */}
@@ -182,15 +327,13 @@ export default function HealthCheckForm({ currentDonor, handleCancel, refetchDon
                         <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="hbvYes" /><Label htmlFor="hbvYes">Rồi</Label></div>
                     </RadioGroup>
                     {errors.hbv && <p className="text-red-500 text-sm mt-1">{errors.hbv}</p>}
+                    {warnings.hbv && <p className="text-yellow-600 text-sm mt-1">{warnings.hbv}</p>}
         </div>
-                <div>
-                    <Label>Đủ điều kiện hiến máu không?</Label>
-                    <RadioGroup onValueChange={(v) => setFormData({...formData, hasReceivedBlood: v as any})} className="mt-2 space-y-2">
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="allowYes" /><Label htmlFor="allowYes">Đủ điều kiện</Label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="allowNo" /><Label htmlFor="allowNo">Không đủ điều kiện</Label></div>
-                    </RadioGroup>
-                    {errors.hasReceivedBlood && <p className="text-red-500 text-sm mt-1">{errors.hasReceivedBlood}</p>}
-              </div>
+                {/* Eligibility Status */}
+                <div className="mt-4">
+                  <Label className="mb-2 block">Đủ điều kiện hiến máu?</Label>
+                  <span className={`font-bold text-base px-3 py-1 rounded-full ${Object.values(warnings).some(Boolean) ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>{Object.values(warnings).some(Boolean) ? 'Không đủ điều kiện hiến máu' : 'Đủ điều kiện hiến máu'}</span>
+                </div>
                 <div className="md:col-span-2">
                     <Label htmlFor="additionalNotes">Ghi chú thêm</Label>
                     <textarea id="additionalNotes" value={formData.additionalNotes} onChange={handleChange} className="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C14B53]" placeholder="Ghi chú của nhân viên y tế (nếu có)..." rows={4} />

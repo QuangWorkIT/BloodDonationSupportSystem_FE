@@ -22,7 +22,9 @@ const formSchema = z.object({
   receiverName: z.string().min(1, "Vui lòng nhập tên người nhận"),
   bloodType: z.string().min(1, "Vui lòng chọn nhóm máu."),
   bloodTypeRh: z.string().min(1, "Vui lòng chọn nhóm máu."),
-  volume: z.string().refine((val) => /^\d{2,3}$/.test(val), "Lượng máu phải là số hợp lệ (vd: 250)"),
+  volume: z.string()
+    .refine((val) => /^\d{2,3}$/.test(val), "Lượng máu phải là số hợp lệ (vd: 250)")
+    .refine((val) => Number(val) <= 450, "Lượng máu không được vượt quá 450ml."),
   note: z.string().optional(),
   staffId: z.string().min(1, "Vui lòng nhập tên hoặc ID nhân viên y tế"),
   confirm: z.boolean().refine((val) => val === true, {
