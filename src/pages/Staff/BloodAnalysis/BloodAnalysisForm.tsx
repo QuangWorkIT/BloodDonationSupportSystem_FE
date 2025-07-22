@@ -368,7 +368,7 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
                             <FormField
                                 control={form.control}
                                 name="isQualified"
-                                render={({ field }) => (
+                                render={({ }) => (
                                     <FormItem className="flex flex-col mb-5 gap-3 items-center justify-center">
                                         <FormLabel className="w-auto text-[18px] font-semibold">Kết luận tổng thể</FormLabel>
                                         <div className="flex flex-col gap-2 w-full">
