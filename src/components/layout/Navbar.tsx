@@ -76,6 +76,14 @@ export default function BloodDonationNavbar() {
         transition: 'all 0.3s cubic-bezier(.4,0,.2,1)'
       }}
     >
+      {/* Hamburger for mobile */}
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="md:hidden cursor-pointer p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#C14B53]"
+        aria-label="Mở menu"
+      >
+        <FaBars size={24} className="text-[#C14B53]" />
+      </button>
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 focus:outline-none cursor-pointer" tabIndex={0} aria-label="Trang chủ">
         <div className="w-10 h-10 bg-[#C14B53] rounded-full flex items-center justify-center">
@@ -169,27 +177,10 @@ export default function BloodDonationNavbar() {
               </DropdownMenuContent>
             </DropdownMenu>
         {/* Hamburger for mobile */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden cursor-pointer p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#C14B53] ml-2"
-          aria-label="Mở menu"
-        >
-          <FaBars size={24} className="text-[#C14B53]" />
-        </button>
       </div>
       {/* Mobile Menu */}
       <AnimatePresence>
         {menuOpen && (
-          <>
-            <motion.div
-              className="fixed inset-0 bg-black bg-opacity-40 z-40 cursor-pointer"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMenuOpen(false)}
-              aria-label="Đóng menu"
-              tabIndex={-1}
-            />
             <motion.div
               ref={mobileMenuRef}
               initial={{ opacity: 0, y: -20 }}
@@ -227,7 +218,6 @@ export default function BloodDonationNavbar() {
                 </Link>
               ))}
             </motion.div>
-          </>
         )}
       </AnimatePresence>
     </nav>
