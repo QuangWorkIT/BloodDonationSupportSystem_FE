@@ -27,7 +27,6 @@ export default function StaffBlogs() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   // Add search and sort state
   const [sort, setSort] = useState<"latest" | "earliest">("latest");
@@ -36,14 +35,11 @@ export default function StaffBlogs() {
 
   // Fetch blogs
   const fetchBlogs = async () => {
-    setLoading(true);
     try {
       const res = await authenApi.get("/api/blogs?pageNumber=1&pageSize=100");
       setBlogs(res.data.items);
     } catch (err) {
       toast.error("Không thể tải blog");
-    } finally {
-      setLoading(false);
     }
   };
 

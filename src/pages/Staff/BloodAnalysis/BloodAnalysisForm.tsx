@@ -266,7 +266,7 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
                                                         <RadioGroup
                                                             onValueChange={field.onChange}
                                                             className="flex gap-8 mt-2"
-                                                            defaultValue={field.value}
+                                                            defaultValue={field.value === undefined || field.value === null ? '' : String(field.value)}
                                                         >
                                                             <FormItem className="flex items-center gap-2">
                                                                 <FormControl>
@@ -294,7 +294,12 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
                                             <FormItem>
                                                 <FormLabel className="font-medium">Hàm lượng hematocrit (%)</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" placeholder="Vd: 41,43,..." {...field} />
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="Vd: 41,43,..."
+                                                        value={field.value === undefined || field.value === null ? '' : String(field.value)}
+                                                        onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

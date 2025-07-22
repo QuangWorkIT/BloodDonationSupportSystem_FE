@@ -48,7 +48,7 @@ function DonorLookup() {
   const [donorFound, setDonorFound] = useState<VolunteerProps[]>([]);
   const [isUrgentReceiptFormOpen, setIsUrgentReceiptFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isListOpen, setIsListOpen] = useState(true);
+  const [] = useState(true);
   const facilityInputRef = useRef<HTMLInputElement>(null);
 
     const form = useForm<z.infer<typeof formSchema>>({
