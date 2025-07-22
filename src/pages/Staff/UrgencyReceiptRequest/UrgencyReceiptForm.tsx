@@ -63,7 +63,7 @@ const UrgencyReceiptForm = ({ volunteerIds, setIsUrgentReceiptFormOpen }: Urgent
       title: data.title,
       maxOfDonor: data.maxOfDonor,
       estimatedVolume: data.bloodVolume,
-      eventTime: data.donationDate.toISOString().split('T')[0],
+      eventTime: data.donationDate.toLocaleString('sv-SE').split(' ')[0],
       bloodTypeId: bloodTypeId !== 0 ? bloodTypeId : 1,
       bloodComponentId: componentId !== -1 ? componentId : 0,
       volunteerIds: volunteerIDs,

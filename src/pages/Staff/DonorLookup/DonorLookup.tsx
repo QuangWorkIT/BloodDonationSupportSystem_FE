@@ -4,13 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import {  ListFilter, Users, Crosshair } from "lucide-react";
+import { ListFilter, Users, Crosshair } from "lucide-react";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -51,27 +51,27 @@ function DonorLookup() {
   const [] = useState(true);
   const facilityInputRef = useRef<HTMLInputElement>(null);
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: { facility: "" },
   });
 
-    const onSearchVolunteers = async (values: z.infer<typeof formSchema>) => {
-        if (!values.facility) return;
+  const onSearchVolunteers = async (values: z.infer<typeof formSchema>) => {
+    if (!values.facility) return;
     const facilityId = 1;
     setIsLoading(true);
     try {
       const response = await authenApi.get(`/api/Volunteers/${facilityId}/paged`);
       const data = response.data;
-            if (data.isSuccess) {
+      if (data.isSuccess) {
         setDonorFound(data.data.items);
         setDisplayDonorList(data.data.items);
-            }
-        } catch (error) {
+      }
+    } catch (error) {
       console.error("Error fetching volunteers:", error);
-        } finally {
+    } finally {
       setIsLoading(false);
-        }
+    }
   };
 
   useEffect(() => {
@@ -83,14 +83,14 @@ function DonorLookup() {
       const criteriaSet = new Set(filterList.map((item) => item.toUpperCase()));
       const filtered = donorFound.filter((donor) => {
         const bloodPrefix = donor.bloodTypeName.startsWith("AB") ? "AB" : donor.bloodTypeName[0];
-            return criteriaSet.has(bloodPrefix.toUpperCase());
-        });
+        return criteriaSet.has(bloodPrefix.toUpperCase());
+      });
       setDisplayDonorList(filtered);
     };
     foundDonor();
   }, [filterList, donorFound]);
 
-    const toggleSelectDonor = (donor: VolunteerProps) => {
+  const toggleSelectDonor = (donor: VolunteerProps) => {
     setSelectedDonor((prev) =>
       prev.some((d) => d.id === donor.id)
         ? prev.filter((d) => d.id !== donor.id)
@@ -98,34 +98,34 @@ function DonorLookup() {
     );
   };
 
-    const toggleSelectAll = () => {
+  const toggleSelectAll = () => {
     if (selectedDonor.length === displayDonorList.length) {
       setSelectedDonor([]);
-        } else {
+    } else {
       setSelectedDonor(displayDonorList);
-        }
+    }
   };
 
-    const handleCreateUrgent = () => {
+  const handleCreateUrgent = () => {
     setIsUrgentReceiptFormOpen(true);
   };
-  
+
   if (isUrgentReceiptFormOpen) {
     return (
-                    <AnimatePresence>
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
-                            transition={{ duration: 0.3 }}
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          transition={{ duration: 0.3 }}
           className="w-full"
-                        >
-                            <UrgencyReceiptForm
-                                volunteerIds={selectedDonor}
-                                setIsUrgentReceiptFormOpen={() => setIsUrgentReceiptFormOpen(false)}
-                            />
-                        </motion.div>
-                    </AnimatePresence>
+        >
+          <UrgencyReceiptForm
+            volunteerIds={selectedDonor}
+            setIsUrgentReceiptFormOpen={() => setIsUrgentReceiptFormOpen(false)}
+          />
+        </motion.div>
+      </AnimatePresence>
     );
   }
 
@@ -135,127 +135,126 @@ function DonorLookup() {
       <div className="w-full md:w-[450px] lg:w-[500px] flex flex-col bg-white shadow-lg">
         <div className="p-4 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-800">Tìm kiếm tình nguyện viên</h1>
-                            <Form {...form}>
+          <Form {...form}>
             <form onSubmit={form.handleSubmit(onSearchVolunteers)} className="mt-4 space-y-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="facility"
-                                        render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="facility"
+                render={({ field }) => (
                   <FormItem>
-                                                    <FormControl>
-                  <div>
-                  <div className="relative flex items-center mb-2">
-                    <input
-                      ref={facilityInputRef}
-                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#C14B53] text-sm"
-                      placeholder="Nhập địa chỉ cơ sở y tế..."
-                      value={field.value}
-                      onChange={field.onChange}
-                      name={field.name}
-                      id={field.name}
-                    />
-                  </div>
-                  {field.value === "" && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full flex items-center justify-center gap-2 text-base font-normal cursor-pointer"
-                      onClick={() => {
-                        const address = "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh";
-                        if (facilityInputRef.current) {
-                          facilityInputRef.current.value = address;
-                          field.onChange(address);
-                        }
-                      }}
-                    >
-                      <Crosshair className="w-5 h-5" />
-                      Địa chỉ cơ sở y tế hiện tại
-                    </Button>
-                  )}
-                                                    </div>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                    <FormControl>
+                      <div>
+                        <div className="relative flex items-center mb-2">
+                          <input
+                            ref={facilityInputRef}
+                            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#C14B53] text-sm"
+                            placeholder="Nhập địa chỉ cơ sở y tế..."
+                            value={field.value}
+                            onChange={field.onChange}
+                            name={field.name}
+                            id={field.name}
+                          />
+                        </div>
+                        {field.value === "" && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full flex items-center justify-center gap-2 text-base font-normal cursor-pointer"
+                            onClick={() => {
+                              const address = "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh";
+                              if (facilityInputRef.current) {
+                                facilityInputRef.current.value = address;
+                                field.onChange(address);
+                              }
+                            }}
+                          >
+                            <Crosshair className="w-5 h-5" />
+                            Địa chỉ cơ sở y tế hiện tại
+                          </Button>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? <LoadingSpinner /> : "Tìm kiếm"}
               </Button>
-                                </form>
-                            </Form>
-                        </div>
+            </form>
+          </Form>
+        </div>
 
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm">
-                            <ListFilter className="h-4 w-4 mr-2" />
-                            Lọc ({filterList.length})
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-56">
-                        <div className="space-y-2">
-                            <h4 className="font-medium leading-none">Nhóm máu</h4>
-                            <div className="grid grid-cols-2 gap-2">
-                                {bloodGroups.map((group) => (
-                                    <Button
-                                        key={group}
-                                        variant={filterList.includes(group) ? "secondary" : "ghost"}
-                                        size="sm"
-                                        onClick={() => {
-                                            setFilterList((prev) =>
-                                                prev.includes(group)
-                                                    ? prev.filter((g) => g !== group)
-                                                    : [...prev, group]
-                                            );
-                                        }}
-                                    >
-                                        {group}
-                                                        </Button>
-                                ))}
-                                                        </div>
-                                                    </div>
-                    </PopoverContent>
-                </Popover>
-                {filterList.length > 0 && (
-                  <Button variant="ghost" size="sm" onClick={() => setFilterList([])}>
-                    Xóa lọc
-                  </Button>
-                )}
-                                                    </div>
-            <Button onClick={handleCreateUrgent} disabled={selectedDonor.length === 0}>
-                Tạo yêu cầu ({selectedDonor.length})
-                                                                                </Button>
-                                                                            </div>
-        
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <ListFilter className="h-4 w-4 mr-2" />
+                  Lọc ({filterList.length})
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56">
+                <div className="space-y-2">
+                  <h4 className="font-medium leading-none">Nhóm máu</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {bloodGroups.map((group) => (
+                      <Button
+                        key={group}
+                        variant={filterList.includes(group) ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => {
+                          setFilterList((prev) =>
+                            prev.includes(group)
+                              ? prev.filter((g) => g !== group)
+                              : [...prev, group]
+                          );
+                        }}
+                      >
+                        {group}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            {filterList.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => setFilterList([])}>
+                Xóa lọc
+              </Button>
+            )}
+          </div>
+          <Button onClick={handleCreateUrgent} disabled={selectedDonor.length === 0}>
+            Tạo yêu cầu ({selectedDonor.length})
+          </Button>
+        </div>
+
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
               <LoadingSpinner />
-                                                                        </div>
+            </div>
           ) : displayDonorList.length > 0 ? (
             <div className="divide-y divide-gray-100">
-               <div className="p-4 flex justify-between items-center bg-gray-50/70">
-                    <h2 className="text-sm font-semibold text-gray-600 uppercase">
-                        {displayDonorList.length} kết quả
-                    </h2>
-                    <div className="flex items-center">
-                        <label htmlFor="select-all" className="text-sm mr-2">Chọn tất cả</label>
-                                                                            <Checkbox
-                            id="select-all"
-                            checked={selectedDonor.length === displayDonorList.length && displayDonorList.length > 0}
-                            onCheckedChange={toggleSelectAll}
-                                                                            />
-                                                                        </div>
-                                                                    </div>
+              <div className="p-4 flex justify-between items-center bg-gray-50/70">
+                <h2 className="text-sm font-semibold text-gray-600 uppercase">
+                  {displayDonorList.length} kết quả
+                </h2>
+                <div className="flex items-center">
+                  <label htmlFor="select-all" className="text-sm mr-2">Chọn tất cả</label>
+                  <Checkbox
+                    id="select-all"
+                    checked={selectedDonor.length === displayDonorList.length && displayDonorList.length > 0}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </div>
+              </div>
               {displayDonorList.map((donor) => (
                 <motion.div
                   key={donor.id}
                   onClick={() => toggleSelectDonor(donor)}
-                  className={`p-4 cursor-pointer transition-colors ${
-                    selectedDonor.some((d) => d.id === donor.id) ? "bg-red-50" : "hover:bg-gray-50"
-                  }`}
+                  className={`p-4 cursor-pointer transition-colors ${selectedDonor.some((d) => d.id === donor.id) ? "bg-red-50" : "hover:bg-gray-50"
+                    }`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
@@ -265,11 +264,11 @@ function DonorLookup() {
                       <div>
                         <p className="font-semibold text-gray-800">{donor.fullName}</p>
                         <p className="text-sm text-gray-500">{donor.gmail}</p>
-                                                </div>
-                                </div>
+                      </div>
+                    </div>
                     <div className="text-right">
-                        <p className="font-bold text-lg text-[#C14B53]">{donor.bloodTypeName}</p>
-                        <p className="text-sm text-gray-500">~{donor.distance.toFixed(1)} km</p>
+                      <p className="font-bold text-lg text-[#C14B53]">{donor.bloodTypeName}</p>
+                      <p className="text-sm text-gray-500">~{donor.distance.toFixed(1)} km</p>
                     </div>
                   </div>
                 </motion.div>
@@ -297,12 +296,12 @@ function DonorLookup() {
           toggleSelectDonor={toggleSelectDonor}
         />
         <div className="absolute top-4 right-4 bg-white p-1.5 rounded-full shadow-lg">
-             <Checkbox
-                id="select-all-map"
-                checked={selectedDonor.length === displayDonorList.length && displayDonorList.length > 0}
-                onCheckedChange={toggleSelectAll}
-                className="h-6 w-6"
-            />
+          <Checkbox
+            id="select-all-map"
+            checked={selectedDonor.length === displayDonorList.length && displayDonorList.length > 0}
+            onCheckedChange={toggleSelectAll}
+            className="h-6 w-6"
+          />
         </div>
       </div>
     </div>
