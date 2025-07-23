@@ -1,4 +1,4 @@
-import api, { geoApi } from '@/lib/instance';
+import { geoApi } from '@/lib/instance';
 
 type geoAddress = {
     longitude: number,

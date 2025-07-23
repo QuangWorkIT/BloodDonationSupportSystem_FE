@@ -8,13 +8,14 @@ import {
 
 interface SelectProps {
     onValueChange: (value: string) => void;
-    defaultVal?: string
+    defaultVal?: string;
+    disabled?: boolean;
 }
 
-export function BloodComponentSelect({ onValueChange, defaultVal }: SelectProps) {
+export function BloodComponentSelect({ onValueChange, defaultVal, disabled = false }: SelectProps) {
     return (
-        <Select onValueChange={onValueChange} defaultValue={defaultVal}>
-            <SelectTrigger className="w-full">
+        <Select onValueChange={onValueChange} defaultValue={defaultVal} >
+            <SelectTrigger className="w-full" disabled = {disabled}>
                 <SelectValue placeholder="Chọn loại máu" />
             </SelectTrigger>
             <SelectContent>
@@ -27,10 +28,10 @@ export function BloodComponentSelect({ onValueChange, defaultVal }: SelectProps)
     )
 }
 
-export function BloodTypeSelectRh({ onValueChange, defaultVal }: SelectProps) {
+export function BloodTypeSelectRh({ onValueChange, defaultVal,disabled = false }: SelectProps) {
     return (
-        <Select onValueChange={onValueChange} value={defaultVal}>
-            <SelectTrigger className="w-full">
+        <Select onValueChange={onValueChange} value={defaultVal} >
+            <SelectTrigger className="w-full border border-black/20 shadow-md" disabled = {disabled}>
                 <SelectValue placeholder="Chọn Rh" />
             </SelectTrigger>
             <SelectContent>
@@ -41,10 +42,10 @@ export function BloodTypeSelectRh({ onValueChange, defaultVal }: SelectProps) {
     )
 }
 
-function BloodTypeSelect({ onValueChange, defaultVal }: SelectProps) {
+function BloodTypeSelect({ onValueChange, defaultVal, disabled = false }: SelectProps) {
     return (
         <Select onValueChange={onValueChange} value={defaultVal}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full border border-black/20 shadow-md" disabled = {disabled}>
                 <SelectValue placeholder="Chọn ABO" />
             </SelectTrigger>
             <SelectContent>
