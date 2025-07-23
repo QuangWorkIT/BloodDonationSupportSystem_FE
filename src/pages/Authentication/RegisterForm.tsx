@@ -58,16 +58,24 @@ export default function RegisterForm() {
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
-    if (!formData.lastName) newErrors.lastName = "Đây là trường thông tin bắt buộc.";
-    if (!formData.firstName) newErrors.firstName = "Đây là trường thông tin bắt buộc.";
+    if (!formData.lastName)
+      newErrors.lastName = "Đây là trường thông tin bắt buộc.";
+    if (!formData.firstName)
+      newErrors.firstName = "Đây là trường thông tin bắt buộc.";
     if (!formData.phone) newErrors.phone = "Đây là trường thông tin bắt buộc.";
-    if (!formData.password) newErrors.password = "Đây là trường thông tin bắt buộc.";
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Mật khẩu không khớp.";
-    if (!formData.bloodType) newErrors.bloodType = "Đây là trường thông tin bắt buộc.";
+    if (!formData.password)
+      newErrors.password = "Đây là trường thông tin bắt buộc.";
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Mật khẩu không khớp.";
+    if (!formData.bloodType)
+      newErrors.bloodType = "Đây là trường thông tin bắt buộc.";
     if (!formData.dob) newErrors.dob = "Đây là trường thông tin bắt buộc.";
-    if (!formData.gender) newErrors.gender = "Đây là trường thông tin bắt buộc.";
-    if (!formData.province) newErrors.province = "Đây là trường thông tin bắt buộc.";
-    if (!formData.address) newErrors.address = "Đây là trường thông tin bắt buộc.";
+    if (!formData.gender)
+      newErrors.gender = "Đây là trường thông tin bắt buộc.";
+    if (!formData.province)
+      newErrors.province = "Đây là trường thông tin bắt buộc.";
+    if (!formData.address)
+      newErrors.address = "Đây là trường thông tin bắt buộc.";
 
     return newErrors;
   };
@@ -90,9 +98,15 @@ export default function RegisterForm() {
       delete copyForm.province;
       delete copyForm.confirmPassword;
 
-      copyForm.phone = formatPhoneOtp(formData.phone)
-      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor)
-      const address = formData.address + " Quận " + formData.district + " " + formData.province + " Việt Nam"
+      copyForm.phone = formatPhoneOtp(formData.phone);
+      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor);
+      const address =
+        formData.address +
+        " Quận " +
+        formData.district +
+        " " +
+        formData.province +
+        " Việt Nam";
       try {
         const geoCoding = await getLongLat(address);
         if (geoCoding !== null) {
@@ -109,13 +123,33 @@ export default function RegisterForm() {
         copyForm.latitude = 0;
         console.log("Geocoding register failed ", error);
       }
-      localStorage.setItem('tempUser', JSON.stringify(copyForm))
-      navigate('/otp', { replace: true })
+      localStorage.setItem("tempUser", JSON.stringify(copyForm));
+      navigate("/otp", { replace: true });
     }
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-[#F0EFF4]">
+    <div className="w-full min-h-screen flex items-center justify-center bg-[#F0EFF4] max-sm:bg-white relative overflow-hidden">
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, x: -20, y: 100 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          exit={{ opacity: 0, x: -20, y: 10 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="hidden md:block  w-[430px] h-[393px] bg-[#d94545] absolute top-[-150px] left-[-150px]"
+          style={{ borderRadius: "38% 62% 50% 50% / 58% 61% 39% 42%" }}
+        ></motion.div>
+      </AnimatePresence>
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, x: -20, y: -100 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          exit={{ opacity: 0, x: -20, y: 10 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="hidden md:block w-[430px] h-[393px] bg-[#d94545] absolute bottom-[-100px] right-[-150px]"
+          style={{ borderRadius: "38% 62% 50% 50% / 58% 61% 39% 42%" }}
+        ></motion.div>
+      </AnimatePresence>
       {true && (
         <AnimatePresence>
           <motion.div
@@ -125,8 +159,10 @@ export default function RegisterForm() {
             exit={{ opacity: 0, x: -20, y: -10 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="max-w-3xl mx-auto my-[50px] border rounded-lg shadow-lg p-8 space-y-6 bg-white min-h-[750px]">
-              <h1 className="text-3xl font-bold text-center text-red-600 mb-6">ĐĂNG KÍ THÀNH VIÊN</h1>
+            <div className="max-w-3xl mx-auto my-[50px] sm:border sm:rounded-lg sm:shadow-lg p-8 space-y-6 bg-white min-h-[750px]">
+              <h1 className="text-3xl font-bold text-center text-red-600 mb-6">
+                ĐĂNG KÍ THÀNH VIÊN
+              </h1>
               <form onSubmit={handleSubmit}>
                 {/* Name Row */}
                 <div className="grid grid-cols-2 gap-6">
@@ -134,16 +170,34 @@ export default function RegisterForm() {
                     <Label htmlFor="lastName" className="text-base">
                       Họ<span className="text-red-500"> *</span>
                     </Label>
-                    <Input id="lastName" placeholder="Nhập họ của bạn" className="py-2 text-base" required value={formData.lastName} onChange={handleChange} />
-                    {errors.lastName && <p className="text-red-500">{errors.lastName}</p>}
+                    <Input
+                      id="lastName"
+                      placeholder="Nhập họ của bạn"
+                      className="py-2 text-base"
+                      required
+                      value={formData.lastName}
+                      onChange={handleChange}
+                    />
+                    {errors.lastName && (
+                      <p className="text-red-500">{errors.lastName}</p>
+                    )}
                   </div>
 
                   <div className="space-y-3">
                     <Label htmlFor="firstName" className="text-base">
                       Tên<span className="text-red-500"> *</span>
                     </Label>
-                    <Input id="firstName" placeholder="Nhập tên của bạn" className="py-2 text-base" required value={formData.firstName} onChange={handleChange} />
-                    {errors.firstName && <p className="text-red-500">{errors.firstName}</p>}
+                    <Input
+                      id="firstName"
+                      placeholder="Nhập tên của bạn"
+                      className="py-2 text-base"
+                      required
+                      value={formData.firstName}
+                      onChange={handleChange}
+                    />
+                    {errors.firstName && (
+                      <p className="text-red-500">{errors.firstName}</p>
+                    )}
                   </div>
                 </div>
 
@@ -162,14 +216,23 @@ export default function RegisterForm() {
                       value={formData.phone}
                       onChange={handleChange}
                     />
-                    {errors.phone && <p className="text-red-500">{errors.phone}</p>}
+                    {errors.phone && (
+                      <p className="text-red-500">{errors.phone}</p>
+                    )}
                   </div>
 
                   <div className="space-y-3">
                     <Label htmlFor="gmail" className="text-base">
                       Gmail
                     </Label>
-                    <Input id="gmail" type="gmail" placeholder="Nhập gmail" className="py-2 text-base" value={formData.gmail} onChange={handleChange} />
+                    <Input
+                      id="gmail"
+                      type="gmail"
+                      placeholder="Nhập gmail"
+                      className="py-2 text-base"
+                      value={formData.gmail}
+                      onChange={handleChange}
+                    />
                   </div>
                 </div>
 
@@ -188,7 +251,9 @@ export default function RegisterForm() {
                       value={formData.password}
                       onChange={handleChange}
                     />
-                    {errors.password && <p className="text-red-500">{errors.password}</p>}
+                    {errors.password && (
+                      <p className="text-red-500">{errors.password}</p>
+                    )}
                   </div>
 
                   <div className="space-y-3">
@@ -204,7 +269,9 @@ export default function RegisterForm() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                     />
-                    {errors.confirmPassword && <p className="text-red-500">{errors.confirmPassword}</p>}
+                    {errors.confirmPassword && (
+                      <p className="text-red-500">{errors.confirmPassword}</p>
+                    )}
                   </div>
                 </div>
 
@@ -230,7 +297,9 @@ export default function RegisterForm() {
                           <option value="AB" />
                           <option value="O" />
                         </datalist>
-                        {errors.bloodType && <p className="text-red-500">{errors.bloodType}</p>}
+                        {errors.bloodType && (
+                          <p className="text-red-500">{errors.bloodType}</p>
+                        )}
                       </div>
 
                       <div>
@@ -251,9 +320,17 @@ export default function RegisterForm() {
                   </div>
                   <div className="space-y-3">
                     <Label htmlFor="dob" className="text-base">
-                      Ngày tháng năm sinh<span className="text-red-500"> *</span>
+                      Ngày tháng năm sinh
+                      <span className="text-red-500"> *</span>
                     </Label>
-                    <Input id="dob" type="date" className="py-2 text-base" required value={formData.dob} onChange={handleChange} />
+                    <Input
+                      id="dob"
+                      type="date"
+                      className="w-full py-2 text-base focus:outline-none"
+                      required
+                      value={formData.dob}
+                      onChange={handleChange}
+                    />
                     {errors.dob && <p className="text-red-500">{errors.dob}</p>}
                   </div>
                 </div>
@@ -295,7 +372,9 @@ export default function RegisterForm() {
                       </Label>
                     </div>
                   </div>
-                  {errors.gender && <p className="text-red-500">{errors.gender}</p>}
+                  {errors.gender && (
+                    <p className="text-red-500">{errors.gender}</p>
+                  )}
                 </div>
 
                 {/* Address Info */}
@@ -317,7 +396,9 @@ export default function RegisterForm() {
                       <option value="Hồ Chí Minh" />
                       <option value="Đà Nẵng" />
                     </datalist>
-                    {errors.province && <p className="text-red-500">{errors.province}</p>}
+                    {errors.province && (
+                      <p className="text-red-500">{errors.province}</p>
+                    )}
                   </div>
 
                   <div className="space-y-3">
@@ -341,12 +422,24 @@ export default function RegisterForm() {
                   <Label htmlFor="address" className="text-base">
                     Địa chỉ<span className="text-red-500"> *</span>
                   </Label>
-                  <Input id="address" placeholder="Số nhà, thôn, xã,..." className="py-2 text-base" required value={formData.address} onChange={handleChange} />
-                  {errors.address && <p className="text-red-500">{errors.address}</p>}
+                  <Input
+                    id="address"
+                    placeholder="Số nhà, thôn, xã,..."
+                    className="py-2 text-base"
+                    required
+                    value={formData.address}
+                    onChange={handleChange}
+                  />
+                  {errors.address && (
+                    <p className="text-red-500">{errors.address}</p>
+                  )}
                 </div>
 
                 {/* Submit Button */}
-                <Button type="submit" className="w-full py-6 text-lg bg-red-700 hover:bg-red-800 mt-8 hover: cursor-pointer">
+                <Button
+                  type="submit"
+                  className="w-full py-6 text-lg bg-red-700 hover:bg-red-800 mt-8 hover: cursor-pointer"
+                >
                   Đăng kí
                 </Button>
               </form>
@@ -355,7 +448,7 @@ export default function RegisterForm() {
               <div className="text-center text-base pt-4">
                 Bạn đã có tài khoản?{" "}
                 <Link to="/login" className="text-blue-600 hover:underline">
-                  Đăng Nhập
+                  Đăng nhập
                 </Link>
               </div>
             </div>
