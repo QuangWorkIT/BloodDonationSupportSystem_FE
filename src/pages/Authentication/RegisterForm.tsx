@@ -276,12 +276,12 @@ export default function RegisterForm() {
                 </div>
 
                 {/* Personal Info */}
-                <div className="grid grid-cols-2 gap-6 pt-5">
+                <div className="grid sm:grid-cols-2 gap-6 pt-5">
                   <div className="space-y-3">
                     <Label htmlFor="bloodType" className="text-base">
                       Nhóm máu<span className="text-red-500"> *</span>
                     </Label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 sm:gap-4 gap-6">
                       <div>
                         <Input
                           id="bloodType"
