@@ -4,7 +4,7 @@ import BloodDonationNavbar from "@/components/layout/Navbar";
 
 function EventPage() {
   return (
-    <div className="overflow-x-hidden">
+    <div className="overflow-x-hidden bg-gray-50">
       <BloodDonationNavbar />
       <div className="mb-5 mt-[120px]">
         <Events />

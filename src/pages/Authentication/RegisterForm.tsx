@@ -125,7 +125,7 @@ export default function RegisterForm() {
             exit={{ opacity: 0, x: -20, y: -10 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="max-w-3xl mx-auto my-[50px] border rounded-lg shadow-lg p-8 space-y-6 bg-white min-h-[750px]">
+            <div className="max-w-3xl mx-auto md:my-[50px] border rounded-lg shadow-lg p-8 space-y-6 bg-white min-h-[750px]">
               <h1 className="text-3xl font-bold text-center text-red-600 mb-6">ĐĂNG KÍ THÀNH VIÊN</h1>
               <form onSubmit={handleSubmit}>
                 {/* Name Row */}
