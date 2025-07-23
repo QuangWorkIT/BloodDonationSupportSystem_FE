@@ -124,7 +124,7 @@ export default function BlogPage() {
                 />
               </div>
               <Select onValueChange={(value) => setSort(value as "latest" | "earliest")}>
-                <SelectTrigger className="w-full sm:w-48 h-12 font-medium bg-white border border-gray-200 text-gray-700 flex items-center gap-2 cursor-pointer rounded-xl shadow-sm">
+                <SelectTrigger className="w-full sm:w-48 font-medium bg-white border border-gray-200 text-gray-700 flex items-center gap-2 cursor-pointer rounded-xl shadow-sm px-4 py-6">
                   <Filter size={16} />
                   <SelectValue placeholder="Sắp xếp" />
                 </SelectTrigger>

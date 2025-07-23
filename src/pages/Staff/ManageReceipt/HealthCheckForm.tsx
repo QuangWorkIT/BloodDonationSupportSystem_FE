@@ -1,12 +1,16 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
+import { ArrowLeft} from "lucide-react";
 import type { DonorCardProps } from "@/pages/Staff/ManageReceipt/DonorCard";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";
 import { toast } from "react-toastify";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+import { Checkbox } from "@/components/ui/checkbox";
+
 interface HealthCheckData {
   fullName: string;
   birthDate: string;
@@ -14,29 +18,23 @@ interface HealthCheckData {
   weight: string;
   bloodPressure: string;
   temperature: string;
-  hbvYes: boolean;
-  hbvNo: boolean;
+  hbv: 'yes' | 'no' | null;
   hb: string;
-  hasReceivedBloodYes: boolean;
-  hasReceivedBloodNo: boolean;
+  hasReceivedBlood: 'yes' | 'no' | null;
   additionalNotes: string;
   staffId: string;
   processCompleted: boolean;
 }
 interface HealthCheckoutProps {
-  currentDonor: DonorCardProps | null;
-  handleCancle: () => void;
+  currentDonor: DonorCardProps;
+  handleCancel: () => void;
   refetchDonors: () => void;
 }
 interface FormErrors {
   [key: string]: string;
 }
 
-export default function HealthCheckForm({
-  currentDonor,
-  handleCancle,
-  refetchDonors,
-}: HealthCheckoutProps) {
+export default function HealthCheckForm({ currentDonor, handleCancel, refetchDonors }: HealthCheckoutProps) {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<HealthCheckData>({
@@ -46,164 +44,173 @@ export default function HealthCheckForm({
     weight: "",
     bloodPressure: "",
     temperature: "",
-    hbvYes: false,
-    hbvNo: false,
+    hbv: null,
     hb: "",
-    hasReceivedBloodYes: false,
-    hasReceivedBloodNo: false,
+    hasReceivedBlood: null,
     additionalNotes: "",
     staffId: user?.unique_name || "",
     processCompleted: false,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const [warnings, setWarnings] = useState<FormErrors>({});
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const target = e.target as HTMLInputElement;
-    const { id, type, value } = target;
-    const checked = target.checked;
-
-    if (id === "hbvYes") {
-      setFormData({ ...formData, hbvYes: true, hbvNo: false });
-      return;
-    }
-    if (id === "hbvNo") {
-      setFormData({ ...formData, hbvYes: false, hbvNo: true });
-      return;
-    }
-    if (id === "hasReceivedBloodYes") {
-      setFormData({
-        ...formData,
-        hasReceivedBloodYes: true,
-        hasReceivedBloodNo: false,
-      });
-      return;
-    }
-    if (id === "hasReceivedBloodNo") {
-      setFormData({
-        ...formData,
-        hasReceivedBloodYes: false,
-        hasReceivedBloodNo: true,
-      });
-      return;
-    }
-
-    setFormData({ ...formData, [id]: type === "checkbox" ? checked : value });
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    setFormData((prev) => ({ ...prev, [id]: type === 'checkbox' ? checked : value }));
   };
+
+  // Thêm useEffect để theo dõi thay đổi của formData
+  useEffect(() => {
+    // Tạo một phiên bản validateForm mới chỉ trả về warnings mà không cập nhật state
+    const validateFormData = () => {
+      const newWarnings: FormErrors = {};
+      let shouldSetNotQualified = false;
+      
+      // Kiểm tra chiều cao
+      const height = parseFloat(formData.height);
+      if (formData.height && !isNaN(height) && height > 2.5) {
+        newWarnings.height = "Chiều cao không hợp lệ (>2.5m).";
+        shouldSetNotQualified = true;
+      }
+      
+      // Kiểm tra cân nặng
+      const weight = parseFloat(formData.weight);
+      if (formData.weight && !isNaN(weight) && weight <= 42) {
+        newWarnings.weight = "Cân nặng dưới 42kg.";
+        shouldSetNotQualified = true;
+      }
+      
+      // Kiểm tra nhiệt độ
+      const temp = parseFloat(formData.temperature);
+      if (formData.temperature && !isNaN(temp) && (temp < 36.7 || temp > 37.2)) {
+        newWarnings.temperature = "Nhiệt độ ngoài khoảng 36.7°C đến 37.2°C.";
+        shouldSetNotQualified = true;
+      }
+      
+      // Kiểm tra hemoglobin
+      const hb = parseFloat(formData.hb);
+      if (formData.hb && !isNaN(hb) && hb < 12.0) {
+        newWarnings.hb = "Hemoglobin dưới 12.0 g/dL.";
+        shouldSetNotQualified = true;
+      }
+      
+      // Kiểm tra huyết áp
+      if (formData.bloodPressure) {
+        const bpMatch = formData.bloodPressure.match(/^(\d{2,3})\/(\d{2,3})$/);
+        if (bpMatch) {
+          const systolic = parseInt(bpMatch[1], 10);
+          const diastolic = parseInt(bpMatch[2], 10);
+          if (systolic < 90 || systolic > 120 || diastolic < 60 || diastolic > 80) {
+            newWarnings.bloodPressure = "Huyết áp ngoài khoảng 90/60 đến 120/80 mmHg.";
+            shouldSetNotQualified = true;
+          }
+        }
+      }
+      
+      // Kiểm tra viêm gan B
+      if (formData.hbv === 'yes') {
+        newWarnings.hbv = "Người hiến máu không được có lịch sử bị viêm gan B.";
+        shouldSetNotQualified = true;
+      }
+      
+      return { newWarnings, shouldSetNotQualified };
+    };
+    
+    // Thực hiện kiểm tra và cập nhật warnings
+    const { newWarnings, shouldSetNotQualified } = validateFormData();
+    setWarnings(newWarnings);
+    
+    // Nếu không đủ điều kiện, cập nhật hasReceivedBlood thành 'no'
+    if (shouldSetNotQualified && formData.hasReceivedBlood !== 'no') {
+      setFormData(prev => ({ ...prev, hasReceivedBlood: 'no' }));
+    }
+  }, [formData]); // Chạy lại mỗi khi formData thay đổi
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
+    const newWarnings: FormErrors = {};
+    if (!formData.fullName.trim()) newErrors.fullName = "Đây là trường thông tin bắt buộc.";
+    if (!formData.birthDate) newErrors.birthDate = "Đây là trường thông tin bắt buộc.";
+    if (!formData.height) newErrors.height = "Đây là trường thông tin bắt buộc.";
+    if (!formData.weight) newErrors.weight = "Đây là trường thông tin bắt buộc.";
+    if (!formData.bloodPressure) newErrors.bloodPressure = "Đây là trường thông tin bắt buộc.";
+    if (!formData.temperature) newErrors.temperature = "Đây là trường thông tin bắt buộc.";
+    if (!formData.hb) newErrors.hb = "Đây là trường thông tin bắt buộc.";
+    if (formData.hbv === null) newErrors.hbv = "Vui lòng chọn một tùy chọn.";
+    if (formData.hasReceivedBlood === null) newErrors.hasReceivedBlood = "Vui lòng chọn một tùy chọn.";
+    if (!formData.processCompleted) newErrors.processCompleted = "Bạn phải xác nhận hoàn tất quy trình.";
 
-    // Full Name validation
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Đây là trường thông tin bắt buộc.";
-    } else if (formData.fullName.length > 100) {
-      newErrors.fullName = "Tên không được vượt quá 100 ký tự.";
+    // Strict input validation
+    // Weight must be a number
+    const weight = parseFloat(formData.weight);
+    if (formData.weight && (isNaN(weight) || weight <= 0)) {
+      newErrors.weight = "Cân nặng phải là số hợp lệ.";
     }
-
-    if (!formData.hb.trim()) {
-      newErrors.hb = "Đây là trường thông tin bắt buộc.";
-    } else if (Number(formData.hb) >= 100 || Number(formData.hb) <= 0) {
-      newErrors.hb = "Thông số không hợp lệ";
+    // Temperature must be a number
+    const temp = parseFloat(formData.temperature);
+    if (formData.temperature && isNaN(temp)) {
+      newErrors.temperature = "Nhiệt độ phải là số hợp lệ.";
     }
-
-    // Birth Date validation
-    if (!formData.birthDate) {
-      newErrors.birthDate = "Đây là trường thông tin bắt buộc.";
-    } else {
-      const birthDate = new Date(formData.birthDate);
-      const currentDate = new Date();
-
-      if (birthDate > currentDate) {
-        newErrors.birthDate = "Ngày sinh không thể ở tương lai.";
-      } else if (currentDate.getFullYear() - birthDate.getFullYear() > 60) {
-        newErrors.birthDate = "Người hiến máu phải dưới 60 tuổi.";
+    // Hemoglobin must be a number
+    const hb = parseFloat(formData.hb);
+    if (formData.hb && isNaN(hb)) {
+      newErrors.hb = "Hemoglobin phải là số hợp lệ.";
+    }
+    // Blood pressure format
+    if (formData.bloodPressure) {
+      const bpMatch = formData.bloodPressure.match(/^(\d{2,3})\/(\d{2,3})$/);
+      if (!bpMatch) {
+        newErrors.bloodPressure = "Huyết áp phải theo định dạng VD: 120/80.";
       }
     }
-
-    // Height validation
-    if (!formData.height) {
-      newErrors.height = "Đây là trường thông tin bắt buộc.";
-    } else {
-      const height = parseFloat(formData.height);
-      if (isNaN(height)) {
-        newErrors.height = "Chiều cao phải là số.";
-      } else if (height <= 0) {
-        newErrors.height = "Chiều cao phải lớn hơn 0.";
-      } else if (height > 3) {
-        newErrors.height = "Chiều cao không thể vượt quá 3m.";
-      } else if (height < 0.5) {
-        newErrors.height = "Chiều cao không thể nhỏ hơn 0.5m.";
-      }
+    // Height must be a number
+    const height = parseFloat(formData.height);
+    if (formData.height && (isNaN(height) || height <= 0)) {
+      newErrors.height = "Chiều cao phải là số hợp lệ.";
     }
 
-    // Weight validation
-    if (!formData.weight) {
-      newErrors.weight = "Đây là trường thông tin bắt buộc.";
-    } else {
-      const weight = parseFloat(formData.weight);
-      if (isNaN(weight)) {
-        newErrors.weight = "Cân nặng phải là số.";
-      } else if (weight <= 0) {
-        newErrors.weight = "Cân nặng phải lớn hơn 0.";
-      } else if (weight > 200) {
-        newErrors.weight = "Cân nặng không thể vượt quá 200kg.";
-      } else if (weight < 2) {
-        newErrors.weight = "Cân nặng không thể nhỏ hơn 2kg.";
-      }
+    // Business constraints (set hasReceivedBlood to 'no' if violated)
+    let shouldSetNotQualified = false;
+    // Height business constraint: height <= 2.5m
+    if (!newErrors.height && height > 2.5) {
+      newWarnings.height = "Chiều cao không hợp lệ (>2.5m).";
+      shouldSetNotQualified = true;
     }
-
-    // Blood Pressure validation
-    if (!formData.bloodPressure) {
-      newErrors.bloodPressure = "Đây là trường thông tin bắt buộc.";
-    } else {
-      // Check for format like "120/80"
-      const bpRegex = /^\d{2,3}\/\d{2,3}$/;
-      if (!bpRegex.test(formData.bloodPressure)) {
-        newErrors.bloodPressure = "Huyết áp phải có định dạng như 120/80.";
-      } else {
-        const [systolic, diastolic] = formData.bloodPressure
-          .split("/")
-          .map(Number);
-        if (systolic <= 0 || diastolic <= 0) {
-          newErrors.bloodPressure = "Giá trị huyết áp phải dương.";
-        } else if (systolic > 300 || diastolic > 200) {
-          newErrors.bloodPressure = "Giá trị huyết áp quá cao.";
-        } else if (systolic < diastolic) {
-          newErrors.bloodPressure = "Huyết áp tâm thu phải cao hơn tâm trương.";
+    // Business constraint: weight <= 42kg
+    if (!newErrors.weight && weight <= 42) {
+      newWarnings.weight = "Cân nặng dưới 42kg.";
+      shouldSetNotQualified = true;
+    }
+    if (!newErrors.temperature && (temp < 36.7 || temp > 37.2)) {
+      newWarnings.temperature = "Nhiệt độ ngoài khoảng 36.7°C đến 37.2°C.";
+      shouldSetNotQualified = true;
+    }
+    if (!newErrors.hb && hb < 12.0) {
+      newWarnings.hb = "Hemoglobin dưới 12.0 g/dL.";
+      shouldSetNotQualified = true;
+    }
+    if (!newErrors.bloodPressure && formData.bloodPressure) {
+      const bpMatch = formData.bloodPressure.match(/^(\d{2,3})\/(\d{2,3})$/);
+      if (bpMatch) {
+        const systolic = parseInt(bpMatch[1], 10);
+        const diastolic = parseInt(bpMatch[2], 10);
+        if (systolic < 90 || systolic > 120 || diastolic < 60 || diastolic > 80) {
+          newWarnings.bloodPressure = "Huyết áp ngoài khoảng 90/60 đến 120/80 mmHg.";
+          shouldSetNotQualified = true;
         }
       }
     }
-
-    // Temperature validation
-    if (!formData.temperature) {
-      newErrors.temperature = "Đây là trường thông tin bắt buộc.";
-    } else {
-      const temp = parseFloat(formData.temperature);
-      if (isNaN(temp)) {
-        newErrors.temperature = "Nhiệt độ phải là số.";
-      } else if (temp < 36) {
-        newErrors.temperature = "Nhiệt độ quá thấp.";
-      } else if (temp > 38) {
-        newErrors.temperature = "Nhiệt độ quá cao.";
-      }
+    if (formData.hbv === 'yes') {
+      newWarnings.hbv = "Người hiến máu không được có lịch sử bị viêm gan B.";
+      shouldSetNotQualified = true;
     }
-
-    // Blood donation history validation
-    if (!formData.hasReceivedBloodYes && !formData.hasReceivedBloodNo) {
-      newErrors.hasReceivedBloodYes = "Vui lòng chọn một trong hai.";
+    // If any business constraint is violated, set hasReceivedBlood to 'no'
+    if (shouldSetNotQualified && formData.hasReceivedBlood !== 'no') {
+      setFormData((prev) => ({ ...prev, hasReceivedBlood: 'no' }));
     }
-    if (!formData.hbvYes && !formData.hbvNo) {
-      newErrors.hbvYes = "Vui lòng chọn một trong hai";
-    }
-
-    // Process completion validation
-    if (!formData.processCompleted) {
-      newErrors.processCompleted = "Bạn phải xác nhận hoàn tất quy trình.";
-    }
-
+    setWarnings(newWarnings);
     return newErrors;
   };
 
@@ -212,360 +219,150 @@ export default function HealthCheckForm({
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-    } else {
+      return;
+    }
       setErrors({});
-      console.log("Form submitted successfully:", formData);
+    setIsSubmitting(true);
+    
       const pressure = formData.bloodPressure.split("/");
+      const isHealth = !Object.values(warnings).some(Boolean);
       const payload = {
         systolic: Number(pressure[0]),
         diastolic: Number(pressure[1]),
-        temparature: Number(formData.temperature),
+      temperature: Number(formData.temperature),
         hb: Number(formData.hb),
-        hbv: formData.hbvNo,
+      hbv: formData.hbv === 'no',
         weight: Number(formData.weight),
         height: Number(formData.height),
-        isHealth: formData.hasReceivedBloodYes,
+      isHealth,
         description: formData.additionalNotes,
       };
 
       try {
-        setIsSubmitting(true);
-        const response = await authenApi.post(
-          `/api/blood-registrations/${currentDonor?.id}/health-procedures`,
-          payload
-        );
+      const response = await authenApi.post(`/api/blood-registrations/${currentDonor?.id}/health-procedures`, payload);
         if (response.status === 200) {
-          console.log("Checkout success");
           toast.success("Đã khám sức khỏe thành công!");
-          handleCancle();
+        handleCancel();
           refetchDonors();
         }
       } catch (error) {
         toast.error("Gửi đơn thất bại!");
-        console.log("Submit checkout donor fail", error);
       } finally {
         setIsSubmitting(false);
-      }
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-6 border rounded-lg shadow-lg p-8 space-y-6 bg-white">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-normal text-black">
-          Đơn đánh giá tình trạng bệnh
-        </h1>
-        <button
-          onClick={handleCancle}
-          className="text-gray-500 hover:text-gray-700 cursor-pointer"
-        >
-          <X size={20} />
-        </button>
+    <div className="bg-gray-50/50 min-h-screen p-4 sm:p-6 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="mb-8">
+            <Button variant="ghost" onClick={handleCancel} className="mb-4">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Quay lại danh sách
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Phiếu khám sức khỏe</h1>
+            <p className="text-gray-500 mt-1">Điền thông tin khám cho tình nguyện viên: <span className="font-semibold">{currentDonor.memberName}</span></p>
+        </header>
+
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-8 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                {/* Basic Info */}
+                <div className="md:col-span-2">
+                    <h2 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Thông tin cơ bản</h2>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Full Name */}
-        <div className="flex items-center gap-4 mb-[40px]">
-          <Label htmlFor="fullName" className="text-base w-1/4">
-            Tên người nhận
-          </Label>
-          <div className="flex-1">
-            <Input
-              id="fullName"
-              placeholder="Nhập tên người nhận"
-              className="py-4 text-base bg-[#F4F5F8] border-none"
-              value={formData.fullName}
-              onChange={handleChange}
-            />
-            {errors.fullName && (
-              <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
-            )}
+                <div>
+                    <Label htmlFor="fullName">Họ và tên</Label>
+                    <Input id="fullName" value={formData.fullName} disabled className="mt-1"/>
           </div>
+                <div>
+                    <Label htmlFor="birthDate">Ngày sinh</Label>
+                    <Input id="birthDate" type="date" value={formData.birthDate} disabled className="mt-1"/>
         </div>
 
-        {/* Birth Date */}
-        <div className="flex items-center gap-4 mb-[40px]">
-          <Label htmlFor="birthDate" className="text-base w-1/4">
-            Ngày tháng năm sinh
-          </Label>
-          <div className="flex-1">
-            <Input
-              id="birthDate"
-              type="date"
-              className="py-4 text-base h-[40px] border-none"
-              value={formData.birthDate}
-              onChange={handleChange}
-              max={new Date().toISOString().split("T")[0]} // Prevent future dates
-            />
-            {errors.birthDate && (
-              <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>
-            )}
+                {/* Vitals */}
+                <div className="md:col-span-2 mt-4">
+                    <h2 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Chỉ số sức khỏe</h2>
+                </div>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                    <div>
+                        <Label htmlFor="height">Chiều cao (m)</Label>
+                        <Input id="height" type="number" step="0.01" placeholder="VD: 1.70" value={formData.height} onChange={handleChange} className="mt-1"/>
+                        {errors.height && <p className="text-red-500 text-sm mt-1">{errors.height}</p>}
+                        {warnings.height && <p className="text-yellow-600 text-sm mt-1">{warnings.height}</p>}
+          </div>
+                     <div>
+                        <Label htmlFor="weight">Cân nặng (kg)</Label>
+                        <Input id="weight" type="number" placeholder="VD: 65" value={formData.weight} onChange={handleChange} className="mt-1"/>
+                        {errors.weight && <p className="text-red-500 text-sm mt-1">{errors.weight}</p>}
+                        {warnings.weight && <p className="text-yellow-600 text-sm mt-1">{warnings.weight}</p>}
+        </div>
+                     <div>
+                        <Label htmlFor="bloodPressure">Huyết áp (mmHg)</Label>
+                        <Input id="bloodPressure" placeholder="VD: 120/80" value={formData.bloodPressure} onChange={handleChange} className="mt-1"/>
+                        {errors.bloodPressure && <p className="text-red-500 text-sm mt-1">{errors.bloodPressure}</p>}
+                        {warnings.bloodPressure && <p className="text-yellow-600 text-sm mt-1">{warnings.bloodPressure}</p>}
+          </div>
+                     <div>
+                        <Label htmlFor="temperature">Nhiệt độ (°C)</Label>
+                        <Input id="temperature" type="number" step="0.1" placeholder="VD: 37.0" value={formData.temperature} onChange={handleChange} className="mt-1"/>
+                        {errors.temperature && <p className="text-red-500 text-sm mt-1">{errors.temperature}</p>}
+                        {warnings.temperature && <p className="text-yellow-600 text-sm mt-1">{warnings.temperature}</p>}
           </div>
         </div>
+                <div>
+                    <Label htmlFor="hb">Hemoglobin (g/dL)</Label>
+                    <Input id="hb" type="number" step="0.1" placeholder="VD: 13.5" value={formData.hb} onChange={handleChange} className="mt-1"/>
+                    {errors.hb && <p className="text-red-500 text-sm mt-1">{errors.hb}</p>}
+                    {warnings.hb && <p className="text-yellow-600 text-sm mt-1">{warnings.hb}</p>}
+          </div>
 
-        {/* Height and Weight */}
-        <div className="flex items-center gap-4 mb-[40px]">
-          <Label htmlFor="height" className="text-base w-1/4">
-            Chiều cao (m) <span className="text-red-500">*</span>
-          </Label>
-          <div className="flex-1">
-            <Input
-              id="height"
-              type="number"
-              step="0.01"
-              min="0.5"
-              max="3"
-              placeholder="Nhập chiều cao"
-              className="py-4 text-base bg-[#F4F5F8] border-none"
-              value={formData.height}
-              onChange={handleChange}
-            />
-            {errors.height && (
-              <p className="text-red-500 text-sm mt-1">{errors.height}</p>
-            )}
+                {/* Health Questions */}
+                <div className="md:col-span-2 mt-4">
+                    <h2 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Câu hỏi sức khỏe</h2>
           </div>
-          <Label htmlFor="weight" className="text-base w-1/4">
-            Cân nặng (kg) <span className="text-red-500">*</span>
-          </Label>
-          <div className="flex-1">
-            <Input
-              id="weight"
-              type="number"
-              min="2"
-              max="300"
-              placeholder="Nhập cân nặng"
-              className="py-4 text-base bg-[#F4F5F8] border-none"
-              value={formData.weight}
-              onChange={handleChange}
-            />
-            {errors.weight && (
-              <p className="text-red-500 text-sm mt-1">{errors.weight}</p>
-            )}
-          </div>
+                <div>
+                    <Label>Đã từng bị viêm gan B chưa?</Label>
+                    <RadioGroup onValueChange={(v) => setFormData({...formData, hbv: v as any})} className="mt-2 space-y-2">
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="hbvNo" /><Label htmlFor="hbvNo">Chưa</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="hbvYes" /><Label htmlFor="hbvYes">Rồi</Label></div>
+                    </RadioGroup>
+                    {errors.hbv && <p className="text-red-500 text-sm mt-1">{errors.hbv}</p>}
+                    {warnings.hbv && <p className="text-yellow-600 text-sm mt-1">{warnings.hbv}</p>}
         </div>
-
-        {/* Blood Pressure and Temperature */}
-        <div className="flex items-center gap-4 mb-[40px]">
-          <Label htmlFor="bloodPressure" className="text-base w-1/4">
-            Huyết áp (mmHg) <span className="text-red-500">*</span>
-          </Label>
-          <div className="flex-1">
-            <Input
-              id="bloodPressure"
-              placeholder="VD: 120/80"
-              className="py-4 text-base bg-[#F4F5F8] border-none"
-              value={formData.bloodPressure}
-              onChange={handleChange}
-            />
-            {errors.bloodPressure && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.bloodPressure}
-              </p>
-            )}
-          </div>
-          <Label htmlFor="temperature" className="text-base w-1/4">
-            Nhiệt độ cơ thể (°C) <span className="text-red-500">*</span>
-          </Label>
-          <div className="flex-1">
-            <Input
-              id="temperature"
-              type="number"
-              step="0.1"
-              min="25"
-              max="45"
-              placeholder="Nhập nhiệt độ"
-              className="py-4 text-base bg-[#F4F5F8] border-none"
-              value={formData.temperature}
-              onChange={handleChange}
-            />
-            {errors.temperature && (
-              <p className="text-red-500 text-sm mt-1">{errors.temperature}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-6 mb-[40px]">
-          <Label className="text-base w-1/4">
-            Viêm gan B<span className="text-red-500">*</span>
-          </Label>
-          <div className="flex flex-col gap-1 flex-1 ">
-            <div className="flex gap-10">
-              <div className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  id="hbvYes"
-                  value="true"
-                  checked={formData.hbvYes}
-                  onChange={handleChange}
-                  className="w-5 h-5"
-                  required
-                />
-                <Label htmlFor="hasReceivedBloodYes" className="text-base">
-                  Có
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  id="hbvNo"
-                  value="false"
-                  checked={formData.hbvNo}
-                  onChange={handleChange}
-                  className="w-5 h-5"
-                  required
-                />
-                <Label htmlFor="hasReceivedBloodNo" className="text-base">
-                  Không
-                </Label>
+                {/* Eligibility Status */}
+                <div className="mt-4">
+                  <Label className="mb-2 block">Đủ điều kiện hiến máu?</Label>
+                  <span className={`font-bold text-base px-3 py-1 rounded-full ${Object.values(warnings).some(Boolean) ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>{Object.values(warnings).some(Boolean) ? 'Không đủ điều kiện hiến máu' : 'Đủ điều kiện hiến máu'}</span>
+                </div>
+                <div className="md:col-span-2">
+                    <Label htmlFor="additionalNotes">Ghi chú thêm</Label>
+                    <textarea id="additionalNotes" value={formData.additionalNotes} onChange={handleChange} className="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C14B53]" placeholder="Ghi chú của nhân viên y tế (nếu có)..." rows={4} />
               </div>
             </div>
-            {errors.hbvYes && (
-              <p className="text-red-500 text-sm mt-1 w-full">
-                {errors.hbvYes}
-              </p>
-            )}
+
+            <div className="border-t pt-6 space-y-4">
+                <div className="flex items-start space-x-3">
+                    <Checkbox id="processCompleted" checked={formData.processCompleted} onCheckedChange={(c) => setFormData({...formData, processCompleted: !!c})} />
+                    <div className="grid gap-1.5 leading-none">
+                        <label htmlFor="processCompleted" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            Xác nhận hoàn tất quy trình khám
+                        </label>
+                        <p className="text-xs text-muted-foreground">
+                           Bằng việc chọn, bạn xác nhận đã hoàn thành khám cho tình nguyện viên này.
+                        </p>
           </div>
         </div>
+                {errors.processCompleted && <p className="text-red-500 text-sm mt-1">{errors.processCompleted}</p>}
 
-        <div className="flex items-center gap-4 mb-[40px]">
-          <Label htmlFor="hb" className="text-base w-1/4">
-            Hàm lượng hemoglobin (g/dL)
-          </Label>
-          <div className="flex-1">
-            <Input
-              id="hb"
-              placeholder="VD: 13.5, 18.0,..."
-              className="py-4 text-base bg-[#F4F5F8] border-none"
-              value={formData.hb}
-              onChange={handleChange}
-            />
-            {errors.hb && (
-              <p className="text-red-500 text-sm mt-1">{errors.hb}</p>
-            )}
-          </div>
+                <div className="flex justify-end gap-3">
+                    <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>Hủy</Button>
+                    <Button type="submit" disabled={!formData.processCompleted || isSubmitting}>
+                        {isSubmitting ? "Đang gửi..." : "Gửi kết quả"}
+                    </Button>
         </div>
-
-        {/* Blood Donation History (radio buttons flex row) */}
-        <div className="flex items-center gap-6 mb-[40px]">
-          <Label className="text-base w-1/4">
-            Được phép truyền máu<span className="text-red-500">*</span>
-          </Label>
-          <div className="flex flex-row gap-10 flex-1">
-            <div className="flex items-center gap-2">
-              <input
-                type="radio"
-                id="hasReceivedBloodYes"
-                name="hasReceivedBlood"
-                value="yes"
-                checked={formData.hasReceivedBloodYes}
-                onChange={handleChange}
-                className="w-5 h-5"
-                required
-              />
-              <Label htmlFor="hasReceivedBloodYes" className="text-base">
-                Có
-              </Label>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="radio"
-                id="hasReceivedBloodNo"
-                name="hasReceivedBlood"
-                value="no"
-                checked={formData.hasReceivedBloodNo}
-                onChange={handleChange}
-                className="w-5 h-5"
-                required
-              />
-              <Label htmlFor="hasReceivedBloodNo" className="text-base">
-                Không
-              </Label>
-            </div>
-          </div>
-          {errors.hasReceivedBloodYes && (
-            <p className="text-red-500 text-sm mt-1 w-full pl-[25%]">
-              {errors.hasReceivedBloodYes}
-            </p>
-          )}
+        </form>
         </div>
-
-        {/* Additional Notes - flex column with full width textarea */}
-        <div className="flex flex-col gap-2 mb-[40px]">
-          <Label htmlFor="additionalNotes" className="text-base w-full">
-            Ghi chú
-          </Label>
-          <textarea
-            id="additionalNotes"
-            placeholder="(Ghi chú thêm của nhân viên y tế cho bệnh nhân)"
-            className="py-2 px-3 text-base bg-[#F4F5F8] w-full h-24 resize-none border-none rounded-md"
-            value={formData.additionalNotes}
-            onChange={handleChange}
-            maxLength={500}
-          />
-        </div>
-
-        {/* Staff ID */}
-        <div className="flex items-center gap-4 mb-[40px]">
-          <Label htmlFor="staffId" className="text-base w-1/4">
-            Tên / ID nhân viên
-          </Label>
-          <div className="flex-1">
-            <Input
-              id="staffId"
-              placeholder="Nhập ID nhân viên"
-              className="py-4 text-base bg-[#F4F5F8] border-none"
-              value={formData.staffId}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        {/* Process Completion Confirmation */}
-        <div className="space-y-3">
-          <label
-            htmlFor="processCompleted"
-            className="flex items-center gap-2 cursor-pointer select-none"
-          >
-            <input
-              id="processCompleted"
-              type="checkbox"
-              checked={formData.processCompleted}
-              onChange={handleChange}
-              className="w-5 h-5"
-              required
-            />
-            <span className="text-base">
-              Xác nhận hoàn tất quy trình khám đối với bệnh nhân này
-              <span className="text-red-500">*</span>
-            </span>
-          </label>
-          {errors.processCompleted && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.processCompleted}
-            </p>
-          )}
-        </div>
-
-        {/* Buttons */}
-        <div className="flex gap-4 pt-6">
-          <Button
-            disabled={!formData.processCompleted || isSubmitting}
-            type="submit"
-            className="px-12 py-2 text-base rounded-full bg-[#BA1B1D] hover:bg-[#A0181A] cursor-pointer"
-          >
-            Gửi
-          </Button>
-          <Button
-            disabled={isSubmitting}
-            type="button"
-            variant="outline"
-            className="px-12 py-2 text-base rounded-full bg-[#FBA3A5] hover:bg-[#E99294] text-white border-[#FBA3A5] cursor-pointer"
-          >
-            Hủy
-          </Button>
-        </div>
-      </form>
     </div>
   );
 }

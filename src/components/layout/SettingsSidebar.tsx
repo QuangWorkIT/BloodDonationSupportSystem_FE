@@ -250,11 +250,11 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ isMobile = false, onC
       <div className={`${isMobile ? 'px-4 pb-4' : 'px-8 pb-8'}`}>
         <div className="flex flex-col gap-3">
           <button
-            onClick={() => navigate('/home')}
+            onClick={() => user?.role === 'Staff' ? navigate('/staff') : navigate('/home')}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 transition cursor-pointer text-base"
-            aria-label="Quay lại trang chủ"
+            aria-label={user?.role === 'Staff' ? 'Về trang nhân viên' : 'Quay lại trang chủ'}
           >
-            <FaUndo /> Quay lại trang chủ
+            <FaUndo /> {user?.role === 'Staff' ? 'Về trang nhân viên' : 'Quay lại trang chủ'}
           </button>
           <button
             onClick={handleLogout}

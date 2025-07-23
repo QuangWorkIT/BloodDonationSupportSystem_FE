@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { isTokenExpired } from "@/utils/jwt"
 import useRefreshToken from "./useRefreshToken";
 import type { User } from "@/types/User";
-import { getUser } from "@/utils/permisson";
+import { getUserByToken } from "@/utils/permisson";
 
 interface AuthContextType {
     accessToken: string | null,
@@ -42,7 +42,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
             setToken(validToken);
             if (validToken !== null) {
-                const user = getUser(validToken);
+                const user = await getUserByToken(validToken);
                 setUser(user);
             } else {
                 console.log("Token is wrong!")
