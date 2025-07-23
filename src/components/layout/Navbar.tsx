@@ -66,7 +66,7 @@ export default function BloodDonationNavbar() {
   return (
     <nav
       className={`fixed left-1/2 top-6 z-50 transition-all duration-300 mb-10 mx-auto
-        bg-white backdrop-blur-xl border border-white/20
+        bg-white/30 backdrop-blur-xl border border-white/20
         ${scrolled
           ? 'max-w-5xl w-[98vw] py-2 px-6 h-[50px] md:h-[60px] shadow-xl bg-white/80 border-gray-100'
           : 'max-w-6xl w-[99vw] py-8 px-16 h-[50px] md:h-[70px] shadow-md'}
