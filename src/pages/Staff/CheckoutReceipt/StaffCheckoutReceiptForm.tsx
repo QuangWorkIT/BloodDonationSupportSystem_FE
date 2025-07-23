@@ -22,7 +22,9 @@ const formSchema = z.object({
   receiverName: z.string().min(1, "Vui lòng nhập tên người nhận"),
   bloodType: z.string().min(1, "Vui lòng chọn nhóm máu."),
   bloodTypeRh: z.string().min(1, "Vui lòng chọn nhóm máu."),
-  volume: z.string().refine((val) => /^\d{2,3}$/.test(val), "Lượng máu phải là số hợp lệ (vd: 250)"),
+  volume: z.string()
+    .refine((val) => /^\d{2,3}$/.test(val), "Lượng máu phải là số hợp lệ (vd: 250)")
+    .refine((val) => Number(val) <= 450, "Lượng máu không được vượt quá 450ml."),
   note: z.string().optional(),
   staffId: z.string().min(1, "Vui lòng nhập tên hoặc ID nhân viên y tế"),
   confirm: z.boolean().refine((val) => val === true, {
@@ -80,8 +82,8 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
   const isConfirmChecked = form.watch("confirm");
 
   return (
-    <div className="w-full">
-      <div className="w-[866px] mx-auto px-8 py-6 bg-white rounded-lg shadow-md border">
+    <div className="bg-gray-50 min-h-screen w-full py-12">
+      <div className="w-full max-w-3xl mx-auto px-8 py-8 bg-white rounded-2xl shadow-lg mt-10 mb-10">
         <div className="flex justify-between">
           <h2 className="text-[27px] font-normal mb-6">Đơn xác nhận hoàn tất nhận máu</h2>
           <svg
@@ -177,9 +179,9 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
               render={({ field }) => (
                 <FormItem className="flex justify-between text-nowrap">
                   <FormLabel className="text-lg text-nowrap">Lượng máu đã nhận (ml)</FormLabel>
-                  <div className="flex flex-col items-start gap-2">
+                  <div className="flex flex-col items-start gap-2 w-full max-w-2xl">
                     <FormControl>
-                      <Input className="w-[550px] h-[50px]" placeholder="Vd: 250, 350,..." {...field} />
+                      <Input className="w-full h-[50px] bg-gray-50" placeholder="Vd: 250, 350,..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </div>

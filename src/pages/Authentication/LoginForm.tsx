@@ -14,8 +14,8 @@ import { useEffect, useState } from "react";
 import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
-import { getUser } from "@/utils/permisson";
-import api from "@/lib/instance";
+import {  getUserByToken } from "@/utils/permisson";
+import api from '@/lib/instance'
 import type { RecaptchaVerifier } from "firebase/auth";
 import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
@@ -61,7 +61,7 @@ export default function LoginForm() {
       }
       setToken(data.token);
 
-      const user = getUser(data.token);
+      const user = await getUserByToken(data.token);
       if (user === null) {
         return;
       }
@@ -95,7 +95,7 @@ export default function LoginForm() {
       const data = res.data;
       setToken(data.token); // store token
 
-      const user = getUser(data.token);
+      const user = await getUserByToken(data.token);
       if (user === null) {
         return;
       }

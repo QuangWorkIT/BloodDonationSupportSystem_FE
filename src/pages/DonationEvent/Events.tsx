@@ -200,12 +200,21 @@ const Events = () => {
 
       {/* Conditional Rendering of Events List or Volunteer Form */}
       {isRegistrationFormOpen ? (
-        <DonationRegisterForm 
-          eventId={currentEventId} 
-          eventTime={currentEventTime} 
-          event={currentEvent}
-          setRegistraionFormOpen={setRegistraionFormOpen} 
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <DonationRegisterForm
+              eventId={currentEventId}
+              eventTime={currentEventTime}
+              event={currentEvent}
+              setRegistraionFormOpen={setRegistraionFormOpen}
+            />
+          </motion.div>
+        </AnimatePresence>
       ) : (
         <AnimatePresence mode="wait">
           {activeTab === "donation-events" ? (
@@ -326,7 +335,7 @@ const Events = () => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              <VolunteerForm />
+              <VolunteerForm setActiveTab={() => setActiveTab("donation-events")}/>
             </motion.div>
           )}
         </AnimatePresence>
