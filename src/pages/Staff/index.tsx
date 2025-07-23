@@ -9,10 +9,12 @@ function Staffhome() {
     <div>
       <StaffNavbar/>
       <div className="flex">
-        <div className="w-[250px] min-h-screen">
+        <div className="w-[280px] min-h-screen pt-[125px]">
           <StaffSidebar activeItem= {activeItem} setActiveItem={setActiveItem} />
         </div>
+        <main className="flex-1 p-8 pt-[125px]">
         <Outlet />
+        </main>
       </div>
     </div>
   )

@@ -1,76 +1,103 @@
-import maleIcon from '@/assets/images/male icon.png'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
+import { Phone, Check, X, ClipboardCheck, Calendar } from 'lucide-react';
+import { motion } from 'framer-motion';
+import maleIcon from '@/assets/images/male icon.png';
 
 export interface DonorCardProps {
-    id: number,
-    memberName: string,
-    phone: string,
-    dob: string,
-    bloodType: string,
-    eventTime: string,
-    isApproved: boolean | null,
-    handleHeathCheckout: () => void,
-    setCurrentDonorId: (id: number) => void,
-    setIsShowModal: (isShow:boolean) => void
+    id: number;
+    memberName: string;
+    phone: string;
+    dob: string;
+    bloodType: string;
+    eventTime: string;
+    isApproved: boolean | null;
+    handleHealthCheckout: () => void;
+    setCurrentDonorId: (id: number) => void;
+    setIsShowModal: (isShow:boolean) => void;
 }
 
-function DonorCard({id, memberName, phone, bloodType, eventTime, isApproved, handleHeathCheckout, setCurrentDonorId, setIsShowModal }: DonorCardProps) {
+function DonorCard({ id, memberName, phone, dob, bloodType, isApproved, handleHealthCheckout, setCurrentDonorId, setIsShowModal }: DonorCardProps) {
+    
+    const getStatus = () => {
+        if (isApproved === true) {
+            return <span className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">Đã duyệt</span>;
+        }
+        if (isApproved === false) {
+            return <span className="inline-block px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">Đã từ chối</span>;
+        }
+        return <span className="inline-block px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">Chờ duyệt</span>;
+    };
+
     return (
-        <div className='w-full rounded-[7px] shadow-md flex bg-white p-5 gap-10'>
-            <div className="p-3 mx-auto my-auto">
-                <img src={maleIcon} alt="member img" />
+        <motion.div 
+            className='bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden h-full cursor-pointer max-w-xs'
+            whileHover={{ y: -5 }}
+        >
+            <div className="p-5 flex-grow">
+                    <div className="flex items-center gap-4">
+                        <img src={maleIcon} alt="avatar" className="w-12 h-12 rounded-full" />
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <p className='text-lg font-bold text-gray-800'>{memberName}</p>
+                            {getStatus()}
             </div>
-            <div className="flex-1 flex flex-col gap-2">
-                <div className="flex justify-between">
-                    <p className='text-[23px] font-bold'>{memberName}</p>
-
-                    <div className="rounded-full bg-[#7F5ED9] p-2 hover:cursor-pointer hover:scale-110 transition duration-150">
-                        <svg
-                            width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" clipRule="evenodd" d="M3.09836 1.21451C3.33836 0.974484 3.62666 0.788232 3.94412 0.668112C4.26159 0.547992 4.60097 0.49675 4.93975 0.517786C5.27853 0.538821 5.60896 0.631653 5.90913 0.790122C6.2093 0.948592 6.47234 1.16908 6.6808 1.43695L9.1408 4.60085C9.593 5.18037 9.75251 5.93695 9.57397 6.64963L8.82324 9.65402C8.7842 9.80992 8.78619 9.97327 8.82901 10.1282C8.87184 10.2831 8.95405 10.4242 9.06763 10.5379L12.4393 13.9082C12.553 14.0218 12.6942 14.104 12.8491 14.1468C13.004 14.1896 13.1673 14.1916 13.3232 14.1526L16.3262 13.4018C16.6784 13.3139 17.046 13.3071 17.4012 13.3822C17.7564 13.4572 18.0899 13.6121 18.3764 13.835L21.5403 16.295C22.6774 17.1789 22.7828 18.8604 21.7642 19.8774L20.3447 21.297C19.3306 22.3111 17.813 22.7574 16.3979 22.2599C12.778 20.9858 9.49137 18.913 6.78178 16.1955C4.06369 13.486 1.99048 10.1994 0.715922 6.57939C0.218361 5.16427 0.664703 3.64671 1.67885 2.6311L3.09836 1.21305V1.21451Z" fill="black" />
-                        </svg>
+                        <p className='text-sm text-gray-500 mt-0.5'>
+                            Loại máu: <span className='font-semibold text-[#C14B53]'>{bloodType}</span>
+                        </p>
                     </div>
                 </div>
-                <p className='text-[#7D7D7F] text-[18px]'>Số điện thoại:<span className='text-black font-semibold'> {phone}</span></p>
-                <p className='text-[#7D7D7F] text-[18px]'>Loại máu:<span className='text-black font-semibold'> {bloodType}</span></p>
-                <div className="flex justify-between">
-                    <p className='text-[#7D7D7F] text-[18px]'>Lịch hẹn: <span className='text-black font-semibold'> {eventTime}</span></p>
-                    <div className="flex gap-3">
-                        {
-                            isApproved === null ? (
-                                <>
-                                    <Button
-                                        onClick={() => {
-                                            setIsShowModal(true)
-                                            setCurrentDonorId(id)
-                                        }}
-                                        className='bg-[#C14B53] hover:cursor-pointer hover:bg-[#C14B53] hover:scale-110 font-semibold text-[16px] w-[100px] transition duration-150 '>
-                                        Từ chối
-                                    </Button>
-
-                                    <Button
-                                        onClick={handleHeathCheckout}
-                                        className='bg-[#FFC107] hover:cursor-pointer hover:bg-[#FFC107] hover:scale-110 text-black font-bold text-[16px] w-[100px] transition duration-150 '>
-                                        Check-in
-                                    </Button></>
-                            ) : (
-                                isApproved ? (
-                                    <Button
-                                        className='bg-[#14AF18] hover:cursor-pointer hover:bg-[#14AF18] hover:scale-110 font-semibold text-[16px] w-[100px] transition duration-150 '>
-                                        Đã duyệt
-                                    </Button>) : (
-                                    <Button
-                                        className='bg-[#C14B53] hover:cursor-pointer hover:bg-[#C14B53] hover:scale-110 font-semibold text-[16px] w-[100px] transition duration-150 '>
-                                        Đã từ chối
-                                    </Button>
-                                )
-                            )
-                        }
+                <div className="mt-3 space-y-1">
+                    <div className="flex items-center text-sm text-gray-600">
+                        <Phone className="h-4 w-4 mr-2 text-blue-500" />
+                        <a
+                            href={`tel:${phone}`}
+                            className="font-semibold text-blue-600 hover:underline hover:text-blue-800 transition-colors duration-150"
+                            title={`Gọi cho ${memberName}`}
+                        >
+                            {phone}
+                        </a>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                        <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                        <span>Ngày sinh: {dob}</span>
                     </div>
                 </div>
             </div>
+            
+            <div className="bg-gray-50/70 p-3 flex gap-2 flex-wrap">
+                {isApproved === null && (
+                    <>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full cursor-pointer"
+                            onClick={() => {
+                                setIsShowModal(true);
+                                setCurrentDonorId(id);
+                            }}
+                        >
+                            <X className="h-4 w-4 mr-1.5" />
+                            Từ chối
+                        </Button>
+                        <Button 
+                            size="sm" 
+                            className="w-full bg-green-600 hover:bg-green-700 cursor-pointer"
+                            onClick={handleHealthCheckout}
+                        >
+                            <Check className="h-4 w-4 mr-1.5" />
+                            Check-in
+                        </Button>
+                    </>
+                )}
+                 {isApproved === true && (
+                     <Button variant="outline" size="sm" className="w-full text-green-600 border-green-200 bg-green-50 cursor-pointer" disabled>
+                        <ClipboardCheck className="h-4 w-4 mr-1.5"/>
+                        Đã check-in
+                    </Button>
+                )}
         </div>
+        </motion.div>
     )
 }
 
-export default DonorCard
+export default DonorCard;

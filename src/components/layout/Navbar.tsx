@@ -189,16 +189,6 @@ export default function BloodDonationNavbar() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {menuOpen && (
-          <>
-            <motion.div
-              className="fixed inset-0 bg-black bg-opacity-40 z-40 cursor-pointer"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMenuOpen(false)}
-              aria-label="Đóng menu"
-              tabIndex={-1}
-            />
             <motion.div
               ref={mobileMenuRef}
               initial={{ opacity: 0, y: -20 }}
@@ -236,7 +226,6 @@ export default function BloodDonationNavbar() {
                 </Link>
               ))}
             </motion.div>
-          </>
         )}
       </AnimatePresence>
     </nav>

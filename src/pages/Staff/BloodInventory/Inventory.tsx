@@ -1,24 +1,13 @@
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Trash2, Bell } from "lucide-react";
+import { Trash2, Search, AlertTriangle } from "lucide-react";
 import { BloodUnit } from "./BloodUnit";
 import { authenApi } from "@/lib/instance";
 import LoadingSpinner from "@/components/layout/Spinner";
 import { Link } from "react-router-dom";
-
-const bloodTypes = [
-  { type: "A-", units: 112 },
-  { type: "B-", units: 170 },
-  { type: "AB-", units: 82 },
-  { type: "O-", units: 32 },
-  { type: "A+", units: 142 },
-  { type: "B+", units: 78 },
-  { type: "AB+", units: 66 },
-  { type: "O+", units: 92 },
-];
 
 interface Entry {
   bloodUnitId: number;
@@ -32,22 +21,26 @@ interface Entry {
   description?: string | null;
 }
 
+interface BloodSummary {
+  bloodTypeName: string;
+  bloodUnitCount: number;
+}
+
+interface BloodAlert {
+  bloodComponentName: string;
+  bloodTypeName: string;
+  volume: number;
+}
+
 export default function Inventory() {
-  const [bloodInventories, setBloodInventories] = useState([]);
+  const [bloodInventories, setBloodInventories] = useState<Entry[]>([]);
+  const [bloodSummary, setBloodSummary] = useState<BloodSummary[]>([]);
+  const [criticalAlerts, setCriticalAlerts] = useState<{lowStock: {type: string, stock: number, threshold: number}[]}>({lowStock: []});
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selectedDeleteId, setSelectedDeleteId] = useState<number | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  // Mock critical alert data (replace with real data as needed)
-  const criticalAlerts = {
-    lowStock: [
-      { type: 'O', stock: 5, threshold: 10 },
-      { type: 'A', stock: 7, threshold: 10 },
-    ],
-    // lowEventRegistration: [], // Not used for staff
-  };
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -60,12 +53,8 @@ export default function Inventory() {
       setLoading(true);
       try {
         const response = await authenApi.get("/api/blood-inventories/paged", {
-          params: {
-            pageNumber: currentPage,
-            pageSize: 4,
-          },
+          params: { pageNumber: currentPage, pageSize: 6 },
         });
-
         if (response.data?.isSuccess) {
           setBloodInventories(response.data.data.items);
           setTotalPages(response.data.data.totalPages);
@@ -76,16 +65,60 @@ export default function Inventory() {
         setLoading(false);
       }
     };
-
     fetchInventories();
   }, [currentPage]);
+
+  useEffect(() => {
+    const fetchSummaryAndAlerts = async () => {
+      try {
+        // Fetch blood summary
+        const summaryResponse = await authenApi.get("/api/blood-inventories/summarize");
+        if (summaryResponse.data?.isSuccess) {
+          setBloodSummary(summaryResponse.data.data);
+        }
+
+        // Fetch alerts
+        const alertsResponse = await authenApi.get("/api/blood-inventories/alert");
+        if (alertsResponse.data?.isSuccess) {
+          // Process alerts data to match the expected format
+          const alertData = alertsResponse.data.data;
+          const lowStockTypes = new Set<string>();
+          const lowStockItems: {type: string, stock: number, threshold: number}[] = [];
+          
+          // Find blood types with low volume
+          alertData.forEach((item: BloodAlert) => {
+            if (item.volume === 0) {
+              // Extract just the blood type (A, B, AB, O) without the +/- for grouping
+              const baseType = item.bloodTypeName.replace(/[+-]/, '');
+              lowStockTypes.add(baseType);
+            }
+          });
+          
+          // Create the lowStock array
+          lowStockTypes.forEach(type => {
+            lowStockItems.push({
+              type,
+              stock: 0, // We don't have the exact count, but we know it's critical
+              threshold: 10 // Using a default threshold
+            });
+          });
+          
+          setCriticalAlerts({ lowStock: lowStockItems });
+        }
+      } catch (err) {
+        console.error("Failed to fetch summary or alerts:", err);
+      }
+    };
+    
+    fetchSummaryAndAlerts();
+  }, []);
 
   const handleDelete = async () => {
     if (!selectedDeleteId) return;
     try {
       const response = await authenApi.put(`/api/blood-inventories/${selectedDeleteId}/delete`);
       if (response.data?.isSuccess) {
-        setBloodInventories((prev) => prev.filter((entry: Entry) => entry.bloodUnitId !== selectedDeleteId));
+        setBloodInventories((prev) => prev.filter((entry) => entry.bloodUnitId !== selectedDeleteId));
       } else {
         console.error("Delete failed:", response.data?.message || "Unknown error");
       }
@@ -98,125 +131,169 @@ export default function Inventory() {
   };
 
   return (
-    <div className="container bg-gray-100 rounded-xl p-6 shadow-md flex flex-col items-center m-4">
-      <div className="flex justify-center items-center mb-4">
-        <Input className="p-3 w-[530px] rounded-md border border-red-700 mr-4" placeholder="Tìm kiếm nhóm máu, người hiến,..." />
-        <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tìm kiếm</button>
-      </div>
-      {/* Critical Alerts Section */}
-      {(criticalAlerts.lowStock.length > 0) && (
-        <div className="mb-6 w-full">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-red-500 animate-pulse" /> Cảnh báo quan trọng
-          </h2>
-          <div className="space-y-4 mb-4">
-            {criticalAlerts.lowStock.map((item) => (
-              <div key={`low-stock-${item.type}`} className="flex items-center bg-red-50 border-l-4 border-red-400 shadow-sm rounded-lg px-5 py-4 text-sm text-red-900">
-                <div className="flex items-center justify-center w-8 h-8 bg-red-100 rounded-full mr-4">
-                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21c-4.418 0-8-3.582-8-8 0-3.866 2.857-7.163 6.65-7.876a1 1 0 01.7 0C17.143 5.837 20 9.134 20 13c0 4.418-3.582 8-8 8z" /></svg>
-                </div>
-                <span className="font-bold mr-2">Kho máu:</span> Nhóm máu <span className="font-extrabold text-red-600 mx-1">{item.type}</span> chỉ còn <span className="font-extrabold text-red-600 mx-1">{item.stock}</span> đơn vị <span className="text-xs text-red-400">(ngưỡng an toàn: {item.threshold})</span>
-              </div>
-            ))}
-          </div>
-          <Link to={'/staff/donorsearch'}>
-            <button className="bg-red-600 text-white px-5 py-2 rounded-md font-semibold hover:bg-red-700 transition cursor-pointer">Tạo yêu cầu khẩn cấp</button>
-          </Link>
-        </div>
-      )}
-      {/* End Critical Alerts Section */}
-      {/* Remove old red alert bar and keep the create event button in the alert section above */}
-      {/* Still hardcoding */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 w-fit gap-x-[87px] gap-y-[45px] mb-8 justify-items-center items-center">
-        {bloodTypes.map((bt, i) => (
-          <BloodUnit key={i} type={bt.type} unit={bt.units} maxUnit={200} />
-        ))}
-      </div>
-
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="w-full mb-6">
-          <table className="w-full table-auto border border-black">
-            <thead className="bg-red-800 text-white">
-              <tr className="border border-black">
-                <th className="px-4 py-2 border border-black">ID</th>
-                <th className="px-4 py-2 border border-black">Ngày tạo</th>
-                <th className="px-4 py-2 border border-black">Nhóm máu</th>
-                <th className="px-4 py-2 border border-black">Thành phần</th>
-                <th className="px-4 py-2 border border-black">Mã hiến</th>
-                <th className="px-4 py-2 border border-black">Tuổi</th>
-                <th className="px-4 py-2 border border-black">Trạng thái</th>
-                <th className="px-4 py-2 border border-black">Hết hạn</th>
-                <th className="px-4 py-2 border border-black">Ghi chú</th>
-                <th className="px-4 py-2 border border-black"> </th>
-              </tr>
-            </thead>
-            <tbody>
-              {bloodInventories.map((entry: Entry, i) => (
-                <motion.tr
-                  key={entry.bloodUnitId}
-                  className="text-center text-sm border-b"
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * i }}
-                >
-                  <td className="px-6 py-3 border border-black">{entry.bloodUnitId}</td>
-                  <td className="px-6 py-3 border border-black">{new Date(entry.createAt).toLocaleDateString()}</td>
-                  <td className="px-6 py-3 font-semibold border border-black">
-                    <span className="bg-red-500 px-3 py-1 rounded-md text-white text-sm">{entry.bloodTypeName}</span>
-                  </td>
-                  <td className="px-6 py-3 border border-black">
-                    <span className="bg-blue-400 px-3 py-1 rounded-md text-white text-sm">{entry.bloodComponentName}</span>
-                  </td>
-                  <td className="px-6 py-3 border border-black">{entry.bloodRegisId}</td>
-                  <td className="px-6 py-3 border border-black">{entry.bloodAge} ngày</td>
-                  <td className="px-6 py-3 border border-black">
-                    <span className={`px-3 py-1 rounded-md text-white text-sm ${entry.isAvailable ? "bg-green-500" : "bg-red-500"}`}>
-                      {entry.isAvailable ? "Tốt" : "Hết hạn"}
+    <div className="bg-gray-50/50 min-h-screen p-4 sm:p-6 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Kho máu</h1>
+          <p className="text-gray-500 mt-1">Tổng quan và quản lý các đơn vị máu.</p>
+        </header>
+        
+        {/* Alerts Section */}
+        {criticalAlerts.lowStock.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-8 shadow-sm"
+          >
+            <div className="flex items-center">
+              <AlertTriangle className="h-6 w-6 text-red-500 mr-3" />
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-red-800">Cảnh báo tồn kho thấp</h3>
+                <p className="text-red-700 text-sm">
+                  Các nhóm máu sau đang ở dưới ngưỡng an toàn: {' '}
+                  {criticalAlerts.lowStock.map((a, i) => (
+                    <span key={a.type} className="font-bold">
+                      {a.type} ({a.stock} đơn vị){i < criticalAlerts.lowStock.length - 1 ? ', ' : '.'}
                     </span>
-                  </td>
-                  <td className="px-6 py-3 border border-black">{entry.expiredDate}</td>
-                  <td className="px-6 py-3 border border-black">{entry.description || "-"}</td>
-                  <td className="px-6 py-3 border border-black">
-                    <button
-                      className="hover:text-red-800 cursor-pointer"
-                      onClick={() => {
-                        setSelectedDeleteId(entry.bloodUnitId);
-                        setShowConfirmModal(true);
-                      }}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                  ))}
+                </p>
+              </div>
+              <Link to={'/staff/donorsearch'}>
+                <Button variant="destructive" size="sm" className="ml-4 whitespace-nowrap">
+                  Tạo yêu cầu khẩn
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        )}
 
+        {/* Blood Units Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+          {bloodSummary.map((bt) => (
+            <BloodUnit key={bt.bloodTypeName} type={bt.bloodTypeName} unit={bt.bloodUnitCount} maxUnit={200} />
+          ))}
+        </div>
+
+        {/* Inventory Table Section */}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Chi tiết kho máu</h2>
+                <p className="text-gray-500 text-sm mt-1">Danh sách tất cả đơn vị máu hiện có.</p>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input className="pl-10 w-64" placeholder="Tìm kiếm theo ID, nhóm máu..." />
+              </div>
+            </div>
+          </div>
+          
+          {loading ? (
+            <div className="h-96 flex items-center justify-center">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left text-gray-600">
+                <thead className="bg-gray-50 text-gray-700 uppercase tracking-wider text-xs">
+                  <tr>
+                    <th className="px-6 py-3">ID</th>
+                    <th className="px-6 py-3">Nhóm máu</th>
+                    <th className="px-6 py-3">Thành phần</th>
+                    <th className="px-6 py-3">Tuổi máu</th>
+                    <th className="px-6 py-3">Ngày hết hạn</th>
+                    <th className="px-6 py-3">Trạng thái</th>
+                    <th className="px-6 py-3">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {bloodInventories.map((entry) => (
+                    <motion.tr 
+                      key={entry.bloodUnitId}
+                      className="hover:bg-gray-50/80 transition-colors"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">#{entry.bloodUnitId}</td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-[#C14B53]">{entry.bloodTypeName}</span>
+                      </td>
+                      <td className="px-6 py-4">{entry.bloodComponentName}</td>
+                      <td className="px-6 py-4">{entry.bloodAge} ngày</td>
+                      <td className="px-6 py-4">{entry.expiredDate}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                          ${entry.isAvailable ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                          {entry.isAvailable ? "Sẵn có" : "Hết hạn"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-8 w-8"
+                          onClick={() => {
+                            setSelectedDeleteId(entry.bloodUnitId);
+                            setShowConfirmModal(true);
+                          }}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          <div className="p-4 flex items-center justify-between border-t border-gray-200">
+              <span className="text-sm text-gray-600">Trang {currentPage} trên {totalPages}</span>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Trước
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Sau
+                </Button>
+              </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Confirmation Modal */}
       {showConfirmModal && (
         <motion.div
-          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.2 }}
+            className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            initial={{ scale: 0.9, opacity: 0, y: -20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           >
-            <h2 className="text-xl font-semibold text-red-700 mb-4">Xác nhận xóa</h2>
-            <p className="text-gray-700 mb-6">
-              Bạn có chắc chắn muốn xóa đơn vị máu này không? <span className="text-red-800">Hành động này không thể hoàn tác.</span>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Xác nhận xóa</h2>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn xóa đơn vị máu này? <span className="font-semibold text-red-600">Hành động này không thể hoàn tác.</span>
             </p>
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-end space-x-3">
               <Button
                 variant="outline"
-                className="px-4 py-2 text-gray-700 border border-gray-300 cursor-pointer"
+                className="font-semibold"
                 onClick={() => {
                   setShowConfirmModal(false);
                   setSelectedDeleteId(null);
@@ -224,41 +301,13 @@ export default function Inventory() {
               >
                 Hủy
               </Button>
-              <Button className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 cursor-pointer" onClick={handleDelete}>
+              <Button variant="destructive" className="font-semibold" onClick={handleDelete}>
                 Xóa
               </Button>
             </div>
           </motion.div>
         </motion.div>
       )}
-
-      <motion.div className="flex items-center space-x-2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <Button
-            key={page}
-            variant={page === currentPage ? "outline" : "ghost"}
-            className={`rounded-lg w-10 h-10 p-0 cursor-pointer ${page === currentPage ? "border border-blue-500 text-blue-600 bg-white" : "border border-gray-300 text-gray-600 bg-white"
-              }`}
-            onClick={() => handlePageChange(page)}
-          >
-            {page}
-          </Button>
-        ))}
-
-        <Select onValueChange={(value) => handlePageChange(Number(value))}>
-          <SelectTrigger className="w-20 h-10 rounded-lg">
-            <SelectValue placeholder={`${currentPage}`} />
-          </SelectTrigger>
-          <SelectContent>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <SelectItem key={i + 1} value={(i + 1).toString()} onClick={() => handlePageChange(i)}>
-                {i + 1}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <span className="ml-1 text-muted-foreground">/Trang</span>
-      </motion.div>
     </div>
   );
 }
