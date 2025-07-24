@@ -13,26 +13,17 @@ import {
   Bell,
 } from "lucide-react";
 import { Doughnut, Bar } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from "chart.js";
 import AdminSidebar from "../AdminSidebar";
 import api from "@/lib/instance";
 import { CSVLink } from "react-csv";
 
-
 // Register ChartJS components
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title
-);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 // Type definitions
-type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-type TimeSpan = 'weekly' | 'monthly' | 'yearly' | 'all';
+type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
+type TimeSpan = "weekly" | "monthly" | "yearly" | "all";
 
 interface DashboardStats {
   currentViewers: number;
@@ -40,10 +31,10 @@ interface DashboardStats {
   monthlyEvents: number;
   yearlyDonors: number;
   weeklyChanges: {
-    viewers: { value: string; trend: 'up' | 'down' };
-    bloodUnits: { value: string; trend: 'up' | 'down' };
-    events: { value: string; trend: 'up' | 'down' };
-    donors: { value: string; trend: 'up' | 'down' };
+    viewers: { value: string; trend: "up" | "down" };
+    bloodUnits: { value: string; trend: "up" | "down" };
+    events: { value: string; trend: "up" | "down" };
+    donors: { value: string; trend: "up" | "down" };
   };
 }
 
@@ -96,29 +87,29 @@ const AnalyticsDashboard = () => {
   const [userGrowth] = useState({
     newUsersThisMonth: 87,
     growthRate: 5.2, // percent
-    trend: 'up' as 'up' | 'down',
+    trend: "up" as "up" | "down",
   });
 
   const [bloodStock] = useState<BloodStock[]>([
-    { type: 'A', quantity: 15, color: '#FF6384' },
-    { type: 'B', quantity: 23, color: '#36A2EB' },
-    { type: 'AB', quantity: 15, color: '#FFCE56' },
-    { type: 'O', quantity: 35, color: '#4BC0C0' },
+    { type: "A", quantity: 15, color: "#FF6384" },
+    { type: "B", quantity: 23, color: "#36A2EB" },
+    { type: "AB", quantity: 15, color: "#FFCE56" },
+    { type: "O", quantity: 35, color: "#4BC0C0" },
   ]);
 
   const [donationActivity] = useState<DonationActivity[]>([
-    { month: 'JAN', donations: 120 },
-    { month: 'FEB', donations: 150 },
-    { month: 'MAR', donations: 180 },
-    { month: 'APR', donations: 200 },
-    { month: 'MAY', donations: 240 },
-    { month: 'JUN', donations: 300 },
-    { month: 'JUL', donations: 280 },
-    { month: 'AUG', donations: 260 },
-    { month: 'SEP', donations: 220 },
-    { month: 'OCT', donations: 190 },
-    { month: 'NOV', donations: 160 },
-    { month: 'DEC', donations: 140 },
+    { month: "JAN", donations: 120 },
+    { month: "FEB", donations: 150 },
+    { month: "MAR", donations: 180 },
+    { month: "APR", donations: 200 },
+    { month: "MAY", donations: 240 },
+    { month: "JUN", donations: 300 },
+    { month: "JUL", donations: 280 },
+    { month: "AUG", donations: 260 },
+    { month: "SEP", donations: 220 },
+    { month: "OCT", donations: 190 },
+    { month: "NOV", donations: 160 },
+    { month: "DEC", donations: 140 },
   ]);
 
   // Remove the mock events initialization
@@ -159,23 +150,23 @@ const AnalyticsDashboard = () => {
 
   // Chart data and options
   const bloodStockChartData = {
-    labels: bloodStock.map(item => item.type),
+    labels: bloodStock.map((item) => item.type),
     datasets: [
       {
-        data: bloodStock.map(item => item.quantity),
-        backgroundColor: bloodStock.map(item => item.color),
+        data: bloodStock.map((item) => item.quantity),
+        backgroundColor: bloodStock.map((item) => item.color),
         borderWidth: 1,
       },
     ],
   };
 
   const donationActivityChartData = {
-    labels: donationActivity.map(item => item.month),
+    labels: donationActivity.map((item) => item.month),
     datasets: [
       {
-        label: 'Số lượng hiến máu',
-        data: donationActivity.map(item => item.donations),
-        backgroundColor: '#3B82F6',
+        label: "Số lượng hiến máu",
+        data: donationActivity.map((item) => item.donations),
+        backgroundColor: "#3B82F6",
         borderRadius: 4,
       },
     ],
@@ -186,7 +177,7 @@ const AnalyticsDashboard = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom' as const,
+        position: "bottom" as const,
       },
     },
   };
@@ -203,17 +194,14 @@ const AnalyticsDashboard = () => {
 
     // Apply search filter
     if (searchTerm) {
-      result = result.filter(
-        (event) =>
-          event.location.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      result = result.filter((event) => event.location.toLowerCase().includes(searchTerm.toLowerCase()));
     }
 
     // Apply time span filter
-    if (filters.timeSpan === 'weekly') {
+    if (filters.timeSpan === "weekly") {
       // In a real app, you would filter by date range
       result = result.slice(0, 3); // Just for demo
-    } else if (filters.timeSpan === 'monthly') {
+    } else if (filters.timeSpan === "monthly") {
       result = result.slice(0, 6); // Just for demo
     }
 
@@ -284,16 +272,16 @@ const AnalyticsDashboard = () => {
   // Helper function to get status color
   const getStatusColor = (status: EventStatus): string => {
     switch (status) {
-      case 'upcoming':
-        return 'bg-blue-100 text-blue-800';
-      case 'ongoing':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800'; // Light green for completed
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
+      case "upcoming":
+        return "bg-blue-100 text-blue-800";
+      case "ongoing":
+        return "bg-green-100 text-green-800";
+      case "completed":
+        return "bg-green-100 text-green-800"; // Light green for completed
+      case "cancelled":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -328,52 +316,31 @@ const AnalyticsDashboard = () => {
   }, [filteredEvents]);
 
   return (
-    <div className="flex min-h-screen h-full w-screen bg-[#EFEFEF]">
+    <div className="flex min-h-screen h-full w-screen bg-[#EFEFEF] overflow-x-hidden ">
       <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
 
-
-      {/* Main content */}
-      
-      <main className="flex-1 bg-[#EFEFEF]">
-        {/* Top bar */}
-        <header className="bg-[#EFEFEF] border-b border-gray-200 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 max-w-lg relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      <main className="flex-1 bg-blue-50 p-6 pt-27">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <header className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Bảng thống kê số liệu</h1>
+            <div className="text-sm text-gray-500 mb-4">
+              <span>Dashboard</span>
+              <span className="mx-2">/</span>
+              <span className="text-l text-gray-900 mb-2">Thống kê</span>
+            </div>
+            <div className="w-full max-w-lg mb-4 relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search className="w-5 h-5" />
+              </span>
               <input
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow"
                 placeholder="Tìm kiếm theo địa điểm"
                 type="search"
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
             </div>
-            <div className="flex items-center gap-6">
-              <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
-                <Bell className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-700">Nguyen Van A</div>
-                  <div className="text-xs text-gray-500">jane234@example.com</div>
-                </div>
-                <ChevronDown className="text-gray-400 w-4 h-4 hover:text-blue-600 transition-colors duration-200 cursor-pointer" />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Content */}
-        <div className="p-8">
-          {/* Title and breadcrumb */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Bảng thống kê số liệu</h1>
-            <div className="text-sm text-gray-500">
-              <span>Dashboard</span>
-              <span className="mx-2">/</span>
-              <span className="text-l text-gray-900 mb-2">Thống kê</span>
-            </div>
-          </div>
+          </header>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
@@ -389,12 +356,14 @@ const AnalyticsDashboard = () => {
                 </div>
               </div>
               <div className="mt-2 flex items-center">
-                {userGrowth.trend === 'up' ? (
+                {userGrowth.trend === "up" ? (
                   <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
                 ) : (
                   <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
                 )}
-                <p className={`text-sm ${userGrowth.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>{userGrowth.growthRate}%</p>
+                <p className={`text-sm ${userGrowth.trend === "up" ? "text-green-600" : "text-red-600"}`}>
+                  {userGrowth.growthRate}%
+                </p>
               </div>
             </div>
             {/* Current Viewers */}
@@ -409,12 +378,18 @@ const AnalyticsDashboard = () => {
                 </div>
               </div>
               <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.viewers.trend === 'up' ? (
+                {dashboardStats.weeklyChanges.viewers.trend === "up" ? (
                   <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
                 ) : (
                   <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
                 )}
-                <p className={`text-sm ${dashboardStats.weeklyChanges.viewers.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>{dashboardStats.weeklyChanges.viewers.value}</p>
+                <p
+                  className={`text-sm ${
+                    dashboardStats.weeklyChanges.viewers.trend === "up" ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {dashboardStats.weeklyChanges.viewers.value}
+                </p>
               </div>
             </div>
 
@@ -423,19 +398,25 @@ const AnalyticsDashboard = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-1">Đơn vị máu trong kho</p>
-                  <p className="text-2xl font-bold text-gray-900">{dashboardStats.bloodUnitsInStock.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {dashboardStats.bloodUnitsInStock.toLocaleString()}
+                  </p>
                 </div>
                 <div className="bg-red-100 p-2 rounded-full">
                   <Users className="w-5 h-5 text-red-600" />
                 </div>
               </div>
               <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.bloodUnits.trend === 'up' ? (
+                {dashboardStats.weeklyChanges.bloodUnits.trend === "up" ? (
                   <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
                 ) : (
                   <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
                 )}
-                <p className={`text-sm ${dashboardStats.weeklyChanges.bloodUnits.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                <p
+                  className={`text-sm ${
+                    dashboardStats.weeklyChanges.bloodUnits.trend === "up" ? "text-green-600" : "text-red-600"
+                  }`}
+                >
                   {dashboardStats.weeklyChanges.bloodUnits.value}
                 </p>
               </div>
@@ -453,12 +434,16 @@ const AnalyticsDashboard = () => {
                 </div>
               </div>
               <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.events.trend === 'up' ? (
+                {dashboardStats.weeklyChanges.events.trend === "up" ? (
                   <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
                 ) : (
                   <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
                 )}
-                <p className={`text-sm ${dashboardStats.weeklyChanges.events.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                <p
+                  className={`text-sm ${
+                    dashboardStats.weeklyChanges.events.trend === "up" ? "text-green-600" : "text-red-600"
+                  }`}
+                >
                   {dashboardStats.weeklyChanges.events.value}
                 </p>
               </div>
@@ -476,12 +461,16 @@ const AnalyticsDashboard = () => {
                 </div>
               </div>
               <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.donors.trend === 'up' ? (
+                {dashboardStats.weeklyChanges.donors.trend === "up" ? (
                   <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
                 ) : (
                   <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
                 )}
-                <p className={`text-sm ${dashboardStats.weeklyChanges.donors.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                <p
+                  className={`text-sm ${
+                    dashboardStats.weeklyChanges.donors.trend === "up" ? "text-green-600" : "text-red-600"
+                  }`}
+                >
                   {dashboardStats.weeklyChanges.donors.value}
                 </p>
               </div>
@@ -514,7 +503,7 @@ const AnalyticsDashboard = () => {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                 >
                   <Filter className="w-3 h-3" />
                   Lọc
@@ -523,7 +512,7 @@ const AnalyticsDashboard = () => {
                   data={csvExportData}
                   headers={csvHeaders}
                   filename={`events_export_${new Date().toISOString().slice(0, 10)}.csv`}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                 >
                   <Download className="w-3 h-3" />
                   Xuất
@@ -567,7 +556,7 @@ const AnalyticsDashboard = () => {
                   <div className="flex items-end">
                     <button
                       onClick={resetFilters}
-                      className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-200"
                     >
                       Xóa bộ lọc
                     </button>
@@ -636,15 +625,9 @@ const AnalyticsDashboard = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
                           {startIndex + index + 1}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                          #{event.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                          {event.date}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                          {event.location}
-                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">#{event.id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{event.date}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{event.location}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
                           {event.registeredDonors}/{event.expectedDonors}
                         </td>
@@ -652,10 +635,10 @@ const AnalyticsDashboard = () => {
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}
                           >
-                            {event.status === 'upcoming' && 'Sắp diễn ra'}
-                            {event.status === 'ongoing' && 'Đang diễn ra'}
-                            {event.status === 'completed' && 'Đã hoàn thành'}
-                            {event.status === 'cancelled' && 'Đã hủy'}
+                            {event.status === "upcoming" && "Sắp diễn ra"}
+                            {event.status === "ongoing" && "Đang diễn ra"}
+                            {event.status === "completed" && "Đã hoàn thành"}
+                            {event.status === "cancelled" && "Đã hủy"}
                           </span>
                         </td>
                       </tr>
@@ -677,7 +660,7 @@ const AnalyticsDashboard = () => {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => handlePageChange(currentPage - 1)}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -691,7 +674,7 @@ const AnalyticsDashboard = () => {
                         currentPage === page
                           ? "border-blue-600 bg-blue-50 text-blue-600"
                           : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                      }`}
+                      } transition-colors duration-200`}
                       onClick={() => handlePageChange(page)}
                     >
                       {page}
@@ -702,7 +685,7 @@ const AnalyticsDashboard = () => {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
