@@ -5,6 +5,11 @@ type geoAddress = {
     latitude: number
 }
 
+type extractAddress = {
+    province: string,
+    district: string,
+    address: string
+}
 const geoApiKey = import.meta.env.VITE_GEOCODING_ID
 export const getLongLat = async (address: string): Promise<geoAddress | null> => {
     if (!address) return null
@@ -34,7 +39,6 @@ export const getLongLat = async (address: string): Promise<geoAddress | null> =>
 
 export const reverseGeoCode = async (lat: number, lon: number): Promise<string> => {
     if (!lat || !lon) return ""
-    console.log("reverseGeoCode lat, lon ", lat, lon)
     try {
         const response = await geoApi.get(`https://api.geoapify.com/v1/geocode/reverse`, {
             params: {
@@ -50,5 +54,15 @@ export const reverseGeoCode = async (lat: number, lon: number): Promise<string> 
     } catch (error) {
         console.log("Failed to reverse geocode", error)
         return ""
+    }
+}
+
+export const extractAddress = (address: string): extractAddress | null=> {
+    if(!address) return null
+    const extract = address.split(',')
+    return {
+        address: extract[0].trim(),
+        district: extract[1].trim(),
+        province: extract[2].trim()
     }
 }

@@ -253,7 +253,7 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date: Date) => {
-                              return date >= new Date('2100-01-01') || date < new Date("1960-01-01")
+                              return date >= new Date('2100-01-01') || date < new Date()
                             }}
                           />
                         </PopoverContent>
@@ -297,7 +297,7 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date: Date) => {
-                              return date >= new Date('2100-01-01') || date < new Date("1960-01-01")
+                              return date >= new Date('2100-01-01') || date < new Date()
                             }}
                           />
                         </PopoverContent>

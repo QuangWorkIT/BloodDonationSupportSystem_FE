@@ -31,7 +31,6 @@ export const getUserByToken = async (token: string): Promise<User | null> => {
         const data = response.data
 
         if (data.isSuccess) {
-            console.log('get profile success', data.data)
             const address = await reverseGeoCode(data.data.latitude, data.data.longitude)
             return {
                 id: data.data?.id,
