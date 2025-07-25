@@ -93,7 +93,7 @@ interface ApiResponse<T> {
   data: T;
 }
 
-interface ApiRegistration {
+export interface ApiRegistration {
   id: number;
   type: "Donation" | "Volunteer";
   facilityName: string;
@@ -337,10 +337,12 @@ const RegistrationComponent = () => {
               <div className="flex flex-col gap-2 mt-1 mb-2">
                 {
                   reg.type !== "volunteer" && (
-                    <div className="flex items-center gap-2 text-gray-600 text-sm"><FaRegCalendarAlt /> <span><span className="font-medium">Ngày diễn ra:</span> {reg.date}, từ 7h00 - 17h00</span></div>
+                    <div className="">
+                      <div className="flex items-center gap-2 text-gray-600 text-sm mb-2"><FaRegCalendarAlt /> <span><span className="font-medium">Ngày diễn ra:</span> {reg.date}, từ 7h00 - 17h00</span></div>
+                      <div className="flex items-center gap-2 text-gray-600 text-sm"><FaMapMarkerAlt /> <span><span className="font-medium">Địa điểm:</span> {reg.location}</span></div>
+                    </div>
                   )
                 }
-                <div className="flex items-center gap-2 text-gray-600 text-sm"><FaMapMarkerAlt /> <span><span className="font-medium">Địa điểm:</span> {reg.location}</span></div>
                 <div className="flex items-center gap-2 text-gray-600 text-sm"><FaCalendarAlt /> <span><span className="font-medium">Ngày đăng ký:</span> {reg.registeredDate}</span></div>
                 {reg.type === "volunteer" && (
                   <div className="flex items-center gap-2 text-blue-700 text-sm">
@@ -475,7 +477,7 @@ const RegistrationComponent = () => {
                 </p>
                 <div className="flex gap-4 justify-end mt-6">
                   <button
-                    disabled = {isCancelling}
+                    disabled={isCancelling}
                     type="button"
                     onClick={closeAllModals}
                     className="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition"

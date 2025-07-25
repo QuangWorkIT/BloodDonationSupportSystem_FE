@@ -4,6 +4,7 @@ import DatePicker from "../ui/datepicker";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";
 import { FaUser, FaVenusMars, FaBirthdayCake, FaPhone, FaEnvelope, FaTint, FaHome, FaBuilding } from "react-icons/fa";
+import { IoInformationCircle } from "react-icons/io5";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
@@ -12,7 +13,7 @@ import LoadingSpinner from "./Spinner";
 import { extractAddress, getLongLat } from "@/utils/gecoding";
 import { getTypeId } from "@/types/BloodCompatibility";
 import { Button } from "../ui/button";
-
+import type { ApiRegistration } from "./RegistrationComponent";
 
 type FormData = {
   name: string;
@@ -57,6 +58,7 @@ const AccountEdit = () => {
   const [hasNotChanged, setHasNotChanged] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const extracted = extractAddress(user?.address || "")
+  const [currentRegistration, setCurrentRegistration] = useState<ApiRegistration | null>(null)
   // --- useEffect for initial form data from user ---
   useEffect(() => {
 
@@ -74,6 +76,27 @@ const AccountEdit = () => {
 
     setDefautlFormData(formData);
   }, [user]);
+
+  // fetch registration history
+  useEffect(() => {
+    const fetchRegistration = async () => {
+      try {
+        const response = await authenApi.get('/api/event-registration-history')
+        const data = response.data
+
+        if (data.isSuccess) {
+          setCurrentRegistration(data.data?.[0])
+        } else {
+          console.log('Fail to fetch registration ', data)
+        }
+      } catch (error) {
+        console.log('Error fetching registration ', error)
+      }
+    }
+    fetchRegistration()
+
+  }, [])
+
 
   // default form data to compare changes
   const [defaultFormData, setDefautlFormData] = useState<FormData | null>(null)
@@ -115,7 +138,6 @@ const AccountEdit = () => {
       formData.address === defaultFormData.address &&
       formData.district === formData.district &&
       formData.province === defaultFormData.province
-
     setHasNotChanged(isEqual)
   }, [formData, defaultFormData])
 
@@ -380,6 +402,17 @@ const AccountEdit = () => {
     if (isValid) {
       setIsLoading(true)
       const getLonLat = await getLongLat(formData.address + " " + formData.district + " " + formData.province + " Việt Nam")
+      if (getLonLat === null) {
+        setIsLoading(false)
+        toast.error('Địa chỉ không phù hợp!')
+        setFormData(prev => ({
+          ...prev,
+          address: defaultFormData?.address || "",
+          district: defaultFormData?.district || "",
+          province: defaultFormData?.province || ""
+        }));
+        return
+      }
       const body = {
         firstName: extractName(formData.name).firtName,
         lastName: extractName(formData.name).lastName,
@@ -395,6 +428,7 @@ const AccountEdit = () => {
       user?.phone === null ? updateGoogleProfile(body) : updateProfile(body);
     }
   };
+
 
   return (
     isLoading ? (<LoadingSpinner />) : (
@@ -422,6 +456,30 @@ const AccountEdit = () => {
           )
         }
         <form onSubmit={handleSubmit} className="space-y-6 p-8 md:p-10">
+          {/* status */}
+          <div className="flex items-center gap-1">
+            <IoInformationCircle className={currentRegistration ? (currentRegistration.type === "Volunteer"
+              ? (`text-blue-700 h-5 w-5`)
+              : (`text-green-700 h-5 w-5`)) :
+              (`text-gray-700 h-5 w-5`)
+            } />
+            <p className="font-semibold">
+              {currentRegistration
+                ? (
+                  currentRegistration.type === "Volunteer"
+                    ? (<div className="flex gap-1 items-start text-sm flex-col md:text-[16px] md:flex-row md:items-center">
+                      <p className="font-normal py-1 px-3 bg-blue-100 text-blue-700 rounded-full text-sm w-max">Đã đăng ký tình nguyện</p>
+                      <p className="font-normal">- Từ <span className="font-bold italic">{currentRegistration.startDate}</span> đến <span className="font-bold italic">{currentRegistration.endDate}</span></p>
+                    </div>)
+                    : (<div className="flex gap-1 items-start text-sm flex-col md:text-[16px] md:flex-row md:items-center">
+                      <p className="font-normal py-1 px-3 bg-green-100 text-green-700 rounded-full text-sm w-max">Đã đăng ký hiến máu</p>
+                      <p className="font-normal">- Ngày hiến <span className="font-bold italic">{currentRegistration.eventDate}</span></p>
+                    </div>)
+                )
+                : (<span className="font-normal text-gray-500 p-2 bg-gray-200 rounded-full text-sm">Chưa đăng ký hiến máu</span>)}
+            </p>
+          </div>
+
           {/* Name */}
           <div className="mb-10">
             <label className="block text-gray-800 font-semibold mb-2" htmlFor="name">
