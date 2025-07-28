@@ -7,10 +7,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/compon
 import { toast } from "react-toastify";
 
 const navItems = [
-  { id: "event", label: "Sự kiện hiến máu", href: "/events", icon: <FaCalendarAlt /> },
-  { id: "home", label: "Trang chủ", href: "/", icon: <FaHome /> },
-  { id: "info", label: "Thông tin máu", href: "/bloodinfo", icon: <FaTint /> },
-  { id: "share", label: "Chia sẻ", href: "/blogs", icon: <FaRegNewspaper /> },
+  { id: "event", label: "Sự kiện hiến máu", href: "/events", icon: <FaCalendarAlt className="mr-2" /> },
+  { id: "home", label: "Trang chủ", href: "/", icon: <FaHome className="mr-2" /> },
+  { id: "info", label: "Thông tin máu", href: "/bloodinfo", icon: <FaTint className="mr-2" /> },
+  { id: "share", label: "Chia sẻ", href: "/blogs", icon: <FaRegNewspaper className="mr-2" /> },
 ];
 
 export default function BloodDonationNavbar() {
