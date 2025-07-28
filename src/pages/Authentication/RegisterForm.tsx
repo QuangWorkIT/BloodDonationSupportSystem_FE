@@ -116,7 +116,27 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-[#F0EFF4]">
+    <div className="w-full min-h-screen flex items-center justify-center bg-[#F0EFF4] max-sm:bg-white relative overflow-hidden">
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, x: -20, y: 100 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          exit={{ opacity: 0, x: -20, y: 10 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="hidden md:block  w-[430px] h-[393px] bg-[#d94545] absolute top-[-150px] left-[-150px]"
+          style={{ borderRadius: "38% 62% 50% 50% / 58% 61% 39% 42%" }}
+        ></motion.div>
+      </AnimatePresence>
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, x: -20, y: -100 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          exit={{ opacity: 0, x: -20, y: 10 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="hidden md:block w-[430px] h-[393px] bg-[#d94545] absolute bottom-[-100px] right-[-150px]"
+          style={{ borderRadius: "38% 62% 50% 50% / 58% 61% 39% 42%" }}
+        ></motion.div>
+      </AnimatePresence>
       {true && (
         <AnimatePresence>
           <motion.div
@@ -126,7 +146,7 @@ export default function RegisterForm() {
             exit={{ opacity: 0, x: -20, y: -10 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           >
-            <div className="max-w-3xl mx-auto my-[50px] border rounded-lg shadow-lg p-8 space-y-6 bg-white min-h-[750px]">
+            <div className="max-w-3xl mx-auto my-[50px] sm:border sm:rounded-lg sm:shadow-lg p-8 space-y-6 bg-white min-h-[750px]">
               <h1 className="text-3xl font-bold text-center text-red-600 mb-6">ĐĂNG KÍ THÀNH VIÊN</h1>
               <form onSubmit={handleSubmit}>
                 {/* Name Row */}
@@ -231,7 +251,7 @@ export default function RegisterForm() {
                 </div>
 
                 {/* Personal Info */}
-                <div className="grid grid-cols-2 gap-6 pt-5">
+                <div className="grid sm:grid-cols-2 gap-6 pt-5">
                   <div className="space-y-3">
                     <Label htmlFor="bloodType" className="text-base flex items-center gap-2">
                       Nhóm máu<span className="text-red-500"> *</span>
@@ -242,7 +262,7 @@ export default function RegisterForm() {
                         </span>
                       </span>
                     </Label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 sm:gap-4 gap-6">
                       <div>
                         <Input
                           id="bloodType"
@@ -279,12 +299,13 @@ export default function RegisterForm() {
                   </div>
                   <div className="space-y-3">
                     <Label htmlFor="dob" className="text-base">
-                      Ngày tháng năm sinh<span className="text-red-500"> *</span>
+                      Ngày tháng năm sinh
+                      <span className="text-red-500"> *</span>
                     </Label>
                     <Input
                       id="dob"
                       type="date"
-                      className="py-2 text-base"
+                      className="w-full py-2 text-base focus:outline-none"
                       required
                       value={formData.dob}
                       onChange={handleChange}
@@ -400,7 +421,7 @@ export default function RegisterForm() {
               <div className="text-center text-base pt-4">
                 Bạn đã có tài khoản?{" "}
                 <Link to="/login" className="text-blue-600 hover:underline">
-                  Đăng Nhập
+                  Đăng nhập
                 </Link>
               </div>
             </div>

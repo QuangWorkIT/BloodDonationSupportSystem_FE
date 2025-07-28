@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import BloodTypeSelect, { BloodComponentSelect, BloodTypeSelectRh } from "@/components/layout/BloodTypeSelect";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
@@ -367,7 +367,7 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
               <FormField
                 control={form.control}
                 name="isQualified"
-                render={({}) => (
+                render={() => (
                   <FormItem className="flex flex-col mb-5 gap-3 items-center justify-center">
                     <FormLabel className="w-auto text-[18px] font-semibold">Kết luận tổng thể</FormLabel>
                     <div className="flex flex-col gap-2 w-full">

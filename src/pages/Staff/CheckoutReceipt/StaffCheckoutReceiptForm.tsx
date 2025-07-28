@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
 import { useState } from "react";
 import { FaInfoCircle } from "react-icons/fa";
+import { getBloodTypeRh } from "@/types/BloodCompatibility";
 interface StaffCheckoutReceiptFormProps {
   donor: Donor;
   setIsBloodCollectFormOpen: () => void;
@@ -46,9 +47,9 @@ export default function StaffCheckoutReceiptForm({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      receiverName: donor.fullName,
-      bloodType: donor.bloodTypeName.substring(0, 1),
-      bloodTypeRh: donor.bloodTypeName.substring(1),
+      receiverName: "Bệnh viện Lê Văn Việt",
+      bloodType: getBloodTypeRh(donor.bloodTypeName || "").bloodType || "",
+      bloodTypeRh: getBloodTypeRh(donor.bloodTypeName || "").rh || "",
       volume: "",
       note: "",
       staffId: user?.unique_name,
@@ -273,7 +274,7 @@ export default function StaffCheckoutReceiptForm({
                 className="w-[160px] h-[40px] bg-red-600 text-white text-[17px] font-bold hover:bg-red-800 rounded-full cursor-pointer"
                 disabled={!isConfirmChecked || isSubmitting}
               >
-                Gửi
+                {isSubmitting ? "Đang gửi..." : "Gửi"}
               </Button>
               <Button
                 disabled={isSubmitting}

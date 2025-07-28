@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { isTokenExpired } from "@/utils/jwt"
 import useRefreshToken from "./useRefreshToken";
 import type { User } from "@/types/User";
-import { getUser } from "@/utils/permisson";
+import { getUserByToken } from "@/utils/permisson";
 
 interface AuthContextType {
     accessToken: string | null,
@@ -22,33 +22,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // no user and access token when no login as default
-    const [accessToken, setToken] = useState<string | null>(null)
+    const [accessToken, setToken] = useState<string | null>(localStorage.getItem('token'))
     const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const refresh = useRefreshToken()
     // fetch token
     useEffect(() => {
         const initAuth = async () => {
-            const storedToken = localStorage.getItem("token");
-            if (!storedToken) {
-                console.log('No token found', storedToken)
+
+            if (!accessToken) {
+                console.log('No token found', accessToken)
                 setIsLoading(false)
                 return
             };
 
-            const validToken = isTokenExpired(storedToken)
+            const validToken = isTokenExpired(accessToken)
                 ? await refresh()
-                : storedToken;
+                : accessToken;
 
             setToken(validToken);
             if (validToken !== null) {
-                const user = getUser(validToken);
+                const user = await getUserByToken(validToken);
+                console.log("user ", user)
                 setUser(user);
             } else {
                 console.log("Token is wrong!")
             }
 
-            setIsLoading(false)  
+            setIsLoading(false)
         };
 
         initAuth();

@@ -3,10 +3,17 @@ import { AnimatePresence, motion } from "framer-motion";
 import DatePicker from "../ui/datepicker";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";
-import { FaUser, FaVenusMars, FaBirthdayCake, FaPhone, FaEnvelope, FaTint, FaInfoCircle } from "react-icons/fa";
+import { FaUser, FaVenusMars, FaBirthdayCake, FaPhone, FaEnvelope, FaTint, FaHome, FaBuilding } from "react-icons/fa";
+import { IoInformationCircle } from "react-icons/io5";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
+import { getUserByToken } from "@/utils/permisson";
+import LoadingSpinner from "./Spinner";
+import { extractAddress, getLongLat } from "@/utils/gecoding";
+import { getTypeId } from "@/types/BloodCompatibility";
+import { Button } from "../ui/button";
+import type { ApiRegistration } from "./RegistrationComponent";
 
 type FormData = {
   name: string;
@@ -15,6 +22,9 @@ type FormData = {
   phone: string;
   gmail: string;
   bloodType: string;
+  province: string;
+  district: string;
+  address: string;
 };
 
 type FormErrors = {
@@ -24,6 +34,9 @@ type FormErrors = {
   phone: string;
   gmail: string;
   bloodType: string;
+  province: string;
+  district: string;
+  address: string;
 };
 
 interface UpdateBody {
@@ -31,7 +44,6 @@ interface UpdateBody {
   lastName: string;
   phone: string;
   gmail: string;
-  password: string;
   longitude: number;
   latitude: number;
   bloodTypeId: number;
@@ -43,39 +55,9 @@ type FormField = keyof FormData;
 const AccountEdit = () => {
   const { user, setUser } = useAuth();
   const [hasNotChanged, setHasNotChanged] = useState(true);
-
-  //fetch user
-  useEffect(() => {
-    const getUser = async () => {
-      try {
-        const response = await authenApi.get("/api/users/profile");
-        const data = response.data;
-
-        if (!user) return;
-
-        if (data.isSuccess) {
-          const updatedUser = {
-            ...user,
-            name: data.data.name,
-            phone: data.data.phone,
-            gmail: data.data.gmail,
-            bloodType: data.data.bloodType,
-            dob: new Date(data.data.dob),
-            gender: data.data.gender,
-          };
-
-          setUser(updatedUser);
-        } else {
-          console.log("Data status is wrong");
-        }
-      } catch (error) {
-        console.log("Failed to fetch user profile ", error);
-      }
-    };
-
-    getUser();
-  }, []);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const extracted = extractAddress(user?.address || "");
+  const [currentRegistration, setCurrentRegistration] = useState<ApiRegistration | null>(null);
   // --- useEffect for initial form data from user ---
   useEffect(() => {
     setFormData({
@@ -85,20 +67,46 @@ const AccountEdit = () => {
       phone: user?.phone || "",
       gmail: user?.gmail || "",
       bloodType: user?.bloodType || "",
+      address: extracted?.address || "",
+      district: extracted?.district || "",
+      province: extracted?.province || "",
     });
+
     setDefautlFormData(formData);
   }, [user]);
+
+  // fetch registration history
+  useEffect(() => {
+    const fetchRegistration = async () => {
+      try {
+        const response = await authenApi.get("/api/event-registration-history");
+        const data = response.data;
+
+        if (data.isSuccess) {
+          setCurrentRegistration(data.data?.[0]);
+        } else {
+          console.log("Fail to fetch registration ", data);
+        }
+      } catch (error) {
+        console.log("Error fetching registration ", error);
+      }
+    };
+    fetchRegistration();
+  }, []);
 
   // default form data to compare changes
   const [defaultFormData, setDefautlFormData] = useState<FormData | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
-    name: "",
-    gender: false,
-    birthDate: null,
-    phone: "",
-    gmail: "",
-    bloodType: "",
+    name: user?.unique_name || "",
+    gender: user?.gender || false,
+    birthDate: user?.dob || null,
+    phone: user?.phone || "",
+    gmail: user?.gmail || "",
+    bloodType: user?.bloodType || "",
+    address: extracted?.address || "",
+    district: extracted?.district || "",
+    province: extracted?.province || "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({
@@ -108,6 +116,9 @@ const AccountEdit = () => {
     phone: "",
     gmail: "",
     bloodType: "",
+    address: "",
+    district: "",
+    province: "",
   });
 
   // compare form data
@@ -120,8 +131,10 @@ const AccountEdit = () => {
       String(formData.birthDate) === String(defaultFormData.birthDate) &&
       formData.phone === defaultFormData.phone &&
       formData.bloodType === defaultFormData.bloodType &&
-      formData.gmail === defaultFormData.gmail;
-
+      formData.gmail === defaultFormData.gmail &&
+      formData.address === defaultFormData.address &&
+      formData.district === defaultFormData.district &&
+      formData.province === defaultFormData.province;
     setHasNotChanged(isEqual);
   }, [formData, defaultFormData]);
 
@@ -265,31 +278,33 @@ const AccountEdit = () => {
           error = "Nhóm máu là bắt buộc";
         }
         break;
-      default: {
-        const _exhaustiveCheck: never = name;
-        return _exhaustiveCheck;
-      }
+      case "province":
+        if (typeof value !== "string") {
+          error = "Tỉnh, thành phố là chuỗi";
+        } else if (!value.trim()) {
+          error = "Thông tin bắt buộc";
+        }
+        break;
+      case "district":
+        if (typeof value !== "string") {
+          error = "Quận, huyện phải là chuỗi";
+        } else if (!value.trim()) {
+          error = "Thông tin bắt buộc";
+        }
+        break;
+      case "address":
+        if (typeof value !== "string") {
+          error = "Địa chỉ phải là chuỗi";
+        } else if (!value.trim()) {
+          error = "Thông tin bắt buộc";
+        }
+        break;
     }
 
     return error;
   };
 
-  // Utility to map blood type string to ID
-  const bloodTypeStringToId = (bloodType: string): number => {
-    const map: { [key: string]: number } = {
-      "A+": 1,
-      "A-": 2,
-      "B+": 3,
-      "B-": 4,
-      "AB+": 5,
-      "AB-": 6,
-      "O+": 7,
-      "O-": 8,
-    };
-    return map[bloodType] || 0;
-  };
-
-  const handleChange = (name: FormField, value: any) => {
+  const handleChange = (name: FormField, value: string | boolean | Date) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Validate on change
     if (errors[name]) {
@@ -299,12 +314,24 @@ const AccountEdit = () => {
 
   const updateGoogleProfile = async (body: UpdateBody) => {
     try {
+      setIsLoading(true);
       console.log("Submitting form google with data:", body);
       const endpoint = "/api/google-update-login";
       const response = await authenApi.put(endpoint, body);
       if (response.data.token) {
-        setShowSuccessModal(true);
-        toast.success("Cập nhật thông tin thành công!");
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.log("Error token");
+          toast.error("Phiên đã hết hạn");
+          return;
+        }
+        const refetchUser = await getUserByToken(token);
+        if (refetchUser) {
+          setShowSuccessModal(true);
+          setUser(refetchUser);
+        } else {
+          toast.error("Lỗi tải thông tin");
+        }
       } else {
         toast.error(response.data.message || "Cập nhật thông tin thất bại!");
       }
@@ -313,17 +340,31 @@ const AccountEdit = () => {
       const err = error as AxiosError;
       if (err) console.log("Error updating profile:", err);
       else console.log("Error updating profile:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const updateProfile = async (body: UpdateBody) => {
     try {
-      console.log("Submitting form google with data:", body);
+      setIsLoading(true);
+      console.log("Submitting form with data:", body);
       const endpoint = "/api/users/profile";
       const response = await authenApi.put(endpoint, body);
       if (response.data.isSuccess) {
-        setShowSuccessModal(true);
-        toast.success("Cập nhật thông tin thành công!");
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.log("Error token");
+          toast.error("Phiên đã hết hạn");
+          return;
+        }
+        const refetchUser = await getUserByToken(token);
+        if (refetchUser) {
+          setShowSuccessModal(true);
+          setUser(refetchUser);
+        } else {
+          toast.error("Lỗi tải thông tin");
+        }
       } else {
         toast.error(response.data.message || "Cập nhật thông tin thất bại!");
       }
@@ -332,9 +373,17 @@ const AccountEdit = () => {
       const err = error as AxiosError;
       if (err) console.log("Error updating profile:", err);
       else console.log("Error updating profile:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const extractName = (fullName: string) => {
+    return {
+      firtName: fullName.trim().split(" ").slice(1).join(" ") || "",
+      lastName: fullName.trim().split(" ")[0] || "",
+    };
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -350,26 +399,39 @@ const AccountEdit = () => {
     const isValid = Object.values(newErrors).every((error) => !error);
 
     if (isValid) {
-      const [firstName, ...lastNameArr] = formData.name.trim().split(" ");
-      const lastName = lastNameArr.join(" ");
+      setIsLoading(true);
+      const getLonLat = await getLongLat(
+        formData.address + " quận " + formData.district + " " + formData.province + " Việt Nam"
+      );
+      if (getLonLat === null) {
+        setIsLoading(false);
+        toast.error("Địa chỉ không phù hợp!");
+        setFormData((prev) => ({
+          ...prev,
+          address: defaultFormData?.address || "",
+          district: defaultFormData?.district || "",
+          province: defaultFormData?.province || "",
+        }));
+        return;
+      }
       const body = {
-        firstName: firstName || "",
-        lastName: lastName || "",
+        firstName: extractName(formData.name).firtName,
+        lastName: extractName(formData.name).lastName,
         phone: formData.phone,
         gmail: formData.gmail,
-        password: "", // Not editable in this form
-        longitude: user?.longitude || 0, // Not editable in this form
-        latitude: user?.latitude || 0, // Not editable in this form
-        bloodTypeId: bloodTypeStringToId(formData.bloodType),
+        longitude: getLonLat?.longitude || 0,
+        latitude: getLonLat?.latitude || 0,
+        bloodTypeId: getTypeId(formData.bloodType),
         dob: formData.birthDate ? formData.birthDate.toISOString().split("T")[0] : "",
         gender: formData.gender,
       };
-
       user?.phone === null ? updateGoogleProfile(body) : updateProfile(body);
     }
   };
 
-  return (
+  return isLoading ? (
+    <LoadingSpinner />
+  ) : (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -389,13 +451,53 @@ const AccountEdit = () => {
               fill="#FFDA4B"
             />
           </svg>
-
           <p>Bạn cần cập nhật thông tin cá nhân để sử dụng các tính năng của hệ thống.</p>
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-6 p-8 md:p-10">
+        {/* status */}
+        <div className="flex items-center gap-1">
+          <IoInformationCircle
+            className={
+              currentRegistration
+                ? currentRegistration.type === "Volunteer"
+                  ? `text-blue-700 h-5 w-5`
+                  : `text-green-700 h-5 w-5`
+                : `text-gray-700 h-5 w-5`
+            }
+          />
+          <div className="font-semibold">
+            {currentRegistration ? (
+              currentRegistration.type === "Volunteer" ? (
+                <div className="flex gap-1 items-start text-sm flex-col md:text-[16px] md:flex-row md:items-center">
+                  <p className="font-normal py-1 px-3 bg-blue-100 text-blue-700 rounded-full text-sm w-max">
+                    Đã đăng ký tình nguyện
+                  </p>
+                  <p className="font-normal">
+                    - Từ <span className="font-bold italic">{currentRegistration.startDate}</span> đến{" "}
+                    <span className="font-bold italic">{currentRegistration.endDate}</span>
+                  </p>
+                </div>
+              ) : (
+                <div className="flex gap-1 items-start text-sm flex-col md:text-[16px] md:flex-row md:items-center">
+                  <p className="font-normal py-1 px-3 bg-green-100 text-green-700 rounded-full text-sm w-max">
+                    Đã đăng ký hiến máu
+                  </p>
+                  <p className="font-normal">
+                    - Ngày hiến <span className="font-bold italic">{currentRegistration.eventDate}</span>
+                  </p>
+                </div>
+              )
+            ) : (
+              <span className="font-normal text-gray-500 p-2 bg-gray-200 rounded-full text-sm">
+                Chưa đăng ký hiến máu
+              </span>
+            )}
+          </div>
+        </div>
+
         {/* Name */}
-        <div>
+        <div className="mb-10">
           <label className="block text-gray-800 font-semibold mb-2" htmlFor="name">
             Họ và tên <span className="text-red-500">*</span>
           </label>
@@ -414,83 +516,112 @@ const AccountEdit = () => {
           {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
         </div>
 
-        {/* Gender */}
-        <div>
-          <div className="flex items-center mb-2">
-            <span className="flex items-center text-[#C14B53] text-[22px] mr-3">
-              <FaVenusMars />
-            </span>
-            <label className="block text-gray-800 font-semibold">
-              Giới tính <span className="text-red-500">*</span>
+        <div className="flex gap-10 flex-col md:flex-row">
+          {/* Birth Date */}
+          <div className="w-full">
+            <label className="block text-gray-800 font-semibold mb-2" htmlFor="birthDate">
+              Ngày tháng năm sinh <span className="text-red-500">*</span>
             </label>
-          </div>
-          <div className="flex items-center gap-6 pl-2">
-            <label className="inline-flex items-center text-base">
-              <input
-                type="radio"
-                name="gender"
-                checked={formData.gender === true}
-                onChange={() => handleChange("gender", true)}
-                className="text-[#C14B53] focus:ring-[#C14B53]"
+            <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-2 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+              <FaBirthdayCake className="text-[#C14B53] text-[22px] mr-4" />
+              <DatePicker
+                id="birthDate"
+                value={formData.birthDate}
+                onChange={(date: Date) => {
+                  handleChange("birthDate", date);
+                }}
+                placeholderText="dd/MM/yyyy"
+                className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0"
+                hideCalendarIcon={true}
+                maxDate={new Date()}
               />
-              <span className="ml-2">Nam</span>
-            </label>
-            <label className="inline-flex items-center text-base">
-              <input
-                type="radio"
-                name="gender"
-                checked={formData.gender === false}
-                onChange={() => handleChange("gender", false)}
-                className="text-[#C14B53] focus:ring-[#C14B53]"
-              />
-              <span className="ml-2">Nữ</span>
-            </label>
+            </div>
+            {errors.birthDate && <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>}
           </div>
-          {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
+
+          {/* Gender */}
+          <div className="w-full">
+            <div className="flex items-center mb-3">
+              <span className="flex items-center text-[#C14B53] text-[22px] mr-3">
+                <FaVenusMars />
+              </span>
+              <label className="block text-gray-800 font-semibold">
+                Giới tính <span className="text-red-500">*</span>
+              </label>
+            </div>
+            <div className="flex items-center gap-10 pl-2">
+              <label className="inline-flex items-center text-base">
+                <input
+                  type="radio"
+                  name="gender"
+                  checked={formData.gender === true}
+                  onChange={() => handleChange("gender", true)}
+                  className="text-[#C14B53] focus:ring-[#C14B53] w-5 h-5"
+                />
+                <span className="ml-2">Nam</span>
+              </label>
+              <label className="inline-flex items-center text-base">
+                <input
+                  type="radio"
+                  name="gender"
+                  checked={formData.gender === false}
+                  onChange={() => handleChange("gender", false)}
+                  className="text-[#C14B53] focus:ring-[#C14B53] w-5 h-5"
+                />
+                <span className="ml-2">Nữ</span>
+              </label>
+            </div>
+            {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
+          </div>
         </div>
 
-        {/* Birth Date */}
-        <div>
-          <label className="block text-gray-800 font-semibold mb-2" htmlFor="birthDate">
-            Ngày tháng năm sinh <span className="text-red-500">*</span>
-          </label>
-          <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
-            <FaBirthdayCake className="text-[#C14B53] text-[22px] mr-4" />
-            <DatePicker
-              id="birthDate"
-              value={formData.birthDate}
-              onChange={(date: Date) => handleChange("birthDate", date)}
-              placeholderText="dd/MM/yyyy"
-              className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0"
-              hideCalendarIcon={true}
-              maxDate={new Date()}
-            />
+        <div className="flex gap-10 flex-col md:flex-row">
+          {/* Phone */}
+          <div className="w-full">
+            <label className="block text-gray-800 font-semibold mb-2" htmlFor="phone">
+              Số điện thoại <span className="text-red-500">*</span>
+            </label>
+            <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+              <FaPhone className="text-[#C14B53] text-[22px] mr-4" />
+              <input
+                id="phone"
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={(e) => handleChange("phone", e.target.value as string)}
+                placeholder="Số điện thoại người dùng"
+                className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
+              />
+            </div>
+            {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
           </div>
-          {errors.birthDate && <p className="text-red-500 text-sm mt-1">{errors.birthDate}</p>}
-        </div>
 
-        {/* Phone */}
-        <div>
-          <label className="block text-gray-800 font-semibold mb-2" htmlFor="phone">
-            Số điện thoại <span className="text-red-500">*</span>
-          </label>
-          <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
-            <FaPhone className="text-[#C14B53] text-[22px] mr-4" />
-            <input
-              id="phone"
-              type="text"
-              name="phone"
-              value={formData.phone}
-              onChange={(e) => handleChange("phone", e.target.value as string)}
-              placeholder="Số điện thoại người dùng"
-              className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
-            />
+          {/* Blood Type */}
+          <div className="w-full">
+            <label className="block text-gray-800 font-semibold mb-2" htmlFor="bloodType">
+              Nhóm máu <span className="text-red-500">*</span>
+            </label>
+            <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-1.5 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+              <FaTint className="text-[#C14B53] text-[22px] mr-4" />
+              <Select value={formData.bloodType} onValueChange={(value) => handleChange("bloodType", value as string)}>
+                <SelectTrigger className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0">
+                  <SelectValue placeholder="Chọn nhóm máu" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bloodTypeOptions.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {errors.bloodType && <p className="text-red-500 text-sm mt-1">{errors.bloodType}</p>}
           </div>
-          {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
         </div>
 
         {/* Gmail */}
-        <div>
+        <div className="mb-10">
           <label className="block text-gray-800 font-semibold mb-2" htmlFor="gmail">
             Email
           </label>
@@ -509,46 +640,73 @@ const AccountEdit = () => {
           {errors.gmail && <p className="text-red-500 text-sm mt-1">{errors.gmail}</p>}
         </div>
 
-        {/* Blood Type */}
-        <div>
-          <label className="block text-gray-800 font-semibold mb-2 flex items-center gap-2" htmlFor="bloodType">
-            Nhóm máu <span className="text-red-500">*</span>
-            <span className="relative group">
-              <FaInfoCircle className="text-blue-500 cursor-pointer" />
-              <span className="absolute left-6 top-1/2 -translate-y-1/2 w-64 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 break-words whitespace-normal">
-                Nhóm máu chính xác sẽ được xác nhận bởi nhân viên y tế sau quá trình xét nghiệm máu
-              </span>
-            </span>
+        {/* address */}
+        <div className="flex flex-col md:flex-row gap-10 mb-10">
+          <div className=" w-full">
+            <label className="block text-gray-800 font-semibold mb-2" htmlFor="province">
+              Tỉnh, thành phố <span className="text-red-500">*</span>
+            </label>
+            <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+              <FaBuilding className="text-[#C14B53] text-[22px] mr-4" />
+              <input
+                id="province"
+                type="text"
+                name="province"
+                value={formData.province}
+                onChange={(e) => handleChange("province", e.target.value as string)}
+                placeholder="Nhập tỉnh, thành phố"
+                className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
+              />
+            </div>
+            {errors.province && <p className="text-red-500 text-sm mt-1">{errors.province}</p>}
+          </div>
+
+          <div className="w-full">
+            <label className="block text-gray-800 font-semibold mb-2" htmlFor="district">
+              Quận, huyện <span className="text-red-500">*</span>
+            </label>
+            <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
+              <FaBuilding className="text-[#C14B53] text-[22px] mr-4" />
+              <input
+                id="district"
+                type="text"
+                name="district"
+                value={formData.district}
+                onChange={(e) => handleChange("district", e.target.value as string)}
+                placeholder="Nhập quận, huyện"
+                className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
+              />
+            </div>
+            {errors.district && <p className="text-red-500 text-sm mt-1">{errors.district}</p>}
+          </div>
+        </div>
+
+        <div className="mb-10">
+          <label className="block text-gray-800 font-semibold mb-2" htmlFor="address">
+            Địa chỉ <span className="text-red-500">*</span>
           </label>
           <div className="flex items-center bg-white border border-gray-200 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-[#C14B53] transition-shadow shadow-sm hover:shadow-md">
-            <FaTint className="text-[#C14B53] text-[22px] mr-4" />
+            <FaHome className="text-[#C14B53] text-[22px] mr-4" />
             <input
-              id="bloodType"
+              id="address"
               type="text"
-              name="bloodType"
-              value={formData.bloodType}
-              onChange={(e) => handleChange("bloodType", e.target.value as string)}
-              placeholder="Nhóm máu (A, B, AB, O)"
+              name="address"
+              value={formData.address}
+              onChange={(e) => handleChange("address", e.target.value as string)}
+              placeholder="Địa chỉ người dùng"
               className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0 text-base"
             />
           </div>
-          {errors.bloodType && <p className="text-red-500 text-xs mt-1">{errors.bloodType}</p>}
+          {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
         </div>
 
         <div className="pt-4">
-          <motion.button
-            type="submit"
-            whileHover={!hasNotChanged ? { scale: 1.01 } : undefined}
-            whileTap={!hasNotChanged ? { scale: 0.99 } : undefined}
-            className={`w-full px-8 py-3 rounded-xl font-semibold text-lg shadow transition cursor-pointer ${
-              hasNotChanged
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-[#C14B53] text-white hover:bg-[#a83a42] shadow-lg"
-            }`}
-            disabled={hasNotChanged}
+          <Button
+            className="w-full bg-[#C14B53] hover:bg-[#a83a42] hover:scale-105"
+            disabled={hasNotChanged || isLoading}
           >
-            Lưu thay đổi
-          </motion.button>
+            {isLoading ? "Đang lưu..." : "Lưu thay đổi"}
+          </Button>
         </div>
       </form>
 

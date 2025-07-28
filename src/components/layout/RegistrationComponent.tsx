@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import DatePicker from "../ui/datepicker";
-import { FaCalendarAlt, FaMapMarkerAlt, FaUserFriends, FaRegEdit, FaTrash, FaClipboardList, FaCheckCircle, FaTimesCircle, FaInfoCircle, FaRegCalendarCheck } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaUserFriends, FaRegCalendarAlt, FaRegEdit, FaTrash, FaClipboardList, FaCheckCircle, FaTimesCircle, FaInfoCircle, FaRegCalendarCheck } from "react-icons/fa";
+import { FaCalendarCheck } from "react-icons/fa6";
 import { authenApi } from "@/lib/instance";
 import { AxiosError } from "axios";
-const FeedbackModal = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  message, 
-  type = "info"}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  title: string; 
-  message: string; 
-  type?: "info" | "success" | "error" | "warning";
-  children?: React.ReactNode;
-}) => {
+import { toast } from "react-toastify";
+const FeedbackModal = ({
+  isOpen,
+  onClose,
+  title,
+  message,
+  type = "info" }: {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    message: string;
+    type?: "info" | "success" | "error" | "warning";
+    children?: React.ReactNode;
+  }) => {
   const typeColors = {
     info: "bg-blue-500",
     success: "bg-green-500",
@@ -91,7 +93,7 @@ interface ApiResponse<T> {
   data: T;
 }
 
-interface ApiRegistration {
+export interface ApiRegistration {
   id: number;
   type: "Donation" | "Volunteer";
   facilityName: string;
@@ -106,7 +108,6 @@ interface ApiRegistration {
 }
 const RegistrationComponent = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [volunteerDates, setVolunteerDates] = useState<Record<number, Date | null>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,14 +116,16 @@ const RegistrationComponent = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [showCancelSuccess, setShowCancelSuccess] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
-  const [showDateError, setShowDateError] = useState(false);
+  const [showStartDateError, setShowStartDateError] = useState(false);
+  const [showEndDateError, setShowEndDateError] = useState(false);
   const [showCancelError, setShowCancelError] = useState(false);
   const [cancelErrorMessage, setCancelErrorMessage] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
-  const [tempVolunteerDate, setTempVolunteerDate] = useState<Date | null>(null);
-  const [registrationToCancel, setRegistrationToCancel] = useState<number | null>(null);
+  const [editStartDate, setEditStartDate] = useState<Date | null>(null)
+  const [editEndDate, setEditEndDate] = useState<Date | null>(null)
+  const [isSubmitting, setISubmitting] = useState(false)
 
   // Helper to format date from YYYY-MM-DD to DD/MM/YYYY
   const formatDate = (dateString: string | null): string => {
@@ -142,54 +145,45 @@ const RegistrationComponent = () => {
       eventName: apiReg.eventName || (isVolunteer ? "Tình nguyện viên" : "Hiến máu"),
       date: formatDate(apiReg.eventDate || apiReg.startDate),
       time: "", // API does not provide time, leave blank or parse if available
-      location: apiReg.facilityName,
+      location: "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh",
       type: isVolunteer ? "volunteer" : "normal",
       registeredDate: formatDate(apiReg.registerDate),
-      volunteerDate: isVolunteer ? formatDate(apiReg.eventDate || apiReg.startDate) : undefined,
+      volunteerDate: isVolunteer
+        ? formatDate(apiReg.startDate) + " đến " + formatDate(apiReg.endDate)
+        : formatDate(apiReg.eventDate),
     };
   };
 
-  useEffect(() => {
-    const fetchRegistrations = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await authenApi.get<ApiResponse<ApiRegistration[]>>('/api/event-registration-history');
-        if (response.data.isSuccess) {
-          const transformed = response.data.data.map(transformApiRegistration);
-          setRegistrations(transformed);
-          // Set volunteerDates state for volunteer registrations
-          const volunteerDatesObj: Record<number, Date | null> = {};
-          transformed.forEach(reg => {
-            if (reg.type === "volunteer" && reg.volunteerDate) {
-              const [day, month, year] = reg.volunteerDate.split("/").map(Number);
-              volunteerDatesObj[reg.id] = new Date(year, month - 1, day);
-            } else {
-              volunteerDatesObj[reg.id] = null;
-            }
-          });
-          setVolunteerDates(volunteerDatesObj);
-        } else {
-          setError(response.data.message || "Failed to fetch registration history");
-        }
-      } catch (err) {
-        const error = err as AxiosError<ApiResponse<null>>;
-        setError(error.response?.data?.message || error.message || "Error fetching registration history");
-      } finally {
-        setLoading(false);
+  const fetchRegistrations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await authenApi.get<ApiResponse<ApiRegistration[]>>('/api/event-registration-history');
+      if (response.data.isSuccess) {
+        const transformed = response.data.data.map(transformApiRegistration);
+        setRegistrations(transformed);
+      } else {
+        setError(response.data.message || "Failed to fetch registration history");
       }
-    };
+    } catch (err) {
+      const error = err as AxiosError<ApiResponse<null>>;
+      setError(error.response?.data?.message || error.message || "Error fetching registration history");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchRegistrations();
   }, []);
 
   const openEditModal = (reg: Registration) => {
     setSelectedRegistration(reg);
-    setTempVolunteerDate(volunteerDates[reg.id] || parseDateString(reg.date));
     setIsEditModalOpen(true);
   };
 
-  const openCancelModal = (id: number) => {
-    setRegistrationToCancel(id);
+  const openCancelModal = (reg: Registration) => {
+    setSelectedRegistration(reg);
     setIsCancelModalOpen(true);
   };
 
@@ -197,41 +191,83 @@ const RegistrationComponent = () => {
     setIsEditModalOpen(false);
     setIsCancelModalOpen(false);
     setSelectedRegistration(null);
-    setTempVolunteerDate(null);
-    setRegistrationToCancel(null);
   };
 
-  const handleSaveDate = () => {
-    if (!tempVolunteerDate) {
-      setShowDateError(true);
+  function getDateOnlyString(date: Date): string {
+    return date.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  }
+  const handleSaveDate = async () => {
+    if (!editStartDate && !editEndDate) {
+      setShowEndDateError(true);
+      setShowStartDateError(true);
+      return
+    }
+
+    if (!editStartDate) {
+      setShowStartDateError(true);
+      return
+    }
+
+    if (!editEndDate) {
+      setShowEndDateError(true);
+      return
+    }
+    const todayStr = getDateOnlyString(new Date());
+    const maxDateStr = "2030-01-01";
+
+    if (getDateOnlyString(editEndDate) < todayStr || getDateOnlyString(editEndDate) > maxDateStr) {
+      setShowEndDateError(true);
       return;
     }
 
-    // Ensure we're passing a Date object
-    const selectedDate = tempVolunteerDate ? new Date(tempVolunteerDate) : null;
-
-    if (selectedDate && selectedRegistration) {
-      setVolunteerDates((prev) => ({
-        ...prev,
-        [selectedRegistration.id]: selectedDate,
-      }));
-      closeAllModals();
-      setShowSaveSuccess(true);
+    if (getDateOnlyString(editStartDate) < todayStr || getDateOnlyString(editStartDate) > maxDateStr) {
+      setShowStartDateError(true);
+      return;
     }
+
+    const payload = {
+      startVolunteerDate: editStartDate.toISOString(),
+      endVolunteerDate: editEndDate.toISOString(),
+    }
+
+    try {
+      setISubmitting(true)
+      const response = await authenApi.put(`/api/Volunteers/${selectedRegistration?.id}`, payload)
+      const data = response.data
+
+      if (data.isSuccess) {
+        await fetchRegistrations()
+        setShowSaveSuccess(true)
+      } else {
+        console.log('Fail update volunteer date', data)
+        toast.error('Cập nhật ngày sẵn sàng hiến thất bại!')
+      }
+    } catch (error) {
+      toast.error('Cập nhật ngày sẵn sàng hiến thất bại!')
+      console.log('Fail update volunteer date ', error)
+    } finally {
+      setISubmitting(false)
+    }
+    closeAllModals();
+    setEditEndDate(null)
+    setEditStartDate(null)
+    setShowEndDateError(false);
+    setShowStartDateError(false);
   };
 
+  // cancel dontaion registration
   const handleConfirmCancel = async () => {
-    if (!registrationToCancel) return;
+    if (!selectedRegistration) return;
 
     try {
       setIsCancelling(true);
       const response = await authenApi.put<ApiResponse<null>>(
-        `/api/blood-registrations/${registrationToCancel}/cancel-own`
+        `/api/blood-registrations/${selectedRegistration.id}/cancel-own`
       );
 
       if (response.data.isSuccess) {
         // Remove from local state
-        setRegistrations((prev) => prev.filter((reg) => reg.id !== registrationToCancel));
+        setRegistrations((prev) => prev.filter((reg) => reg.id !== selectedRegistration.id));
         closeAllModals();
         setShowCancelSuccess(true);
       } else {
@@ -248,10 +284,28 @@ const RegistrationComponent = () => {
     }
   };
 
-  const parseDateString = (dateString: string): Date => {
-    const [day, month, year] = dateString.split("/").map(Number);
-    return new Date(year, month - 1, day);
-  };
+  // cancel volunteer registration
+  const handleConfirmCancelVolunteer = async () => {
+    try {
+      setIsCancelling(true)
+      console.log('volunteer id ', selectedRegistration?.id)
+      const response = await authenApi.put(`/api/Volunteers/cancel/${selectedRegistration?.id}`)
+      const data = response.data
+      if (data.isSuccess) {
+        setShowCancelSuccess(true)
+        setRegistrations(registrations.filter(reg => reg.id !== selectedRegistration?.id))
+      } else {
+        setShowCancelError(true)
+        console.log('fail to cancel volunteer ', data)
+      }
+    } catch (error) {
+      console.log('error caneling volunteer ', error)
+      setShowCancelError(true)
+    } finally {
+      setIsCancelling(false)
+      closeAllModals();
+    }
+  }
 
   if (loading) {
     return (
@@ -305,11 +359,20 @@ const RegistrationComponent = () => {
               </div>
               <h3 className="font-bold text-lg text-[#C14B53] flex items-center gap-2 mb-2"><FaClipboardList className="text-[#C14B53]" />{reg.eventName}</h3>
               <div className="flex flex-col gap-2 mt-1 mb-2">
-                <div className="flex items-center gap-2 text-gray-600 text-sm"><FaCalendarAlt /> <span><span className="font-medium">Ngày diễn ra:</span> {reg.date} ({reg.time})</span></div>
-                <div className="flex items-center gap-2 text-gray-600 text-sm"><FaMapMarkerAlt /> <span><span className="font-medium">Địa điểm:</span> {reg.location}</span></div>
+                {
+                  reg.type !== "volunteer" && (
+                    <div className="">
+                      <div className="flex items-center gap-2 text-gray-600 text-sm mb-2"><FaRegCalendarAlt /> <span><span className="font-medium">Ngày diễn ra:</span> {reg.date}, từ 7h00 - 17h00</span></div>
+                      <div className="flex items-center gap-2 text-gray-600 text-sm"><FaMapMarkerAlt /> <span><span className="font-medium">Địa điểm:</span> {reg.location}</span></div>
+                    </div>
+                  )
+                }
                 <div className="flex items-center gap-2 text-gray-600 text-sm"><FaCalendarAlt /> <span><span className="font-medium">Ngày đăng ký:</span> {reg.registeredDate}</span></div>
                 {reg.type === "volunteer" && (
-                  <div className="flex items-center gap-2 text-blue-700 text-sm"><FaCalendarAlt /> <span><span className="font-medium">Ngày TN:</span> {volunteerDates[reg.id]?.toLocaleDateString("en-GB") || reg.date}</span></div>
+                  <div className="flex items-center gap-2 text-blue-700 text-sm">
+                    <FaCalendarCheck />
+                    <span><span className="font-medium">Thời gian sẵn sàng hiến máu:</span> {reg.volunteerDate}</span>
+                  </div>
                 )}
               </div>
               <div className="flex gap-2 mt-2 justify-end">
@@ -324,7 +387,7 @@ const RegistrationComponent = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => openCancelModal(reg.id)}
+                  onClick={() => openCancelModal(reg)}
                   className="p-3 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition cursor-pointer text-lg shadow-sm active:scale-95"
                   title="Hủy đăng ký"
                   aria-label="Hủy đăng ký"
@@ -359,15 +422,34 @@ const RegistrationComponent = () => {
               </div>
               <div className="border-b border-gray-200 my-0" />
               <div className="p-6">
-                <DatePicker
-                  value={tempVolunteerDate}
-                  onChange={date => setTempVolunteerDate(date as Date)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  aria-label="Chọn ngày tình nguyện"
-                />
-                {showDateError && <span className="text-red-500 text-xs flex items-center mt-2"><FaTimesCircle className="mr-1" />Vui lòng chọn ngày hợp lệ</span>}
+                <div className="flex gap-5">
+                  <div className="">
+                    <label htmlFor="startdatedit">Từ</label>
+                    <DatePicker
+                      value={editStartDate}
+                      onChange={date => setEditStartDate(date as Date)}
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Chọn ngày tình nguyện"
+                      id="startdatedit"
+                    />
+                    {showStartDateError && <span className="text-red-500 text-xs flex items-center mt-2"><FaTimesCircle className="mr-1" />Vui lòng chọn ngày hợp lệ</span>}
+                  </div>
+                  <div className="">
+                    <label htmlFor="enddatedit">Đến</label>
+                    <DatePicker
+                      value={editEndDate}
+                      onChange={date => setEditEndDate(date as Date)}
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Chọn ngày tình nguyện"
+                      id="enddatedit"
+                    />
+                    {showEndDateError && <span className="text-red-500 text-xs flex items-center mt-2"><FaTimesCircle className="mr-1" />Vui lòng chọn ngày hợp lệ</span>}
+
+                  </div>
+                </div>
                 <div className="flex gap-4 justify-end mt-6">
                   <button
+                    disabled={isSubmitting}
                     type="button"
                     onClick={closeAllModals}
                     className="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition"
@@ -375,12 +457,13 @@ const RegistrationComponent = () => {
                     Hủy
                   </button>
                   <button
+                    disabled={isSubmitting}
                     type="button"
                     onClick={handleSaveDate}
                     className="px-8 py-2 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all duration-200 flex items-center gap-2"
                   >
                     <FaCheckCircle />
-                    Lưu
+                    {isSubmitting ? "Đang lưu..." : "Lưu"}
                   </button>
                 </div>
               </div>
@@ -411,9 +494,14 @@ const RegistrationComponent = () => {
               </div>
               <div className="border-b border-gray-200 my-0" />
               <div className="p-6">
-                <p className="text-gray-700 mb-4 flex items-center gap-2"><FaInfoCircle className="text-red-500" />Bạn có chắc chắn muốn hủy đăng ký sự kiện này không?</p>
+                <p className="text-gray-700 mb-4 flex items-center gap-2"><FaInfoCircle className="text-red-500" />
+                  {selectedRegistration?.type === "volunteer"
+                    ? "Bạn có chắc chắn muốn hủy đăng ký tình nguyện viên?"
+                    : "Bạn có chắc chắn muốn hủy đăng ký sự kiện này không?"}
+                </p>
                 <div className="flex gap-4 justify-end mt-6">
                   <button
+                    disabled={isCancelling}
                     type="button"
                     onClick={closeAllModals}
                     className="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition"
@@ -422,7 +510,7 @@ const RegistrationComponent = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={handleConfirmCancel}
+                    onClick={selectedRegistration?.type === "volunteer" ? handleConfirmCancelVolunteer : handleConfirmCancel}
                     disabled={isCancelling}
                     className="px-8 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 active:scale-95 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -451,7 +539,7 @@ const RegistrationComponent = () => {
         isOpen={showCancelSuccess}
         onClose={() => setShowCancelSuccess(false)}
         title="Hủy đăng ký thành công"
-        message="Bạn đã hủy đăng ký sự kiện thành công."
+        message="Bạn đã hủy đăng ký thành công."
         type="success"
       />
       <FeedbackModal
