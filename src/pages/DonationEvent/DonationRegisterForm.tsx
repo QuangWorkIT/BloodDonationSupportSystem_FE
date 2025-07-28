@@ -9,7 +9,6 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 import { CalendarIcon } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -27,8 +26,13 @@ import {
 } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import BloodTypeSelect, { BloodTypeSelectRh } from "../../components/layout/BloodTypeSelect"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { authenApi } from "@/lib/instance"
-import { type bloodType } from "@/types/BloodCompatibility"
+import { getBloodTypeRh, type bloodType } from "@/types/BloodCompatibility"
 import { useAuth } from "@/hooks/authen/AuthContext"
 import AlertBanner from "@/components/layout/AlerBanner"
 interface DonationRegistrationProps {
@@ -99,11 +103,11 @@ export function DonationRegisterForm({
         setIsWarning('Hãy cập nhật thông tin tài khoản để tiếp tục !')
         return
       }
-      const bloodTypeUser = {
-        bloodType: user.bloodType?.substring(0, 1) || "",
-        rh: user.bloodType?.substring(1) || ""
-      }
-      setCurrentBloodType(bloodTypeUser)
+
+      setCurrentBloodType({
+        bloodType: getBloodTypeRh(user?.bloodType || "").bloodType || "",
+        rh: getBloodTypeRh(user?.bloodType || "").rh || ""
+      })
       setIsWarning('')
     }
 
@@ -116,10 +120,10 @@ export function DonationRegisterForm({
     defaultValues: {
       donorName: user?.unique_name,
       address: user?.address,
-      lastDonation: undefined,
+      lastDonation: user?.lastDonation || undefined,
       donationDate: new Date(eventTime),
-      bloodType: user?.bloodType?.substring(0, 1) || "",
-      bloodTypeRh: user?.bloodType?.substring(1) || "",
+      bloodType: getBloodTypeRh(user?.bloodType || "").bloodType || "",
+      bloodTypeRh: getBloodTypeRh(user?.bloodType || "").rh || "",
     }
   })
 
@@ -226,7 +230,21 @@ export function DonationRegisterForm({
         {/* Form header */}
         <div className="mb-6 md:mb-[25px]">
           <div className="flex justify-between items-center my-4 md:my-[25px] px-2 md:px-[20px]">
-            <h1 className="text-xl md:text-[28px] font-semibold">Đơn đăng ký hiến máu</h1>
+            <div className="flex gap-2 items-center">
+              <h1 className="text-xl md:text-[28px] font-semibold">Đơn đăng ký hiến máu</h1>
+              <Tooltip>
+                <TooltipTrigger>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.0003 18.3334C14.6027 18.3334 18.3337 14.6025 18.3337 10.0001C18.3337 5.39771 14.6027 1.66675 10.0003 1.66675C5.39795 1.66675 1.66699 5.39771 1.66699 10.0001C1.66699 14.6025 5.39795 18.3334 10.0003 18.3334Z" stroke="black" stroke-width="1.5" />
+                    <path d="M8.4375 7.39603C8.43754 7.1224 8.50943 6.85357 8.64599 6.61645C8.78255 6.37933 8.97899 6.18223 9.21565 6.04487C9.45231 5.90751 9.72089 5.83471 9.99452 5.83375C10.2682 5.83279 10.5372 5.90371 10.7749 6.0394C11.0125 6.1751 11.2103 6.37082 11.3485 6.60698C11.4867 6.84313 11.5605 7.11145 11.5625 7.38508C11.5644 7.6587 11.4945 7.92804 11.3596 8.16615C11.2248 8.40426 11.0298 8.60279 10.7942 8.74186C10.3983 8.97603 10 9.33186 10 9.79186V10.8335" stroke="black" stroke-width="1.5" stroke-linecap="round" />
+                    <path d="M10.0003 14.1667C10.4606 14.1667 10.8337 13.7936 10.8337 13.3333C10.8337 12.8731 10.4606 12.5 10.0003 12.5C9.54009 12.5 9.16699 12.8731 9.16699 13.3333C9.16699 13.7936 9.54009 14.1667 10.0003 14.1667Z" fill="black" />
+                  </svg>
+                </TooltipTrigger>
+                <TooltipContent className="bg-gray-200">
+                  <p className="text-black">Thông tin cá nhân sẽ được cập nhật sau khi hiến máu</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
             <button
               onClick={() => setRegistraionFormOpen(false)}
               className="hover:cursor-pointer text-gray-500 hover:text-gray-700"
@@ -341,7 +359,7 @@ export function DonationRegisterForm({
                         <FormControl>
                           <Button
                             variant={"outline"}
-                            className="w-full shadow-sm font-semibold"
+                            className={`shadow-sm font-semibold ` + user?.lastDonation === undefined ? "cursor-not-allowed w-full" : "cursor-default w-full"}
                           >
                             {field.value ? (
                               format(field.value, "PPP", { locale: vi })
@@ -359,7 +377,11 @@ export function DonationRegisterForm({
                           selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date: Date) => {
-                            return date >= new Date() || date < new Date("2000-01-01")
+                            if (!user?.lastDonation) {
+                              return date >= new Date() || date < new Date("2000-01-01")
+                            } else {
+                              return date >= new Date() || date < new Date()
+                            }
                           }}
                         />
                       </PopoverContent>
@@ -384,7 +406,7 @@ export function DonationRegisterForm({
                         <FormControl>
                           <Button
                             variant={"outline"}
-                            className="w-full shadow-sm font-semibold cursor-default"
+                            className="w-full shadow-sm font-semibold cursor-not-allowed"
                           >
                             {format(new Date(field.value ?? ""), "PPP", { locale: vi })}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-75" />

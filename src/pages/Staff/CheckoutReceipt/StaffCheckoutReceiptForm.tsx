@@ -12,6 +12,7 @@ import { authenApi } from "@/lib/instance";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
 import { useState } from "react";
+import { getBloodTypeRh } from "@/types/BloodCompatibility";
 interface StaffCheckoutReceiptFormProps {
   donor: Donor,
   setIsBloodCollectFormOpen: () => void
@@ -40,9 +41,9 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      receiverName: donor.fullName,
-      bloodType: donor.bloodTypeName.substring(0, 1),
-      bloodTypeRh: donor.bloodTypeName.substring(1),
+      receiverName: "Bệnh viện Lê Văn Việt",
+      bloodType: getBloodTypeRh(donor.bloodTypeName || "").bloodType || "",
+      bloodTypeRh: getBloodTypeRh(donor.bloodTypeName || "").rh || "",
       volume: "",
       note: "",
       staffId: user?.unique_name,
@@ -55,13 +56,13 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
       volume: Number(data.volume),
       description: data.note
     }
-    console.log("id " + donor.bloodRegisId  + "payload ",   payload)
+    console.log("id " + donor.bloodRegisId + "payload ", payload)
     try {
       setIsSubmitting(true)
       const response = await authenApi.post(`/api/blood-registrations/${donor.bloodRegisId}/blood-procedures/collect`, payload)
       const data = response.data
 
-      if(data.isSuccess) {
+      if (data.isSuccess) {
         console.log('Collect blood success')
         toast.success('Hiến máu thành công!')
         await fetchEvents()
@@ -70,11 +71,11 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
     } catch (error) {
       toast.error('Gửi đơn thất bại!')
       const err = error as AxiosError
-      if(err)
+      if (err)
         console.log('Fail submit form ', err)
       else
         console.log('Error submitting ', error)
-    }finally{
+    } finally {
       setIsSubmitting(false)
     }
   };
@@ -248,10 +249,10 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
                 className="w-[160px] h-[40px] bg-red-600 text-white text-[17px] font-bold hover:bg-red-800 rounded-full cursor-pointer"
                 disabled={!isConfirmChecked || isSubmitting}
               >
-                Gửi
+                {isSubmitting ? "Đang gửi..." : "Gửi"}
               </Button>
               <Button
-                disabled = {isSubmitting}
+                disabled={isSubmitting}
                 type="button"
                 variant="outline"
                 className="w-[160px] h-[40px] bg-red-200 text-white text-[17px] font-bold hover:bg-red-400 rounded-full cursor-pointer"

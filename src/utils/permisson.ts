@@ -43,6 +43,7 @@ export const getUserByToken = async (token: string): Promise<User | null> => {
                 longitude: data.data?.longitude,
                 latitude: data.data?.latitude,
                 address: address,
+                lastDonation: data.data?.lastDonation !== null ? new Date(data.data.lastDonation) : undefined,
                 role: data.data?.role
             }
         } else {

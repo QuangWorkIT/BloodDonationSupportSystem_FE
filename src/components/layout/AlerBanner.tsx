@@ -16,7 +16,7 @@ const AlertBanner = ({ warning }: AlertBannerProps) => {
             <div className="flex flex-1 gap-2 md:flex-row items-center justify-between">
                 <p>{warning}</p>
                 <Link to={warning === 'Hãy cập nhật thông tin tài khoản để tiếp tục !' ? '/profile' : "/login"}>
-                    <Button variant='outline' className="text-black text-[11.5px] w-20 md:text-[15px] md:w-30">
+                    <Button variant='outline' className="text-black text-[11.5px] min-w-20 md:text-[15px] md:min-w-30">
                         {warning === 'Hãy cập nhật thông tin tài khoản để tiếp tục !' ? "Cập nhật tài khoản" : "Đăng nhập"}
                     </Button>
                 </Link>

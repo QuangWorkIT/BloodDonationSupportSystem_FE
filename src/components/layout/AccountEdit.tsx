@@ -48,8 +48,7 @@ interface UpdateBody {
   latitude: number,
   bloodTypeId: number,
   dob: string,
-  gender: boolean,
-  password: string
+  gender: boolean
 }
 type FormField = keyof FormData;
 
@@ -136,7 +135,7 @@ const AccountEdit = () => {
       formData.bloodType === defaultFormData.bloodType &&
       formData.gmail === defaultFormData.gmail &&
       formData.address === defaultFormData.address &&
-      formData.district === formData.district &&
+      formData.district === defaultFormData.district &&
       formData.province === defaultFormData.province
     setHasNotChanged(isEqual)
   }, [formData, defaultFormData])
@@ -299,7 +298,7 @@ const AccountEdit = () => {
   };
 
 
-  const handleChange = (name: FormField, value: string | boolean) => {
+  const handleChange = (name: FormField, value: string | boolean | Date) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Validate on change
     if (errors[name]) {
@@ -401,7 +400,7 @@ const AccountEdit = () => {
 
     if (isValid) {
       setIsLoading(true)
-      const getLonLat = await getLongLat(formData.address + " " + formData.district + " " + formData.province + " Việt Nam")
+      const getLonLat = await getLongLat(formData.address + " quận " + formData.district + " " + formData.province + " Việt Nam")
       if (getLonLat === null) {
         setIsLoading(false)
         toast.error('Địa chỉ không phù hợp!')
@@ -423,7 +422,6 @@ const AccountEdit = () => {
         bloodTypeId: getTypeId(formData.bloodType),
         dob: formData.birthDate ? formData.birthDate.toISOString().split('T')[0] : '',
         gender: formData.gender,
-        password: ""
       };
       user?.phone === null ? updateGoogleProfile(body) : updateProfile(body);
     }
@@ -463,7 +461,7 @@ const AccountEdit = () => {
               : (`text-green-700 h-5 w-5`)) :
               (`text-gray-700 h-5 w-5`)
             } />
-            <p className="font-semibold">
+            <div className="font-semibold">
               {currentRegistration
                 ? (
                   currentRegistration.type === "Volunteer"
@@ -477,7 +475,7 @@ const AccountEdit = () => {
                     </div>)
                 )
                 : (<span className="font-normal text-gray-500 p-2 bg-gray-200 rounded-full text-sm">Chưa đăng ký hiến máu</span>)}
-            </p>
+            </div>
           </div>
 
           {/* Name */}
@@ -511,7 +509,9 @@ const AccountEdit = () => {
                 <DatePicker
                   id="birthDate"
                   value={formData.birthDate}
-                  onChange={(date: Date) => handleChange("birthDate", date.toISOString())}
+                  onChange={(date: Date) => {
+                    handleChange("birthDate", date)
+                  }}
                   placeholderText="dd/MM/yyyy"
                   className="w-full bg-transparent outline-none border-none p-0 m-0 focus:ring-0"
                   hideCalendarIcon={true}

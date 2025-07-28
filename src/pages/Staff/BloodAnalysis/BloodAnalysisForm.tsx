@@ -24,7 +24,7 @@ import {
     RadioGroupItem,
 } from "@/components/ui/radio-group"
 import type { Donor } from "@/pages/Staff/BloodAnalysis/BloodAnalysisEventList"
-import { getComponentId, getTypeId } from "@/types/BloodCompatibility"
+import { getBloodTypeRh, getComponentId, getTypeId } from "@/types/BloodCompatibility"
 import { authenApi } from "@/lib/instance"
 import { toast } from "react-toastify"
 import { useState, useEffect } from "react"
@@ -92,8 +92,8 @@ function BloodAnalysisForm({ setIsAnalysisFormOpen, donor, fetchEvents }: BloodA
         resolver: zodResolver(formSchema),
         defaultValues: {
             donorName: donor.fullName,
-            bloodType: donor.bloodTypeName?.substring(0, 1),
-            rhFactor: donor.bloodTypeName?.substring(1),
+            bloodType: getBloodTypeRh(donor.bloodTypeName || "").bloodType,
+            rhFactor: getBloodTypeRh(donor.bloodTypeName || "").rh,
             donationDate: new Date(donor.performedAt),
             bloodComponent: undefined,
             volume: donor.volume,

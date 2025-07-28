@@ -255,6 +255,7 @@ const RegistrationComponent = () => {
     setShowStartDateError(false);
   };
 
+  // cancel dontaion registration
   const handleConfirmCancel = async () => {
     if (!selectedRegistration) return;
 
@@ -282,6 +283,29 @@ const RegistrationComponent = () => {
       setIsCancelling(false);
     }
   };
+
+  // cancel volunteer registration
+  const handleConfirmCancelVolunteer = async () => {
+    try {
+      setIsCancelling(true)
+      console.log('volunteer id ', selectedRegistration?.id)
+      const response = await authenApi.put(`/api/Volunteers/cancel/${selectedRegistration?.id}`)
+      const data = response.data
+      if (data.isSuccess) {
+        setShowCancelSuccess(true)
+        setRegistrations(registrations.filter(reg => reg.id !== selectedRegistration?.id))
+      } else {
+        setShowCancelError(true)
+        console.log('fail to cancel volunteer ', data)
+      }
+    } catch (error) {
+      console.log('error caneling volunteer ', error)
+      setShowCancelError(true)
+    } finally {
+      setIsCancelling(false)
+      closeAllModals();
+    }
+  }
 
   if (loading) {
     return (
@@ -486,7 +510,7 @@ const RegistrationComponent = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={handleConfirmCancel}
+                    onClick={selectedRegistration?.type === "volunteer" ? handleConfirmCancelVolunteer : handleConfirmCancel}
                     disabled={isCancelling}
                     className="px-8 py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700 active:scale-95 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -515,7 +539,7 @@ const RegistrationComponent = () => {
         isOpen={showCancelSuccess}
         onClose={() => setShowCancelSuccess(false)}
         title="Hủy đăng ký thành công"
-        message="Bạn đã hủy đăng ký sự kiện thành công."
+        message="Bạn đã hủy đăng ký thành công."
         type="success"
       />
       <FeedbackModal

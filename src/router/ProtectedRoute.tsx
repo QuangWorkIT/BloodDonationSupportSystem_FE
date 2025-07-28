@@ -10,11 +10,14 @@ interface ProtectedRouteProps {
 
 function ProtectedRoute({ element, allowRole }: ProtectedRouteProps) {
     const { user, isLoading } = useAuth()
-    if (isLoading) return (
-        <div className="w-full h-screen flex items-center justify-center">
-            <LoadingSpinner />
-        </div>
-    )
+    if (isLoading) {
+        return (
+
+            <div className="w-full h-screen flex items-center justify-center">
+                <LoadingSpinner />
+            </div>
+        )
+    }
 
     if (!user) return <Navigate to={'/login'} replace />
 
