@@ -6,23 +6,25 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Donor } from "@/pages/Staff/BloodCollection/BloodCollectEventList"
+import type { Donor } from "@/pages/Staff/BloodCollection/BloodCollectEventList";
 import { useAuth } from "@/hooks/authen/AuthContext";
 import { authenApi } from "@/lib/instance";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
 import { useState } from "react";
+import { FaInfoCircle } from "react-icons/fa";
 interface StaffCheckoutReceiptFormProps {
-  donor: Donor,
-  setIsBloodCollectFormOpen: () => void
-  fetchEvents: () => Promise<void>
+  donor: Donor;
+  setIsBloodCollectFormOpen: () => void;
+  fetchEvents: () => Promise<void>;
 }
 
 const formSchema = z.object({
   receiverName: z.string().min(1, "Vui lòng nhập tên người nhận"),
   bloodType: z.string().min(1, "Vui lòng chọn nhóm máu."),
   bloodTypeRh: z.string().min(1, "Vui lòng chọn nhóm máu."),
-  volume: z.string()
+  volume: z
+    .string()
     .refine((val) => /^\d{2,3}$/.test(val), "Lượng máu phải là số hợp lệ (vd: 250)")
     .refine((val) => Number(val) <= 450, "Lượng máu không được vượt quá 450ml."),
   note: z.string().optional(),
@@ -34,9 +36,13 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormOpen, fetchEvents }: StaffCheckoutReceiptFormProps) {
-  const { user } = useAuth()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export default function StaffCheckoutReceiptForm({
+  donor,
+  setIsBloodCollectFormOpen,
+  fetchEvents,
+}: StaffCheckoutReceiptFormProps) {
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,29 +59,30 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
   const onSubmit = async (data: FormValues) => {
     const payload = {
       volume: Number(data.volume),
-      description: data.note
-    }
-    console.log("id " + donor.bloodRegisId  + "payload ",   payload)
+      description: data.note,
+    };
+    console.log("id " + donor.bloodRegisId + "payload ", payload);
     try {
-      setIsSubmitting(true)
-      const response = await authenApi.post(`/api/blood-registrations/${donor.bloodRegisId}/blood-procedures/collect`, payload)
-      const data = response.data
+      setIsSubmitting(true);
+      const response = await authenApi.post(
+        `/api/blood-registrations/${donor.bloodRegisId}/blood-procedures/collect`,
+        payload
+      );
+      const data = response.data;
 
-      if(data.isSuccess) {
-        console.log('Collect blood success')
-        toast.success('Hiến máu thành công!')
-        await fetchEvents()
-        setIsBloodCollectFormOpen()
+      if (data.isSuccess) {
+        console.log("Collect blood success");
+        toast.success("Hiến máu thành công!");
+        await fetchEvents();
+        setIsBloodCollectFormOpen();
       }
     } catch (error) {
-      toast.error('Gửi đơn thất bại!')
-      const err = error as AxiosError
-      if(err)
-        console.log('Fail submit form ', err)
-      else
-        console.log('Error submitting ', error)
-    }finally{
-      setIsSubmitting(false)
+      toast.error("Gửi đơn thất bại!");
+      const err = error as AxiosError;
+      if (err) console.log("Fail submit form ", err);
+      else console.log("Error submitting ", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -109,10 +116,10 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
               name="receiverName"
               render={({ field }) => (
                 <FormItem className="flex justify-between">
-                  <FormLabel className="text-lg text-nowrap">Tên cơ sở</FormLabel>
+                  <FormLabel className="text-lg text-nowrap">Tên bệnh nhân</FormLabel>
                   <div className="flex flex-col items-start gap-2">
                     <FormControl>
-                      <Input placeholder="Nhập tên cơ sở y tế" className="w-[550px] h-[50px]" {...field} />
+                      <Input placeholder="Nhập tên bệnh nhân" className="w-[550px] h-[50px]" {...field} />
                     </FormControl>
                     <FormMessage />
                   </div>
@@ -122,13 +129,21 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
 
             {/* Blood type */}
             <div className="flex items-start gap-2 justify-between">
-              <FormLabel className="text-lg text-nowrap">Nhóm máu</FormLabel>
+              <FormLabel className="text-lg text-nowrap flex items-center gap-2">
+                Nhóm máu
+                <span className="relative group">
+                  <FaInfoCircle className="text-blue-500 cursor-pointer" />
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 w-64 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 break-words whitespace-normal">
+                    Nhóm máu chính xác sẽ được xác nhận bởi nhân viên y tế sau quá trình xét nghiệm máu
+                  </span>
+                </span>
+              </FormLabel>
               <div className="flex gap-25">
                 <FormField
                   control={form.control}
                   name="bloodType"
                   render={({ field }) => (
-                    <FormItem >
+                    <FormItem>
                       <div className="flex flex-col items-start gap-2">
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl className="w-[225px] h-[50px]">
@@ -197,7 +212,8 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
                 <FormItem>
                   <FormLabel className="text-lg text-nowrap">Ghi chú</FormLabel>
                   <FormControl>
-                    <textarea className="w-full h-[130px] p-3 rounded-[10px] border-2 border-gray focus:shadow-lg focus:border-gray-500 transition-all duration-300 ease-in-out"
+                    <textarea
+                      className="w-full h-[130px] p-3 rounded-[10px] border-2 border-gray focus:shadow-lg focus:border-gray-500 transition-all duration-300 ease-in-out"
                       placeholder="(Ghi chú thêm của nhân viên y tế cho bệnh nhân)"
                       {...field}
                     />
@@ -215,7 +231,11 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
                   <FormLabel className="text-lg text-nowrap">Tên / ID nhân viên y tế</FormLabel>
                   <div className="flex flex-col items-start gap-2">
                     <FormControl>
-                      <Input className="w-[550px] h-[50px]" placeholder="(Tên hoặc ID của nhân viên y tế đã được điền)" {...field} />
+                      <Input
+                        className="w-[550px] h-[50px]"
+                        placeholder="(Tên hoặc ID của nhân viên y tế đã được điền)"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </div>
@@ -231,7 +251,12 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
                 <FormItem>
                   <div className="flex justify-start gap-2.5">
                     <FormControl>
-                      <Input type="checkbox" checked={field.value} onChange={(e) => field.onChange(e.target.checked)} className="w-6 h-6" />
+                      <Input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                        className="w-6 h-6"
+                      />
                     </FormControl>
                     <FormLabel htmlFor="confirm" className="font-normal">
                       Xác nhận hoàn tất quy trình nhận máu đối với bệnh nhân này
@@ -251,7 +276,7 @@ export default function StaffCheckoutReceiptForm({ donor, setIsBloodCollectFormO
                 Gửi
               </Button>
               <Button
-                disabled = {isSubmitting}
+                disabled={isSubmitting}
                 type="button"
                 variant="outline"
                 className="w-[160px] h-[40px] bg-red-200 text-white text-[17px] font-bold hover:bg-red-400 rounded-full cursor-pointer"

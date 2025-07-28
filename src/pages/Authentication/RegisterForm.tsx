@@ -7,6 +7,7 @@ import { getLongLat } from "@/utils/gecoding";
 import { getTypeId } from "@/types/BloodCompatibility";
 import { formatPhoneOtp } from "@/utils/format";
 import { AnimatePresence, motion } from "framer-motion";
+import { FaInfoCircle } from "react-icons/fa";
 export interface FormData {
   lastName: string;
   firstName: string;
@@ -90,9 +91,9 @@ export default function RegisterForm() {
       delete copyForm.province;
       delete copyForm.confirmPassword;
 
-      copyForm.phone = formatPhoneOtp(formData.phone)
-      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor)
-      const address = formData.address + " Quận " + formData.district + " " + formData.province + " Việt Nam"
+      copyForm.phone = formatPhoneOtp(formData.phone);
+      copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor);
+      const address = formData.address + " Quận " + formData.district + " " + formData.province + " Việt Nam";
       try {
         const geoCoding = await getLongLat(address);
         if (geoCoding !== null) {
@@ -109,8 +110,8 @@ export default function RegisterForm() {
         copyForm.latitude = 0;
         console.log("Geocoding register failed ", error);
       }
-      localStorage.setItem('tempUser', JSON.stringify(copyForm))
-      navigate('/otp', { replace: true })
+      localStorage.setItem("tempUser", JSON.stringify(copyForm));
+      navigate("/otp", { replace: true });
     }
   };
 
@@ -134,7 +135,14 @@ export default function RegisterForm() {
                     <Label htmlFor="lastName" className="text-base">
                       Họ<span className="text-red-500"> *</span>
                     </Label>
-                    <Input id="lastName" placeholder="Nhập họ của bạn" className="py-2 text-base" required value={formData.lastName} onChange={handleChange} />
+                    <Input
+                      id="lastName"
+                      placeholder="Nhập họ của bạn"
+                      className="py-2 text-base"
+                      required
+                      value={formData.lastName}
+                      onChange={handleChange}
+                    />
                     {errors.lastName && <p className="text-red-500">{errors.lastName}</p>}
                   </div>
 
@@ -142,7 +150,14 @@ export default function RegisterForm() {
                     <Label htmlFor="firstName" className="text-base">
                       Tên<span className="text-red-500"> *</span>
                     </Label>
-                    <Input id="firstName" placeholder="Nhập tên của bạn" className="py-2 text-base" required value={formData.firstName} onChange={handleChange} />
+                    <Input
+                      id="firstName"
+                      placeholder="Nhập tên của bạn"
+                      className="py-2 text-base"
+                      required
+                      value={formData.firstName}
+                      onChange={handleChange}
+                    />
                     {errors.firstName && <p className="text-red-500">{errors.firstName}</p>}
                   </div>
                 </div>
@@ -169,7 +184,14 @@ export default function RegisterForm() {
                     <Label htmlFor="gmail" className="text-base">
                       Gmail
                     </Label>
-                    <Input id="gmail" type="gmail" placeholder="Nhập gmail" className="py-2 text-base" value={formData.gmail} onChange={handleChange} />
+                    <Input
+                      id="gmail"
+                      type="gmail"
+                      placeholder="Nhập gmail"
+                      className="py-2 text-base"
+                      value={formData.gmail}
+                      onChange={handleChange}
+                    />
                   </div>
                 </div>
 
@@ -211,8 +233,14 @@ export default function RegisterForm() {
                 {/* Personal Info */}
                 <div className="grid grid-cols-2 gap-6 pt-5">
                   <div className="space-y-3">
-                    <Label htmlFor="bloodType" className="text-base">
+                    <Label htmlFor="bloodType" className="text-base flex items-center gap-2">
                       Nhóm máu<span className="text-red-500"> *</span>
+                      <span className="relative group">
+                        <FaInfoCircle className="text-blue-500 cursor-pointer" />
+                        <span className="absolute left-6 top-1/2 -translate-y-1/2 w-64 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 break-words whitespace-normal">
+                          Nhóm máu chính xác sẽ được xác nhận bởi nhân viên y tế sau quá trình xét nghiệm máu
+                        </span>
+                      </span>
                     </Label>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -253,7 +281,14 @@ export default function RegisterForm() {
                     <Label htmlFor="dob" className="text-base">
                       Ngày tháng năm sinh<span className="text-red-500"> *</span>
                     </Label>
-                    <Input id="dob" type="date" className="py-2 text-base" required value={formData.dob} onChange={handleChange} />
+                    <Input
+                      id="dob"
+                      type="date"
+                      className="py-2 text-base"
+                      required
+                      value={formData.dob}
+                      onChange={handleChange}
+                    />
                     {errors.dob && <p className="text-red-500">{errors.dob}</p>}
                   </div>
                 </div>
@@ -341,12 +376,22 @@ export default function RegisterForm() {
                   <Label htmlFor="address" className="text-base">
                     Địa chỉ<span className="text-red-500"> *</span>
                   </Label>
-                  <Input id="address" placeholder="Số nhà, thôn, xã,..." className="py-2 text-base" required value={formData.address} onChange={handleChange} />
+                  <Input
+                    id="address"
+                    placeholder="Số nhà, thôn, xã,..."
+                    className="py-2 text-base"
+                    required
+                    value={formData.address}
+                    onChange={handleChange}
+                  />
                   {errors.address && <p className="text-red-500">{errors.address}</p>}
                 </div>
 
                 {/* Submit Button */}
-                <Button type="submit" className="w-full py-6 text-lg bg-red-700 hover:bg-red-800 mt-8 hover: cursor-pointer">
+                <Button
+                  type="submit"
+                  className="w-full py-6 text-lg bg-red-700 hover:bg-red-800 mt-8 hover: cursor-pointer"
+                >
                   Đăng kí
                 </Button>
               </form>

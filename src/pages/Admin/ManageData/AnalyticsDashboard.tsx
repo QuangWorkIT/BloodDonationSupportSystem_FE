@@ -5,17 +5,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  ChevronDown,
   Users,
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
-  Bell,
 } from "lucide-react";
 import { Doughnut, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from "chart.js";
 import AdminSidebar from "../AdminSidebar";
-import api from "@/lib/instance";
+import { authenApi } from "@/lib/instance";
 import { CSVLink } from "react-csv";
 
 // Register ChartJS components
@@ -25,11 +23,13 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
 type TimeSpan = "weekly" | "monthly" | "yearly" | "all";
 
+// Update DashboardStats type to match new API
 interface DashboardStats {
   currentViewers: number;
   bloodUnitsInStock: number;
   monthlyEvents: number;
   yearlyDonors: number;
+  totalUsers: number;
   weeklyChanges: {
     viewers: { value: string; trend: "up" | "down" };
     bloodUnits: { value: string; trend: "up" | "down" };
@@ -69,33 +69,26 @@ const AnalyticsDashboard = () => {
     eventStatus: "" as EventStatus | "",
   });
 
-  // Generated data
-  const [dashboardStats] = useState<DashboardStats>({
-    currentViewers: 1312,
-    bloodUnitsInStock: 1423,
-    monthlyEvents: 12,
-    yearlyDonors: 923,
-    weeklyChanges: {
-      viewers: { value: "+1.01%", trend: "up" },
-      bloodUnits: { value: "+0.49%", trend: "up" },
-      events: { value: "-0.91%", trend: "down" },
-      donors: { value: "+1.51%", trend: "up" },
-    },
-  });
+  // Add state for fetched dashboard stats
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
-  // Mockdata for User Growth Trends
-  const [userGrowth] = useState({
-    newUsersThisMonth: 87,
-    growthRate: 5.2, // percent
-    trend: "up" as "up" | "down",
-  });
+   // Predefined color mapping for blood types
+  const BLOOD_TYPE_COLORS: Record<string, string> = {
+    "A+": "#FF6384",
+    "A-": "#FF9AA2",
+    "B+": "#36A2EB",
+    "B-": "#9AD0F5",
+    "AB+": "#FFCE56",
+    "AB-": "#FFFACD",
+    "O+": "#4BC0C0",
+    "O-": "#B2DFDB",
+  };
 
-  const [bloodStock] = useState<BloodStock[]>([
-    { type: "A", quantity: 15, color: "#FF6384" },
-    { type: "B", quantity: 23, color: "#36A2EB" },
-    { type: "AB", quantity: 15, color: "#FFCE56" },
-    { type: "O", quantity: 35, color: "#4BC0C0" },
-  ]);
+  const [bloodStock, setBloodStock] = useState<BloodStock[]>([]);
+  const [bloodStockLoading, setBloodStockLoading] = useState(true);
+  const [bloodStockError, setBloodStockError] = useState<string | null>(null);
 
   const [donationActivity] = useState<DonationActivity[]>([
     { month: "JAN", donations: 120 },
@@ -115,24 +108,74 @@ const AnalyticsDashboard = () => {
   // Remove the mock events initialization
   const [events, setEvents] = useState<DonationEvent[]>([]);
 
+  // Fetch dashboard stats from API
+  useEffect(() => {
+    async function fetchStats() {
+      setStatsLoading(true);
+      setStatsError(null);
+      try {
+        const response = await authenApi.get("/api/reports/stats");
+        if (response.data.isSuccess) {
+          setDashboardStats(response.data.data);
+        } else {
+          setStatsError("Không thể tải dữ liệu thống kê.");
+        }
+      } catch {
+        setStatsError("Lỗi khi tải dữ liệu thống kê.");
+      } finally {
+        setStatsLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  // Fetch blood stock from API
+  useEffect(() => {
+    async function fetchBloodStock() {
+      setBloodStockLoading(true);
+      setBloodStockError(null);
+      try {
+        const response = await authenApi.get("/api/reports/blood-stock");
+        if (response.data.isSuccess) {
+          // Add color to each blood type
+          const stockWithColor = response.data.data.map((item: { type: string; quantity: number }) => ({
+            type: item.type,
+            quantity: item.quantity,
+            color: BLOOD_TYPE_COLORS[item.type] || "#CCCCCC",
+          }));
+          setBloodStock(stockWithColor);
+        } else {
+          setBloodStockError("Không thể tải dữ liệu kho máu.");
+        }
+      } catch {
+        setBloodStockError("Lỗi khi tải dữ liệu kho máu.");
+      } finally {
+        setBloodStockLoading(false);
+      }
+    }
+    fetchBloodStock();
+  }, []);
+
   // Fetch events from API
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const response = await api.get("/api/events");
+        const response = await authenApi.get("/api/events");
         if (response.data.isSuccess) {
           setEvents(
-            response.data.data.items.map((item: any) => ({
-              id: item.id,
-              date: new Date(item.eventTime).toLocaleDateString(),
-              location: "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh", // Hardcoded address
-              registeredDonors: item.bloodRegisCount,
-              expectedDonors: item.maxOfDonor,
-              status: inferStatus(item.eventTime),
-            }))
+            response.data.data.items.map(
+              (item: { id: number; eventTime: string; bloodRegisCount: number; maxOfDonor: number }) => ({
+                id: item.id,
+                date: new Date(item.eventTime).toLocaleDateString(),
+                location: "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh", // Hardcoded address
+                registeredDonors: item.bloodRegisCount,
+                expectedDonors: item.maxOfDonor,
+                status: inferStatus(item.eventTime),
+              })
+            )
           );
         }
-      } catch (error) {
+      } catch {
         setEvents([]);
       }
     }
@@ -344,137 +387,134 @@ const AnalyticsDashboard = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            {/* User Growth Trends */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Người dùng mới tháng này</p>
-                  <p className="text-2xl font-bold text-gray-900">{userGrowth.newUsersThisMonth}</p>
-                </div>
-                <div className="bg-yellow-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-yellow-600" />
-                </div>
+            {statsLoading ? (
+              <div className="col-span-5 flex justify-center items-center h-32">
+                <span className="text-gray-500">Đang tải dữ liệu...</span>
               </div>
-              <div className="mt-2 flex items-center">
-                {userGrowth.trend === "up" ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p className={`text-sm ${userGrowth.trend === "up" ? "text-green-600" : "text-red-600"}`}>
-                  {userGrowth.growthRate}%
-                </p>
+            ) : statsError ? (
+              <div className="col-span-5 flex justify-center items-center h-32">
+                <span className="text-red-500">{statsError}</span>
               </div>
-            </div>
-            {/* Current Viewers */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Tổng số người dùng</p>
-                  <p className="text-2xl font-bold text-gray-900">{dashboardStats.currentViewers.toLocaleString()}</p>
+            ) : dashboardStats ? (
+              <>
+                {/* Tổng số người dùng */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Tổng số người dùng</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalUsers}</p>
+                    </div>
+                    <div className="bg-yellow-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-yellow-600" />
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-blue-600" />
+                {/* Người dùng đang xem */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Người dùng đang xem</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.currentViewers}</p>
+                    </div>
+                    <div className="bg-blue-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-blue-600" />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    {dashboardStats.weeklyChanges.viewers.trend === "up" ? (
+                      <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <p
+                      className={`text-sm ${
+                        dashboardStats.weeklyChanges.viewers.trend === "up" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {dashboardStats.weeklyChanges.viewers.value}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.viewers.trend === "up" ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p
-                  className={`text-sm ${
-                    dashboardStats.weeklyChanges.viewers.trend === "up" ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {dashboardStats.weeklyChanges.viewers.value}
-                </p>
-              </div>
-            </div>
-
-            {/* Blood Units */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Đơn vị máu trong kho</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {dashboardStats.bloodUnitsInStock.toLocaleString()}
-                  </p>
+                {/* Đơn vị máu trong kho */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Đơn vị máu trong kho</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.bloodUnitsInStock}</p>
+                    </div>
+                    <div className="bg-red-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-red-600" />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    {dashboardStats.weeklyChanges.bloodUnits.trend === "up" ? (
+                      <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <p
+                      className={`text-sm ${
+                        dashboardStats.weeklyChanges.bloodUnits.trend === "up" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {dashboardStats.weeklyChanges.bloodUnits.value}
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-red-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-red-600" />
+                {/* Tổng sự kiện tháng này */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Tổng sự kiện tháng này</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.monthlyEvents}</p>
+                    </div>
+                    <div className="bg-purple-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-purple-600" />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    {dashboardStats.weeklyChanges.events.trend === "up" ? (
+                      <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <p
+                      className={`text-sm ${
+                        dashboardStats.weeklyChanges.events.trend === "up" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {dashboardStats.weeklyChanges.events.value}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.bloodUnits.trend === "up" ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p
-                  className={`text-sm ${
-                    dashboardStats.weeklyChanges.bloodUnits.trend === "up" ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {dashboardStats.weeklyChanges.bloodUnits.value}
-                </p>
-              </div>
-            </div>
-
-            {/* Monthly Events */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Tổng sự kiện tháng này</p>
-                  <p className="text-2xl font-bold text-gray-900">{dashboardStats.monthlyEvents}</p>
+                {/* Tổng người hiến năm nay */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Tổng người hiến năm nay</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.yearlyDonors}</p>
+                    </div>
+                    <div className="bg-green-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-green-600" />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    {dashboardStats.weeklyChanges.donors.trend === "up" ? (
+                      <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <p
+                      className={`text-sm ${
+                        dashboardStats.weeklyChanges.donors.trend === "up" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {dashboardStats.weeklyChanges.donors.value}
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-purple-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-purple-600" />
-                </div>
-              </div>
-              <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.events.trend === "up" ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p
-                  className={`text-sm ${
-                    dashboardStats.weeklyChanges.events.trend === "up" ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {dashboardStats.weeklyChanges.events.value}
-                </p>
-              </div>
-            </div>
-
-            {/* Yearly Donors */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Tổng người hiến năm nay</p>
-                  <p className="text-2xl font-bold text-gray-900">{dashboardStats.yearlyDonors.toLocaleString()}</p>
-                </div>
-                <div className="bg-green-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-              <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.donors.trend === "up" ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p
-                  className={`text-sm ${
-                    dashboardStats.weeklyChanges.donors.trend === "up" ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {dashboardStats.weeklyChanges.donors.value}
-                </p>
-              </div>
-            </div>
+              </>
+            ) : null}
           </div>
 
           {/* Blood Stock and Activity */}
@@ -482,8 +522,16 @@ const AnalyticsDashboard = () => {
             {/* Blood Stock Doughnut Chart */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 lg:col-span-1">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Kho máu</h2>
-              <div className="h-64">
-                <Doughnut data={bloodStockChartData} options={chartOptions} />
+              <div className="h-64 flex items-center justify-center">
+                {bloodStockLoading ? (
+                  <span className="text-gray-500">Đang tải dữ liệu...</span>
+                ) : bloodStockError ? (
+                  <span className="text-red-500">{bloodStockError}</span>
+                ) : bloodStock.length > 0 ? (
+                  <Doughnut data={bloodStockChartData} options={chartOptions} />
+                ) : (
+                  <span className="text-gray-500">Không có dữ liệu</span>
+                )}
               </div>
             </div>
 

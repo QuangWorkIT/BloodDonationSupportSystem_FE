@@ -3,6 +3,7 @@ import { Eye, EyeOff, X } from "lucide-react";
 import DatePicker from "@/components/ui/datepicker";
 import { authenApi } from "@/lib/instance";
 import { AxiosError } from "axios";
+import { FaInfoCircle } from "react-icons/fa";
 
 // Type definitions
 type BloodTypeId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; // Assuming standard blood types (A+, A-, B+, B-, AB+, AB-, O+, O-)
@@ -223,7 +224,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
               className={`w-full border ${
                 errors.firstName ? "border-red-500" : "border-gray-300"
               } rounded px-3 py-2 text-sm`}
-              aria-invalid={!!errors.firstName}
+              aria-invalid={errors.firstName ? "true" : "false"}
               aria-describedby={errors.firstName ? "firstName-error" : undefined}
             />
             {errors.firstName && (
@@ -248,7 +249,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
               className={`w-full border ${
                 errors.lastName ? "border-red-500" : "border-gray-300"
               } rounded px-3 py-2 text-sm`}
-              aria-invalid={!!errors.lastName}
+              aria-invalid={errors.lastName ? "true" : "false"}
               aria-describedby={errors.lastName ? "lastName-error" : undefined}
             />
             {errors.lastName && (
@@ -273,7 +274,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
               className={`w-full border ${
                 errors.gmail ? "border-red-500" : "border-gray-300"
               } rounded px-3 py-2 text-sm`}
-              aria-invalid={!!errors.gmail}
+              aria-invalid={errors.gmail ? "true" : "false"}
               aria-describedby={errors.gmail ? "gmail-error" : undefined}
             />
             {errors.gmail && (
@@ -295,7 +296,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
               disabled={isSubmitting}
               hasError={!!errors.dob}
               className={`w-full ${errors.dob ? "border-red-500" : "border-gray-300"}`}
-              aria-invalid={!!errors.dob}
+              aria-invalid={errors.dob ? "true" : "false"}
               aria-describedby={errors.dob ? "dob-error" : undefined}
               placeholderText="DD/MM/YYYY"
             />
@@ -321,7 +322,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
               className={`w-full border ${
                 errors.phone ? "border-red-500" : "border-gray-300"
               } rounded px-3 py-2 text-sm`}
-              aria-invalid={!!errors.phone}
+              aria-invalid={errors.phone ? "true" : "false"}
               aria-describedby={errors.phone ? "phone-error" : undefined}
             />
             {errors.phone && (
@@ -347,7 +348,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
                 className={`w-full border ${
                   errors.password ? "border-red-500" : "border-gray-300"
                 } rounded px-3 py-2 text-sm`}
-                aria-invalid={!!errors.password}
+                aria-invalid={errors.password ? "true" : "false"}
                 aria-describedby={errors.password ? "password-error" : undefined}
               />
               <button
@@ -369,8 +370,17 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
 
           {/* Blood Type Field */}
           <div>
-            <label htmlFor="bloodTypeId" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="bloodTypeId"
+              className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2"
+            >
               Nhóm Máu
+              <span className="relative group">
+                <FaInfoCircle className="text-blue-500 cursor-pointer" />
+                <span className="absolute left-6 top-1/2 -translate-y-1/2 w-64 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 break-words whitespace-normal">
+                  Nhóm máu chính xác sẽ được xác nhận bởi nhân viên y tế sau quá trình xét nghiệm máu
+                </span>
+              </span>
             </label>
             <select
               id="bloodTypeId"
@@ -381,7 +391,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
               className={`w-full border ${
                 errors.bloodTypeId ? "border-red-500" : "border-gray-300"
               } rounded px-3 py-2 text-sm`}
-              aria-invalid={!!errors.bloodTypeId}
+              aria-invalid={errors.bloodTypeId ? "true" : "false"}
               aria-describedby={errors.bloodTypeId ? "bloodTypeId-error" : undefined}
             >
               {bloodTypeOptions.map((type) => (
@@ -413,6 +423,7 @@ const AddAccountModal = ({ onSave, onCancel }: AddAccountModalProps) => {
               className={`w-full border ${
                 errors.gender ? "border-red-500" : "border-gray-300"
               } rounded px-3 py-2 text-sm`}
+              aria-invalid={errors.gender ? "true" : "false"}
             >
               <option value="male">Nam</option>
               <option value="female">Nữ</option>
