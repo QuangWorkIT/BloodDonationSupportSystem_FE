@@ -14,8 +14,8 @@ import { useEffect, useState } from "react";
 import * as z from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/authen/AuthContext";
-import {  getUserByToken } from "@/utils/permisson";
-import api from '@/lib/instance'
+import { getUserByToken } from "@/utils/permisson";
+import api from "@/lib/instance";
 import type { RecaptchaVerifier } from "firebase/auth";
 import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
@@ -249,6 +249,11 @@ export default function LoginForm() {
                   >
                     Đăng nhập
                   </Button>
+                  <div className="text-center text-sm">
+                    <Link to="/resetpassword" className="text-blue-600">
+                      Quên mật khẩu?
+                    </Link>
+                  </div>
                   <div className="text-center text-black text-sm">
                     Hoặc tiếp tục với
                   </div>
