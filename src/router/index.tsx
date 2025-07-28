@@ -1,4 +1,9 @@
-import { createBrowserRouter, Navigate, RouterProvider, type RouteObject } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+  type RouteObject,
+} from "react-router-dom";
 
 import HomePage from "@/pages/Home/HomePage";
 import BloodInfoPage from "@/pages/BloodInfo/BloodInfoPage";
@@ -27,6 +32,7 @@ import UserProfile from "@/components/layout/UserProfile";
 import OTPForm from "@/pages/Authentication/OTPForm";
 import DonorReceiptList from "@/pages/Staff/ManageReceipt/DonorReceiptList";
 import StaffBlogs from "@/pages/Staff/Blog/StaffBlog";
+import ResetPasswordForm from "@/components/layout/ResetPasswordForm";
 
 // define routes
 const routes: RouteObject[] = [
@@ -55,9 +61,16 @@ const routes: RouteObject[] = [
 
   { path: "/compatibility", element: <Compatibility /> },
 
+  { path: "/resetpassword", element: <ResetPasswordForm /> },
+
   {
     path: "/profile",
-    element: <ProtectedRoute element={<UserProfile />} allowRole={["Member", "Staff", "Admin"]} />,
+    element: (
+      <ProtectedRoute
+        element={<UserProfile />}
+        allowRole={["Member", "Staff", "Admin"]}
+      />
+    ),
   },
 
   {
