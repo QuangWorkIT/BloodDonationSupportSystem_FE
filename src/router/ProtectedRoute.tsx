@@ -12,16 +12,20 @@ function ProtectedRoute({ element, allowRole }: ProtectedRouteProps) {
     const { user, isLoading } = useAuth()
     if (isLoading) {
         return (
-
             <div className="w-full h-screen flex items-center justify-center">
                 <LoadingSpinner />
             </div>
         )
     }
 
-    if (!user) return <Navigate to={'/login'} replace />
+    // if no user login
+    if (!user) {
+        if(allowRole?.includes('Guest'))
+            return element
+        return <Navigate to={'/login'} replace />
+    }
 
-    if (!allowRole?.includes(user.role)) return <Navigate to={'/unauthorized'} replace />
+    if (user && !allowRole?.includes(user.role)) return <Navigate to={'/unauthorized'} replace />
     return element
 }
 
