@@ -25,12 +25,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
 import BloodTypeSelect, { BloodTypeSelectRh } from "../../components/layout/BloodTypeSelect"
 import { authenApi } from "@/lib/instance"
 import { useAuth } from "@/hooks/authen/AuthContext"
 import AlertBanner from "@/components/layout/AlerBanner"
 import type { AxiosError } from "axios"
+import { getBloodTypeRh } from "@/types/BloodCompatibility"
 
 
 interface VolunteerFormProps {
@@ -78,11 +84,11 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
     defaultValues: {
       donorName: user?.unique_name,
       address: user?.address,
-      lastDonation: undefined,
+      lastDonation: user?.lastDonation || undefined,
       startDonation: undefined,
       endDonation: undefined,
-      bloodType: user?.bloodType?.substring(0, 1),
-      bloodTypeRh: user?.bloodType?.substring(1)
+      bloodType: getBloodTypeRh(user?.bloodType || "").bloodType || "",
+      bloodTypeRh: getBloodTypeRh(user?.bloodType || "").rh || ""
     }
   })
   const onSubmit = async (values: formType) => {
@@ -94,23 +100,23 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
     console.log('payload ', payload)
     try {
       setIsSubmitting(true)
-      const response = await authenApi.post('/api/Volunteers', 
+      const response = await authenApi.post('/api/Volunteers',
         payload
       )
       const data = response.data
-      if(data.isSuccess) {
+      if (data.isSuccess) {
         toast.success('Đăng ký tình nguyện viên thành công!')
-        nav('/', {replace: true})
-      }else {
+        nav('/', { replace: true })
+      } else {
         console.log("Error volunteer submitting ", data)
         toast.error('Đăng ký tình nguyện viên thất bại. Vui lòng thử lại sau!')
       }
     } catch (error) {
       toast.error('Đăng ký tình nguyện viên thất bại. Vui lòng thử lại sau!')
       const err = error as AxiosError
-      if(err) console.log('Error axios volunteer register ', err)
+      if (err) console.log('Error axios volunteer register ', err)
       else console.log('Error volunteer register ', error)
-    }finally{ 
+    } finally {
       setIsSubmitting(false)
     }
   }
@@ -126,8 +132,21 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
           onSubmit={form.handleSubmit(onSubmit)}
           className="max-w-[750px] mx-auto border border-gray-200 p-5 rounded-lg shadow-lg bg-white">
 
-          <h1 className="font-semibold text-[25px] mb-5">Đơn đăng ký tình nguyện</h1>
-
+          <div className="flex gap-2 items-center mb-5">
+            <h1 className="font-semibold text-[25px]">Đơn đăng ký tình nguyện</h1>
+            <Tooltip>
+              <TooltipTrigger>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.0003 18.3334C14.6027 18.3334 18.3337 14.6025 18.3337 10.0001C18.3337 5.39771 14.6027 1.66675 10.0003 1.66675C5.39795 1.66675 1.66699 5.39771 1.66699 10.0001C1.66699 14.6025 5.39795 18.3334 10.0003 18.3334Z" stroke="black" stroke-width="1.5" />
+                  <path d="M8.4375 7.39603C8.43754 7.1224 8.50943 6.85357 8.64599 6.61645C8.78255 6.37933 8.97899 6.18223 9.21565 6.04487C9.45231 5.90751 9.72089 5.83471 9.99452 5.83375C10.2682 5.83279 10.5372 5.90371 10.7749 6.0394C11.0125 6.1751 11.2103 6.37082 11.3485 6.60698C11.4867 6.84313 11.5605 7.11145 11.5625 7.38508C11.5644 7.6587 11.4945 7.92804 11.3596 8.16615C11.2248 8.40426 11.0298 8.60279 10.7942 8.74186C10.3983 8.97603 10 9.33186 10 9.79186V10.8335" stroke="black" stroke-width="1.5" stroke-linecap="round" />
+                  <path d="M10.0003 14.1667C10.4606 14.1667 10.8337 13.7936 10.8337 13.3333C10.8337 12.8731 10.4606 12.5 10.0003 12.5C9.54009 12.5 9.16699 12.8731 9.16699 13.3333C9.16699 13.7936 9.54009 14.1667 10.0003 14.1667Z" fill="black" />
+                </svg>
+              </TooltipTrigger>
+              <TooltipContent className="bg-gray-200">
+                <p className="text-black">Thông tin cá nhân sẽ được cập nhật sau khi hiến máu</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <FormField
             control={form.control}
             name="donorName"
@@ -201,7 +220,11 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
                         selected={field.value}
                         onSelect={field.onChange}
                         disabled={(date: Date) => {
-                          return date >= new Date() || date < new Date("2000-01-01")
+                          if (!user?.lastDonation) {
+                            return date >= new Date() || date < new Date("2000-01-01")
+                          } else {
+                            return date >= new Date() || date < new Date()
+                          }
                         }}
                       />
                     </PopoverContent>
@@ -253,7 +276,7 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date: Date) => {
-                              return date >= new Date('2100-01-01') || date < new Date("1960-01-01")
+                              return date >= new Date('2100-01-01') || date < new Date()
                             }}
                           />
                         </PopoverContent>
@@ -297,7 +320,7 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date: Date) => {
-                              return date >= new Date('2100-01-01') || date < new Date("1960-01-01")
+                              return date >= new Date('2100-01-01') || date < new Date()
                             }}
                           />
                         </PopoverContent>
@@ -353,13 +376,13 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-5">
+          <div className="flex flex-col md:flex-row gap-5 md:justify-end">
             <Button
-              disabled = {isSubmitting}
+              disabled={isSubmitting}
               onClick={setActiveTab}
               type="button"
-              variant='default'
-              className="w-full md:w-30"
+              variant='ghost'
+              className="w-full md:w-30 border border-gray-500/20 shadow-md font-bold"
             >
               Hủy
             </Button>
@@ -368,7 +391,7 @@ function VolunteerForm({ setActiveTab }: VolunteerFormProps) {
               disabled={warning.length > 0 || isSubmitting}
               type="submit"
               variant='destructive'
-              className="w-full md:w-30"
+              className="w-full md:w-30 shadow-md bg-[#C14B53] font-bold"
             >
               Gửi
             </Button>

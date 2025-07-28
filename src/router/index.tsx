@@ -40,7 +40,9 @@ const routes: RouteObject[] = [
 
   {
     path: "/home",
-    element: <HomePage />,
+    element: (
+      <ProtectedRoute element={<HomePage />} allowRole={['Member', 'Guest']}/>
+    ),
   },
 
   { path: "/login", element: <LoginForm /> },

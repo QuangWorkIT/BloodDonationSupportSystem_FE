@@ -33,8 +33,15 @@ export const getComponentId = (bloodComponent: string): number => {
 
 
 export const getBloodTypeRh = (type: string): bloodType => {
+  if(!type) {
+    return {
+      rh: "",
+      bloodType: ""
+    }
+  }
+
   return {
-    bloodType: type.substring(0, 1),
-    rh: type.substring(1)
+    rh : type.slice(-1), // '+' or '-'
+    bloodType : type.slice(0, -1)// 'A', 'B', 'AB', or 'O'
   }
 }

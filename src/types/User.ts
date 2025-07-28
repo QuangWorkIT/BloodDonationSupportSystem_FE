@@ -1,5 +1,5 @@
-export type Role = "Admin" | "Guest" | "Member" | "Staff" 
-    
+export type Role = "Admin" | "Guest" | "Member" | "Staff"
+
 export type User = {
     id: string,
     unique_name?: string,
@@ -8,6 +8,7 @@ export type User = {
     gmail?: string,
     bloodType?: string,
     dob?: Date,
+    lastDonation?: Date,
     longitude?: number,
     latitude?: number,
     address?: string,
