@@ -14,7 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import BloodTypeSelect, { BloodTypeSelectRh } from "../../components/layout/BloodTypeSelect";
+// import BloodTypeSelect, { BloodTypeSelectRh } from "../../components/layout/BloodTypeSelect";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { authenApi } from "@/lib/instance";
 import { getBloodTypeRh, type bloodType } from "@/types/BloodCompatibility";
@@ -431,7 +431,7 @@ export function DonationRegisterForm({ eventId, eventTime, event, setRegistraion
               )}
             />
 
-            <div className="flex flex-col md:flex-row mb-4 md:mb-5">
+            {/* <div className="flex flex-col md:flex-row mb-4 md:mb-5">
               <FormLabel className="w-full md:w-[155px] text-base md:text-[16px] mb-1 md:mb-0 whitespace-nowrap">
                 Nhóm máu
               </FormLabel>
@@ -462,7 +462,7 @@ export function DonationRegisterForm({ eventId, eventTime, event, setRegistraion
                   )}
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <div className="flex justify-end gap-4 my-8">
