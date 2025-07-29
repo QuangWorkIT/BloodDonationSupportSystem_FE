@@ -30,18 +30,18 @@ const ReceiptEventList = () => {
   const [isCreateDonationFormOpen, setCreateDonationFormOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const fetchEvents = async () => {
+    try {
+      const response = await api.get("/api/events", { params: { pageSize: 100 } });
+      if (response.data.isSuccess) {
+        setEvents(response.data.data.items);
+      }
+    } catch (error) {
+      console.log("Failed to fetch event", error);
+    }
+  };
   // Fetch all events at once
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await api.get("/api/events", { params: { pageSize: 1000 } });
-        if (response.data.isSuccess) {
-          setEvents(response.data.data.items);
-        }
-      } catch (error) {
-        console.log("Failed to fetch event", error);
-      }
-    };
     fetchEvents();
   }, []);
 
@@ -59,7 +59,7 @@ const ReceiptEventList = () => {
       if (response.status === 200) {
         toast.success("Hủy sự kiện thành công");
         // Refetch all events to update the list
-        const refetchResponse = await api.get("/api/events", { params: { pageSize: 1000 } });
+        const refetchResponse = await api.get("/api/events", { params: { pageSize: 100 } });
         if (refetchResponse.data.isSuccess) {
           setEvents(refetchResponse.data.data.items);
         }
@@ -74,17 +74,20 @@ const ReceiptEventList = () => {
 
   if (isCreateDonationFormOpen) {
     return (
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
           transition={{ duration: 0.3 }}
           className="w-full"
-          >
-          <StandardReceiptForm onCick={() => setCreateDonationFormOpen(false)} />
-          </motion.div>
-        </AnimatePresence>
+        >
+          <StandardReceiptForm
+            onCick={() => setCreateDonationFormOpen(false)}
+            fetchEvents={fetchEvents}
+          />
+        </motion.div>
+      </AnimatePresence>
     )
   }
 
@@ -104,13 +107,13 @@ const ReceiptEventList = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {currentEvents.map((event) => (
-              <motion.div
-                key={event.id}
+            <motion.div
+              key={event.id}
               className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              >
+            >
               <div className="p-6 flex-grow flex items-center gap-6">
                 <img src={eventLogo} alt="Red Cross Logo" className="w-20 h-20 object-contain rounded-full border" />
                 <div className="flex-1">
@@ -142,9 +145,9 @@ const ReceiptEventList = () => {
 
               <div className="bg-gray-50 p-4 border-t border-gray-100 flex items-center justify-between">
                 <div className="flex items-center">
-                    <Users2 className="h-5 w-5 mr-2 text-blue-500" />
-                    <span className="text-blue-600 font-bold">{event.bloodRegisCount || 0}</span>
-                    <span className="text-gray-500">/{event.maxOfDonor} người</span>
+                  <Users2 className="h-5 w-5 mr-2 text-blue-500" />
+                  <span className="text-blue-600 font-bold">{event.bloodRegisCount || 0}</span>
+                  <span className="text-gray-500">/{event.maxOfDonor} người</span>
                 </div>
                 <Button
                   variant="ghost"
@@ -154,10 +157,10 @@ const ReceiptEventList = () => {
                 >
                   Hủy
                 </Button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
 
         <div className="mt-8 flex justify-center items-center gap-2">
           <Button
@@ -195,7 +198,7 @@ const ReceiptEventList = () => {
       </div>
 
       {showModal && selectedEvent && (
-         <motion.div
+        <motion.div
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

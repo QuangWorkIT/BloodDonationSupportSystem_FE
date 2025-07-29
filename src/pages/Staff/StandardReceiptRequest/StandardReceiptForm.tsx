@@ -34,6 +34,7 @@ import { toast } from "react-toastify";
 
 interface StandardReceiptProps {
   onCick: () => void;
+  fetchEvents: () => Promise<void>
 }
 const formSchema = z.object({
   fullName: z.string().min(1, "Không được để trống"),
@@ -53,7 +54,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
+const StandardReceiptForm = ({ onCick, fetchEvents }: StandardReceiptProps) => {
   const { user } = useAuth();
   const [date, setDate] = useState<Date>();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,6 +86,7 @@ const StandardReceiptForm = ({ onCick }: StandardReceiptProps) => {
         console.log("Create event successfully");
         form.reset();
         setDate(undefined);
+        await fetchEvents()
         toast.success("Tạo sự kiện hiến máu thành công!");
       }
     } catch (error) {
