@@ -49,14 +49,15 @@ interface DonationActivity {
   donations: number;
 }
 
-interface DonationEvent {
+// Update DonationEvent type to match API
+type DonationEvent = {
   id: number;
-  date: string;
-  location: string;
-  registeredDonors: number;
-  expectedDonors: number;
-  status: EventStatus;
-}
+  eventTime: string;
+  address: string;
+  bloodRegisCount: number;
+  status: string;
+  successfulBloodRegisCount: number;
+};
 
 const AnalyticsDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,7 +75,7 @@ const AnalyticsDashboard = () => {
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
 
-   // Predefined color mapping for blood types
+  // Predefined color mapping for blood types
   const BLOOD_TYPE_COLORS: Record<string, string> = {
     "A+": "#FF6384",
     "A-": "#FF9AA2",
@@ -90,23 +91,14 @@ const AnalyticsDashboard = () => {
   const [bloodStockLoading, setBloodStockLoading] = useState(true);
   const [bloodStockError, setBloodStockError] = useState<string | null>(null);
 
-  const [donationActivity] = useState<DonationActivity[]>([
-    { month: "JAN", donations: 120 },
-    { month: "FEB", donations: 150 },
-    { month: "MAR", donations: 180 },
-    { month: "APR", donations: 200 },
-    { month: "MAY", donations: 240 },
-    { month: "JUN", donations: 300 },
-    { month: "JUL", donations: 280 },
-    { month: "AUG", donations: 260 },
-    { month: "SEP", donations: 220 },
-    { month: "OCT", donations: 190 },
-    { month: "NOV", donations: 160 },
-    { month: "DEC", donations: 140 },
-  ]);
+  // Remove the mock donationActivity initialization and add state for fetched donation activity
+  const [donationActivity, setDonationActivity] = useState<DonationActivity[]>([]);
+  const [donationActivityLoading, setDonationActivityLoading] = useState(true);
+  const [donationActivityError, setDonationActivityError] = useState<string | null>(null);
 
   // Remove the mock events initialization
   const [events, setEvents] = useState<DonationEvent[]>([]);
+  const [totalEventPages, setTotalEventPages] = useState(1);
 
   // Fetch dashboard stats from API
   useEffect(() => {
@@ -156,40 +148,67 @@ const AnalyticsDashboard = () => {
     fetchBloodStock();
   }, []);
 
+  // Fetch donation activity from API
+  useEffect(() => {
+    async function fetchDonationActivity() {
+      setDonationActivityLoading(true);
+      setDonationActivityError(null);
+      try {
+        const response = await authenApi.get("/api/reports/activities");
+        if (response.data.isSuccess) {
+          setDonationActivity(response.data.data);
+        } else {
+          setDonationActivityError("Không thể tải dữ liệu hoạt động hiến máu.");
+        }
+      } catch {
+        setDonationActivityError("Lỗi khi tải dữ liệu hoạt động hiến máu.");
+      } finally {
+        setDonationActivityLoading(false);
+      }
+    }
+    fetchDonationActivity();
+  }, []);
+
   // Fetch events from API
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const response = await authenApi.get("/api/events");
+        const response = await authenApi.get("/api/reports/events", {
+          params: {
+            pageNumber: currentPage,
+            pageSize: rowsPerPage,
+          },
+        });
         if (response.data.isSuccess) {
+          console.log("Fetched events page items:", response.data.data.items);
           setEvents(
             response.data.data.items.map(
-              (item: { id: number; eventTime: string; bloodRegisCount: number; maxOfDonor: number }) => ({
+              (item: {
+                id: number;
+                eventTime: string;
+                address: string;
+                bloodRegisCount: number;
+                status: string;
+                successfulBloodRegisCount: number;
+              }) => ({
                 id: item.id,
-                date: new Date(item.eventTime).toLocaleDateString(),
-                location: "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh", // Hardcoded address
-                registeredDonors: item.bloodRegisCount,
-                expectedDonors: item.maxOfDonor,
-                status: inferStatus(item.eventTime),
+                eventTime: item.eventTime,
+                address: item.address,
+                bloodRegisCount: item.bloodRegisCount,
+                status: item.status,
+                successfulBloodRegisCount: item.successfulBloodRegisCount,
               })
             )
           );
+          setTotalEventPages(response.data.data.totalPages > 0 ? response.data.data.totalPages : 1);
         }
       } catch {
         setEvents([]);
+        setTotalEventPages(1);
       }
     }
     fetchEvents();
-  }, []);
-
-  // Helper to infer status from eventTime
-  function inferStatus(eventTime: string): EventStatus {
-    const now = new Date();
-    const eventDate = new Date(eventTime);
-    if (eventDate > now) return "upcoming";
-    // You can add more logic for ongoing/completed/cancelled if available
-    return "completed";
-  }
+  }, [currentPage, rowsPerPage]);
 
   // Chart data and options
   const bloodStockChartData = {
@@ -237,7 +256,7 @@ const AnalyticsDashboard = () => {
 
     // Apply search filter
     if (searchTerm) {
-      result = result.filter((event) => event.location.toLowerCase().includes(searchTerm.toLowerCase()));
+      result = result.filter((event) => event.address.toLowerCase().includes(searchTerm.toLowerCase()));
     }
 
     // Apply time span filter
@@ -278,11 +297,10 @@ const AnalyticsDashboard = () => {
     setSortConfig({ key, direction });
   };
 
-  // Pagination
-  const totalPages = Math.ceil(filteredEvents.length / rowsPerPage);
+  // Pagination (use API values)
+  const totalPages = totalEventPages;
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const currentEvents = filteredEvents.slice(startIndex, endIndex);
+  const currentEvents = events;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -341,20 +359,11 @@ const AnalyticsDashboard = () => {
   const csvExportData = useMemo(() => {
     return filteredEvents.map((event) => ({
       id: event.id,
-      date: event.date,
-      location: event.location,
-      registeredDonors: event.registeredDonors,
-      expectedDonors: event.expectedDonors,
-      status:
-        event.status === "upcoming"
-          ? "Sắp diễn ra"
-          : event.status === "ongoing"
-          ? "Đang diễn ra"
-          : event.status === "completed"
-          ? "Đã hoàn thành"
-          : event.status === "cancelled"
-          ? "Đã hủy"
-          : event.status,
+      date: event.eventTime ? new Date(event.eventTime).toISOString().slice(0, 10) : "",
+      location: event.address || "",
+      registeredDonors: typeof event.bloodRegisCount === "number" ? event.bloodRegisCount : 0,
+      expectedDonors: 0, // No expected donors in this table
+      status: event.status,
     }));
   }, [filteredEvents]);
 
@@ -538,8 +547,16 @@ const AnalyticsDashboard = () => {
             {/* Donation Activity Bar Chart */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 lg:col-span-2">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Hoạt động hiến máu</h2>
-              <div className="h-64">
-                <Bar data={donationActivityChartData} options={chartOptions} />
+              <div className="h-64 flex items-center justify-center">
+                {donationActivityLoading ? (
+                  <span className="text-gray-500">Đang tải dữ liệu...</span>
+                ) : donationActivityError ? (
+                  <span className="text-red-500">{donationActivityError}</span>
+                ) : donationActivity.length > 0 ? (
+                  <Bar data={donationActivityChartData} options={chartOptions} />
+                ) : (
+                  <span className="text-gray-500">Không có dữ liệu</span>
+                )}
               </div>
             </div>
           </div>
@@ -641,10 +658,10 @@ const AnalyticsDashboard = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                       <div
                         className="flex items-center justify-between cursor-pointer"
-                        onClick={() => requestSort("date")}
+                        onClick={() => requestSort("eventTime")}
                       >
                         Ngày
-                        {sortConfig?.key === "date" ? (
+                        {sortConfig?.key === "eventTime" ? (
                           sortConfig.direction === "ascending" ? (
                             <ArrowUp className="w-3 h-3 text-gray-400" />
                           ) : (
@@ -659,7 +676,10 @@ const AnalyticsDashboard = () => {
                       Địa điểm
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                      Số người hiến
+                      Số người đăng ký hiến
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                      Số người hiến thành công
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Trạng thái
@@ -674,19 +694,25 @@ const AnalyticsDashboard = () => {
                           {startIndex + index + 1}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">#{event.id}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{event.date}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{event.location}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                          {event.registeredDonors}/{event.expectedDonors}
+                          {event.eventTime ? new Date(event.eventTime).toLocaleDateString() : ""}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                          {event.address || ""}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                          {typeof event.bloodRegisCount === "number" ? event.bloodRegisCount : 0}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
+                          {typeof event.successfulBloodRegisCount === "number" ? event.successfulBloodRegisCount : 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm border-r">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              event.status as EventStatus
+                            )}`}
                           >
-                            {event.status === "upcoming" && "Sắp diễn ra"}
-                            {event.status === "ongoing" && "Đang diễn ra"}
-                            {event.status === "completed" && "Đã hoàn thành"}
-                            {event.status === "cancelled" && "Đã hủy"}
+                            {event.status}
                           </span>
                         </td>
                       </tr>

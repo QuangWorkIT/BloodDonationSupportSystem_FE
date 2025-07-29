@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { authenApi } from "@/lib/instance";
 import { useEffect, useState } from "react";
+import { DonationRegisterForm } from "./DonationRegisterForm";
 
 interface UrgentEventApiResponse {
   eventId: number;
@@ -24,6 +25,8 @@ interface UrgentEventApiResponse {
 const UrgentEvents = () => {
   const [urgentRequests, setUrgentRequests] = useState<UrgentEventApiResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRegisterFormOpen, setRegisterFormOpen] = useState(false);
+  const [selectedUrgentEvent, setSelectedUrgentEvent] = useState<UrgentEventApiResponse | null>(null);
 
   useEffect(() => {
     const fetchUrgentEvents = async () => {
@@ -43,6 +46,12 @@ const UrgentEvents = () => {
     };
     fetchUrgentEvents();
   }, []);
+
+  // Function to handle user response to an urgent event
+  const handleRespond = (request: UrgentEventApiResponse) => {
+    setSelectedUrgentEvent(request);
+    setRegisterFormOpen(true);
+  };
 
   return (
     <motion.div
@@ -147,9 +156,10 @@ const UrgentEvents = () => {
                     {/* Action button */}
                     <div className="flex-shrink-0 w-full md:w-auto mt-4 md:mt-0 flex items-center justify-center">
                       <motion.button
-                        className="w-full md:w-auto bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm flex items-center justify-center font-semibold text-base gap-2"
+                        className="w-full md:w-auto bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm flex items-center justify-center font-semibold text-base gap-2 disabled:opacity-60"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.98 }}
+                        onClick={() => handleRespond(request)}
                       >
                         <FaUserInjured className="mr-2 text-lg" />
                         <span>Phản hồi ngay</span>
@@ -175,6 +185,37 @@ const UrgentEvents = () => {
           </motion.div>
         </div>
       </div>
+      {/* Registration Form Modal/Inline */}
+      {isRegisterFormOpen && selectedUrgentEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
+            <DonationRegisterForm
+              eventId={selectedUrgentEvent.eventId}
+              eventTime={selectedUrgentEvent.eventTime}
+              event={{
+                id: selectedUrgentEvent.eventId,
+                title: selectedUrgentEvent.title,
+                address: "", // Not available in urgent event, pass empty or fetch if needed
+                eventTime: selectedUrgentEvent.eventTime,
+                bloodType: selectedUrgentEvent.bloodTypeName,
+                bloodComponent: "", // Not available, pass empty or fetch if needed
+                bloodRegisCount: 0, // Not available, pass 0 or fetch if needed
+                maxOfDonor: 0, // Not available, pass 0 or fetch if needed
+                isUrgent: true,
+                estimateVolume: selectedUrgentEvent.estimatedVolume,
+              }}
+              setRegistraionFormOpen={setRegisterFormOpen}
+            />
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setRegisterFormOpen(false)}
+              aria-label="Close form"
+            >
+              &times;
+            </button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };

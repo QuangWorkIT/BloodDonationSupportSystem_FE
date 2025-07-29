@@ -190,24 +190,27 @@ export function DonationRegisterForm({ eventId, eventTime, event, setRegistraion
       } else {
         setRegistrationError(data.message || "Đăng ký hiến máu thất bại!");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error register ", error);
 
       // Extract specific error message from API response
       let errorMessage = "Đăng ký hiến máu thất bại!";
 
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response?.status === 400) {
-        errorMessage = "Dữ liệu đăng ký không hợp lệ. Vui lòng kiểm tra lại thông tin.";
-      } else if (error.response?.status === 409) {
-        errorMessage = "Bạn đã đăng ký sự kiện này rồi.";
-      } else if (error.response?.status === 403) {
-        errorMessage = "Bạn không có quyền đăng ký sự kiện này.";
-      } else if (error.response?.status === 404) {
-        errorMessage = "Sự kiện không tồn tại hoặc đã bị hủy.";
-      } else if (error.response?.status >= 500) {
-        errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau.";
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const err = error as { response?: { data?: { message?: string }; status?: number } };
+        if (err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (typeof err.response?.status === "number" && err.response.status === 400) {
+          errorMessage = "Dữ liệu đăng ký không hợp lệ. Vui lòng kiểm tra lại thông tin.";
+        } else if (typeof err.response?.status === "number" && err.response.status === 409) {
+          errorMessage = "Bạn đã đăng ký sự kiện này rồi.";
+        } else if (typeof err.response?.status === "number" && err.response.status === 403) {
+          errorMessage = "Bạn không có quyền đăng ký sự kiện này.";
+        } else if (typeof err.response?.status === "number" && err.response.status === 404) {
+          errorMessage = "Sự kiện không tồn tại hoặc đã bị hủy.";
+        } else if (typeof err.response?.status === "number" && err.response.status >= 500) {
+          errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau.";
+        }
       }
 
       setRegistrationError(errorMessage);
@@ -328,7 +331,7 @@ export function DonationRegisterForm({ eventId, eventTime, event, setRegistraion
                   </FormLabel>
                   <div className="flex-1">
                     <FormControl>
-                      <Input placeholder="Họ và tên" {...field} readOnly className="cursor-default" />
+                      <Input placeholder="Họ và tên" {...field} />
                     </FormControl>
                     <FormMessage />
                   </div>
@@ -349,10 +352,8 @@ export function DonationRegisterForm({ eventId, eventTime, event, setRegistraion
                       <textarea
                         {...field}
                         placeholder="Nhập địa chỉ"
-                        readOnly
                         rows={2}
-                        className="cursor-default w-full border-2 border-gray-200 rounded-lg p-2 resize-none shadow-sm focus:shadow-lg
-                        focus:border-primary-500 transition-all duration-300 ease-in-out"
+                        className="w-full border-2 border-gray-200 rounded-lg p-2 resize-none shadow-sm focus:shadow-lg focus:border-primary-500 transition-all duration-300 ease-in-out"
                       />
                     </FormControl>
                     <FormMessage />
@@ -373,14 +374,7 @@ export function DonationRegisterForm({ eventId, eventTime, event, setRegistraion
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={
-                              `shadow-sm font-semibold ` + user?.lastDonation === undefined
-                                ? "cursor-not-allowed w-full"
-                                : "cursor-default w-full"
-                            }
-                          >
+                          <Button variant={"outline"} className="shadow-sm font-semibold w-full">
                             {field.value ? format(field.value, "PPP", { locale: vi }) : <span>mm/dd/yyyy</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-75" />
                           </Button>
@@ -392,13 +386,7 @@ export function DonationRegisterForm({ eventId, eventTime, event, setRegistraion
                           captionLayout="dropdown"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date: Date) => {
-                            if (!user?.lastDonation) {
-                              return date >= new Date() || date < new Date("2000-01-01");
-                            } else {
-                              return date >= new Date() || date < new Date();
-                            }
-                          }}
+                          disabled={(date: Date) => date > new Date() || date < new Date("2000-01-01")}
                         />
                       </PopoverContent>
                     </Popover>
