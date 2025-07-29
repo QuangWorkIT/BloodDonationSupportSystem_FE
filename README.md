@@ -1,54 +1,107 @@
-# React + TypeScript + Vite
+# 💉 BloodDonationSupportSystem_FE
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+BloodDonationSupportSystem_FE is the frontend component of the Blood Donation Support System, designed to provide a user-friendly interface for individuals, donors, and organizations to interact with the blood donation platform. This repository likely contains the source code for the web application, including user interfaces, API integrations, and frontend logic.
 
-Currently, two official plugins are available:
+## 📝 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **User Registration & Authentication:** Secure sign-up, login, and profile management for donors and receivers.
+- **Blood Donation Requests:** Submit, view, and manage requests for blood donations.
+- **Search & Matching:** Find compatible donors or donation centers based on blood type and location.
+- **Notifications:** Receive alerts about donation drives, matching requests, and other important updates.
+- **Donation History:** Track previous donations and request status.
+- **Admin Dashboard:** Manage users, requests, and platform content.
 
-## Expanding the ESLint configuration
+## 🚀 Technologies Used
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend Framework:** (React, Vue, Typescript)
+- **UI Library:** (ShadCN, Tailwind CSS, etc.)
+- **HTTP Client:** (Axios, Fetch API, etc.)
+- **Form Management:** (React Hook Form, etc.)
+- **Routing:** (React Router, Vue Router, etc.)
+- **Other:** (Include any other notable libraries or tools)
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 🔗 Live Demo
+- Frontend: [https://blood-donation-support-system-fe.vercel.app](https://blood-donation-support-system-fe.vercel.app/)
+- Backend API: [https://blood-donation-support-system.somee.com/swagger/index.html](https://blood-donation-support-system.somee.com/swagger/index.html)
+
+## ⭐ Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (version v22.14.0 or higher)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/QuangWorkIT/BloodDonationSupportSystem_FE.git
+   cd BloodDonationSupportSystem_FE
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Configure environment variables:**
+   - Copy `.env.example` to `.env` and update values as needed.
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Run the application:**
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
+
+5. **Access the app:**
+   - Open your browser and visit `http://localhost:5173`.
+
+## 📁 Project Structure
+
+```
+BloodDonationSupportSystem_FE/
+├── public/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── lib/
+│   ├── hooks/
+│   ├── configs/
+│   ├── utils/
+│   ├── App.js
+│   └── index.js
+├── .env.example
+├── package.json
+└── README.md
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 💡Contribution
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Contributions are welcome! Please follow these steps:
+1. Fork the repository.
+2. Create your feature branch: `git checkout -b feature/YourFeature`
+3. Commit your changes: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin feature/YourFeature`
+5. Open a pull request.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+Please ensure your code follows the project's coding style and includes relevant tests if applicable.
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## 🔎 Contact
+
+For questions or support, please open an issue or contact the repository owner:
+
+- **GitHub:** [QuangWorkIT](https://github.com/QuangWorkIT)
+
+---
+
+*Thank you for supporting blood donation initiatives!*
