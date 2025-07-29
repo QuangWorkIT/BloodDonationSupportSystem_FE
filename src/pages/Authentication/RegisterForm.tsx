@@ -7,6 +7,7 @@ import { getLongLat } from "@/utils/gecoding";
 import { getTypeId } from "@/types/BloodCompatibility";
 import { formatPhoneOtp } from "@/utils/format";
 import { AnimatePresence, motion } from "framer-motion";
+import { FaInfoCircle } from "react-icons/fa";
 export interface FormData {
   lastName: string;
   firstName: string;
@@ -58,24 +59,16 @@ export default function RegisterForm() {
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
-    if (!formData.lastName)
-      newErrors.lastName = "Đây là trường thông tin bắt buộc.";
-    if (!formData.firstName)
-      newErrors.firstName = "Đây là trường thông tin bắt buộc.";
+    if (!formData.lastName) newErrors.lastName = "Đây là trường thông tin bắt buộc.";
+    if (!formData.firstName) newErrors.firstName = "Đây là trường thông tin bắt buộc.";
     if (!formData.phone) newErrors.phone = "Đây là trường thông tin bắt buộc.";
-    if (!formData.password)
-      newErrors.password = "Đây là trường thông tin bắt buộc.";
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Mật khẩu không khớp.";
-    if (!formData.bloodType)
-      newErrors.bloodType = "Đây là trường thông tin bắt buộc.";
+    if (!formData.password) newErrors.password = "Đây là trường thông tin bắt buộc.";
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Mật khẩu không khớp.";
+    if (!formData.bloodType) newErrors.bloodType = "Đây là trường thông tin bắt buộc.";
     if (!formData.dob) newErrors.dob = "Đây là trường thông tin bắt buộc.";
-    if (!formData.gender)
-      newErrors.gender = "Đây là trường thông tin bắt buộc.";
-    if (!formData.province)
-      newErrors.province = "Đây là trường thông tin bắt buộc.";
-    if (!formData.address)
-      newErrors.address = "Đây là trường thông tin bắt buộc.";
+    if (!formData.gender) newErrors.gender = "Đây là trường thông tin bắt buộc.";
+    if (!formData.province) newErrors.province = "Đây là trường thông tin bắt buộc.";
+    if (!formData.address) newErrors.address = "Đây là trường thông tin bắt buộc.";
 
     return newErrors;
   };
@@ -100,13 +93,7 @@ export default function RegisterForm() {
 
       copyForm.phone = formatPhoneOtp(formData.phone);
       copyForm.bloodTypeId = getTypeId(formData.bloodType + formData.rhFactor);
-      const address =
-        formData.address +
-        " Quận " +
-        formData.district +
-        " " +
-        formData.province +
-        " Việt Nam";
+      const address = formData.address + " Quận " + formData.district + " " + formData.province + " Việt Nam";
       try {
         const geoCoding = await getLongLat(address);
         if (geoCoding !== null) {
@@ -160,9 +147,7 @@ export default function RegisterForm() {
             transition={{ duration: 0.5, ease: "easeInOut" }}
           >
             <div className="max-w-3xl mx-auto my-[50px] sm:border sm:rounded-lg sm:shadow-lg p-8 space-y-6 bg-white min-h-[750px]">
-              <h1 className="text-3xl font-bold text-center text-red-600 mb-6">
-                ĐĂNG KÍ THÀNH VIÊN
-              </h1>
+              <h1 className="text-3xl font-bold text-center text-red-600 mb-6">ĐĂNG KÍ THÀNH VIÊN</h1>
               <form onSubmit={handleSubmit}>
                 {/* Name Row */}
                 <div className="grid grid-cols-2 gap-6">
@@ -178,9 +163,7 @@ export default function RegisterForm() {
                       value={formData.lastName}
                       onChange={handleChange}
                     />
-                    {errors.lastName && (
-                      <p className="text-red-500">{errors.lastName}</p>
-                    )}
+                    {errors.lastName && <p className="text-red-500">{errors.lastName}</p>}
                   </div>
 
                   <div className="space-y-3">
@@ -195,9 +178,7 @@ export default function RegisterForm() {
                       value={formData.firstName}
                       onChange={handleChange}
                     />
-                    {errors.firstName && (
-                      <p className="text-red-500">{errors.firstName}</p>
-                    )}
+                    {errors.firstName && <p className="text-red-500">{errors.firstName}</p>}
                   </div>
                 </div>
 
@@ -216,9 +197,7 @@ export default function RegisterForm() {
                       value={formData.phone}
                       onChange={handleChange}
                     />
-                    {errors.phone && (
-                      <p className="text-red-500">{errors.phone}</p>
-                    )}
+                    {errors.phone && <p className="text-red-500">{errors.phone}</p>}
                   </div>
 
                   <div className="space-y-3">
@@ -251,9 +230,7 @@ export default function RegisterForm() {
                       value={formData.password}
                       onChange={handleChange}
                     />
-                    {errors.password && (
-                      <p className="text-red-500">{errors.password}</p>
-                    )}
+                    {errors.password && <p className="text-red-500">{errors.password}</p>}
                   </div>
 
                   <div className="space-y-3">
@@ -269,17 +246,21 @@ export default function RegisterForm() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                     />
-                    {errors.confirmPassword && (
-                      <p className="text-red-500">{errors.confirmPassword}</p>
-                    )}
+                    {errors.confirmPassword && <p className="text-red-500">{errors.confirmPassword}</p>}
                   </div>
                 </div>
 
                 {/* Personal Info */}
                 <div className="grid sm:grid-cols-2 gap-6 pt-5">
                   <div className="space-y-3">
-                    <Label htmlFor="bloodType" className="text-base">
+                    <Label htmlFor="bloodType" className="text-base flex items-center gap-2">
                       Nhóm máu<span className="text-red-500"> *</span>
+                      <span className="relative group">
+                        <FaInfoCircle className="text-blue-500 cursor-pointer" />
+                        <span className="absolute left-6 top-1/2 -translate-y-1/2 w-64 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 break-words whitespace-normal">
+                          Nhóm máu chính xác sẽ được xác nhận bởi nhân viên y tế sau quá trình xét nghiệm máu
+                        </span>
+                      </span>
                     </Label>
                     <div className="grid grid-cols-2 sm:gap-4 gap-6">
                       <div>
@@ -297,9 +278,7 @@ export default function RegisterForm() {
                           <option value="AB" />
                           <option value="O" />
                         </datalist>
-                        {errors.bloodType && (
-                          <p className="text-red-500">{errors.bloodType}</p>
-                        )}
+                        {errors.bloodType && <p className="text-red-500">{errors.bloodType}</p>}
                       </div>
 
                       <div>
@@ -372,9 +351,7 @@ export default function RegisterForm() {
                       </Label>
                     </div>
                   </div>
-                  {errors.gender && (
-                    <p className="text-red-500">{errors.gender}</p>
-                  )}
+                  {errors.gender && <p className="text-red-500">{errors.gender}</p>}
                 </div>
 
                 {/* Address Info */}
@@ -396,9 +373,7 @@ export default function RegisterForm() {
                       <option value="Hồ Chí Minh" />
                       <option value="Đà Nẵng" />
                     </datalist>
-                    {errors.province && (
-                      <p className="text-red-500">{errors.province}</p>
-                    )}
+                    {errors.province && <p className="text-red-500">{errors.province}</p>}
                   </div>
 
                   <div className="space-y-3">
@@ -430,9 +405,7 @@ export default function RegisterForm() {
                     value={formData.address}
                     onChange={handleChange}
                   />
-                  {errors.address && (
-                    <p className="text-red-500">{errors.address}</p>
-                  )}
+                  {errors.address && <p className="text-red-500">{errors.address}</p>}
                 </div>
 
                 {/* Submit Button */}

@@ -26,16 +26,12 @@ interface BloodSummary {
   bloodUnitCount: number;
 }
 
-interface BloodAlert {
-  bloodComponentName: string;
-  bloodTypeName: string;
-  volume: number;
-}
-
 export default function Inventory() {
   const [bloodInventories, setBloodInventories] = useState<Entry[]>([]);
   const [bloodSummary, setBloodSummary] = useState<BloodSummary[]>([]);
-  const [criticalAlerts, setCriticalAlerts] = useState<{lowStock: {type: string, stock: number, threshold: number}[]}>({lowStock: []});
+  const [criticalAlerts, setCriticalAlerts] = useState<{
+    lowStock: { type: string; stock: number; threshold: number }[];
+  }>({ lowStock: [] });
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -69,48 +65,31 @@ export default function Inventory() {
   }, [currentPage]);
 
   useEffect(() => {
-    const fetchSummaryAndAlerts = async () => {
+    const fetchSummary = async () => {
       try {
         // Fetch blood summary
         const summaryResponse = await authenApi.get("/api/blood-inventories/summarize");
         if (summaryResponse.data?.isSuccess) {
           setBloodSummary(summaryResponse.data.data);
-        }
 
-        // Fetch alerts
-        const alertsResponse = await authenApi.get("/api/blood-inventories/alert");
-        if (alertsResponse.data?.isSuccess) {
-          // Process alerts data to match the expected format
-          const alertData = alertsResponse.data.data;
-          const lowStockTypes = new Set<string>();
-          const lowStockItems: {type: string, stock: number, threshold: number}[] = [];
-          
-          // Find blood types with low volume
-          alertData.forEach((item: BloodAlert) => {
-            if (item.volume === 0) {
-              // Extract just the blood type (A, B, AB, O) without the +/- for grouping
-              const baseType = item.bloodTypeName.replace(/[+-]/, '');
-              lowStockTypes.add(baseType);
-            }
-          });
-          
-          // Create the lowStock array
-          lowStockTypes.forEach(type => {
-            lowStockItems.push({
-              type,
-              stock: 0, // We don't have the exact count, but we know it's critical
-              threshold: 10 // Using a default threshold
-            });
-          });
-          
+          // Calculate low stock based on summary
+          const threshold = 10;
+          const lowStockItems = summaryResponse.data.data
+            .filter((item: BloodSummary) => item.bloodUnitCount < threshold)
+            .map((item: BloodSummary) => ({
+              type: item.bloodTypeName,
+              stock: item.bloodUnitCount,
+              threshold,
+            }));
+
           setCriticalAlerts({ lowStock: lowStockItems });
         }
       } catch (err) {
-        console.error("Failed to fetch summary or alerts:", err);
+        console.error("Failed to fetch summary:", err);
       }
     };
-    
-    fetchSummaryAndAlerts();
+
+    fetchSummary();
   }, []);
 
   const handleDelete = async () => {
@@ -137,10 +116,10 @@ export default function Inventory() {
           <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Kho máu</h1>
           <p className="text-gray-500 mt-1">Tổng quan và quản lý các đơn vị máu.</p>
         </header>
-        
+
         {/* Alerts Section */}
         {criticalAlerts.lowStock.length > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-8 shadow-sm"
@@ -150,15 +129,15 @@ export default function Inventory() {
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-red-800">Cảnh báo tồn kho thấp</h3>
                 <p className="text-red-700 text-sm">
-                  Các nhóm máu sau đang ở dưới ngưỡng an toàn: {' '}
+                  Các nhóm máu sau đang ở dưới ngưỡng an toàn:{" "}
                   {criticalAlerts.lowStock.map((a, i) => (
                     <span key={a.type} className="font-bold">
-                      {a.type} ({a.stock} đơn vị){i < criticalAlerts.lowStock.length - 1 ? ', ' : '.'}
+                      {a.type} ({a.stock} đơn vị){i < criticalAlerts.lowStock.length - 1 ? ", " : "."}
                     </span>
                   ))}
                 </p>
               </div>
-              <Link to={'/staff/donorsearch'}>
+              <Link to={"/staff/donorsearch"}>
                 <Button variant="destructive" size="sm" className="ml-4 whitespace-nowrap">
                   Tạo yêu cầu khẩn
                 </Button>
@@ -188,7 +167,7 @@ export default function Inventory() {
               </div>
             </div>
           </div>
-          
+
           {loading ? (
             <div className="h-96 flex items-center justify-center">
               <LoadingSpinner />
@@ -209,7 +188,7 @@ export default function Inventory() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {bloodInventories.map((entry) => (
-                    <motion.tr 
+                    <motion.tr
                       key={entry.bloodUnitId}
                       className="hover:bg-gray-50/80 transition-colors"
                       initial={{ opacity: 0 }}
@@ -223,15 +202,17 @@ export default function Inventory() {
                       <td className="px-6 py-4">{entry.bloodAge} ngày</td>
                       <td className="px-6 py-4">{entry.expiredDate}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                          ${entry.isAvailable ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                        <span
+                          className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                          ${entry.isAvailable ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                        >
                           {entry.isAvailable ? "Sẵn có" : "Hết hạn"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="text-gray-400 hover:text-red-600 hover:bg-red-50 h-8 w-8"
                           onClick={() => {
                             setSelectedDeleteId(entry.bloodUnitId);
@@ -250,25 +231,27 @@ export default function Inventory() {
 
           {/* Pagination */}
           <div className="p-4 flex items-center justify-between border-t border-gray-200">
-              <span className="text-sm text-gray-600">Trang {currentPage} trên {totalPages}</span>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  Trước
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Sau
-                </Button>
-              </div>
+            <span className="text-sm text-gray-600">
+              Trang {currentPage} trên {totalPages}
+            </span>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Trước
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Sau
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -284,11 +267,12 @@ export default function Inventory() {
             className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl"
             initial={{ scale: 0.9, opacity: 0, y: -20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             <h2 className="text-xl font-bold text-gray-800 mb-2">Xác nhận xóa</h2>
             <p className="text-gray-600 mb-6">
-              Bạn có chắc chắn muốn xóa đơn vị máu này? <span className="font-semibold text-red-600">Hành động này không thể hoàn tác.</span>
+              Bạn có chắc chắn muốn xóa đơn vị máu này?{" "}
+              <span className="font-semibold text-red-600">Hành động này không thể hoàn tác.</span>
             </p>
             <div className="flex justify-end space-x-3">
               <Button

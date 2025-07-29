@@ -5,45 +5,36 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  ChevronDown,
   Users,
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
-  Bell,
 } from "lucide-react";
 import { Doughnut, Bar } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from "chart.js";
 import AdminSidebar from "../AdminSidebar";
-import api from "@/lib/instance";
+import { authenApi } from "@/lib/instance";
 import { CSVLink } from "react-csv";
 
-
 // Register ChartJS components
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title
-);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 // Type definitions
-type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-type TimeSpan = 'weekly' | 'monthly' | 'yearly' | 'all';
+type EventStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
+type TimeSpan = "weekly" | "monthly" | "yearly" | "all";
 
+// Update DashboardStats type to match new API
 interface DashboardStats {
   currentViewers: number;
   bloodUnitsInStock: number;
   monthlyEvents: number;
   yearlyDonors: number;
+  totalUsers: number;
   weeklyChanges: {
-    viewers: { value: string; trend: 'up' | 'down' };
-    bloodUnits: { value: string; trend: 'up' | 'down' };
-    events: { value: string; trend: 'up' | 'down' };
-    donors: { value: string; trend: 'up' | 'down' };
+    viewers: { value: string; trend: "up" | "down" };
+    bloodUnits: { value: string; trend: "up" | "down" };
+    events: { value: string; trend: "up" | "down" };
+    donors: { value: string; trend: "up" | "down" };
   };
 }
 
@@ -58,14 +49,15 @@ interface DonationActivity {
   donations: number;
 }
 
-interface DonationEvent {
+// Update DonationEvent type to match API
+type DonationEvent = {
   id: number;
-  date: string;
-  location: string;
-  registeredDonors: number;
-  expectedDonors: number;
-  status: EventStatus;
-}
+  eventTime: string;
+  address: string;
+  bloodRegisCount: number;
+  status: string;
+  successfulBloodRegisCount: number;
+};
 
 const AnalyticsDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,104 +70,165 @@ const AnalyticsDashboard = () => {
     eventStatus: "" as EventStatus | "",
   });
 
-  // Generated data
-  const [dashboardStats] = useState<DashboardStats>({
-    currentViewers: 1312,
-    bloodUnitsInStock: 1423,
-    monthlyEvents: 12,
-    yearlyDonors: 923,
-    weeklyChanges: {
-      viewers: { value: "+1.01%", trend: "up" },
-      bloodUnits: { value: "+0.49%", trend: "up" },
-      events: { value: "-0.91%", trend: "down" },
-      donors: { value: "+1.51%", trend: "up" },
-    },
-  });
+  // Add state for fetched dashboard stats
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
-  // Mockdata for User Growth Trends
-  const [userGrowth] = useState({
-    newUsersThisMonth: 87,
-    growthRate: 5.2, // percent
-    trend: 'up' as 'up' | 'down',
-  });
+  // Predefined color mapping for blood types
+  const BLOOD_TYPE_COLORS: Record<string, string> = {
+    "A+": "#FF6384",
+    "A-": "#FF9AA2",
+    "B+": "#36A2EB",
+    "B-": "#9AD0F5",
+    "AB+": "#FFCE56",
+    "AB-": "#FFFACD",
+    "O+": "#4BC0C0",
+    "O-": "#B2DFDB",
+  };
 
-  const [bloodStock] = useState<BloodStock[]>([
-    { type: 'A', quantity: 15, color: '#FF6384' },
-    { type: 'B', quantity: 23, color: '#36A2EB' },
-    { type: 'AB', quantity: 15, color: '#FFCE56' },
-    { type: 'O', quantity: 35, color: '#4BC0C0' },
-  ]);
+  const [bloodStock, setBloodStock] = useState<BloodStock[]>([]);
+  const [bloodStockLoading, setBloodStockLoading] = useState(true);
+  const [bloodStockError, setBloodStockError] = useState<string | null>(null);
 
-  const [donationActivity] = useState<DonationActivity[]>([
-    { month: 'JAN', donations: 120 },
-    { month: 'FEB', donations: 150 },
-    { month: 'MAR', donations: 180 },
-    { month: 'APR', donations: 200 },
-    { month: 'MAY', donations: 240 },
-    { month: 'JUN', donations: 300 },
-    { month: 'JUL', donations: 280 },
-    { month: 'AUG', donations: 260 },
-    { month: 'SEP', donations: 220 },
-    { month: 'OCT', donations: 190 },
-    { month: 'NOV', donations: 160 },
-    { month: 'DEC', donations: 140 },
-  ]);
+  // Remove the mock donationActivity initialization and add state for fetched donation activity
+  const [donationActivity, setDonationActivity] = useState<DonationActivity[]>([]);
+  const [donationActivityLoading, setDonationActivityLoading] = useState(true);
+  const [donationActivityError, setDonationActivityError] = useState<string | null>(null);
 
   // Remove the mock events initialization
   const [events, setEvents] = useState<DonationEvent[]>([]);
+  const [totalEventPages, setTotalEventPages] = useState(1);
+
+  // Fetch dashboard stats from API
+  useEffect(() => {
+    async function fetchStats() {
+      setStatsLoading(true);
+      setStatsError(null);
+      try {
+        const response = await authenApi.get("/api/reports/stats");
+        if (response.data.isSuccess) {
+          setDashboardStats(response.data.data);
+        } else {
+          setStatsError("Không thể tải dữ liệu thống kê.");
+        }
+      } catch {
+        setStatsError("Lỗi khi tải dữ liệu thống kê.");
+      } finally {
+        setStatsLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  // Fetch blood stock from API
+  useEffect(() => {
+    async function fetchBloodStock() {
+      setBloodStockLoading(true);
+      setBloodStockError(null);
+      try {
+        const response = await authenApi.get("/api/reports/blood-stock");
+        if (response.data.isSuccess) {
+          // Add color to each blood type
+          const stockWithColor = response.data.data.map((item: { type: string; quantity: number }) => ({
+            type: item.type,
+            quantity: item.quantity,
+            color: BLOOD_TYPE_COLORS[item.type] || "#CCCCCC",
+          }));
+          setBloodStock(stockWithColor);
+        } else {
+          setBloodStockError("Không thể tải dữ liệu kho máu.");
+        }
+      } catch {
+        setBloodStockError("Lỗi khi tải dữ liệu kho máu.");
+      } finally {
+        setBloodStockLoading(false);
+      }
+    }
+    fetchBloodStock();
+  }, []);
+
+  // Fetch donation activity from API
+  useEffect(() => {
+    async function fetchDonationActivity() {
+      setDonationActivityLoading(true);
+      setDonationActivityError(null);
+      try {
+        const response = await authenApi.get("/api/reports/activities");
+        if (response.data.isSuccess) {
+          setDonationActivity(response.data.data);
+        } else {
+          setDonationActivityError("Không thể tải dữ liệu hoạt động hiến máu.");
+        }
+      } catch {
+        setDonationActivityError("Lỗi khi tải dữ liệu hoạt động hiến máu.");
+      } finally {
+        setDonationActivityLoading(false);
+      }
+    }
+    fetchDonationActivity();
+  }, []);
 
   // Fetch events from API
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const response = await api.get("/api/events");
+        const response = await authenApi.get("/api/reports/events", {
+          params: {
+            pageNumber: currentPage,
+            pageSize: rowsPerPage,
+          },
+        });
         if (response.data.isSuccess) {
+          console.log("Fetched events page items:", response.data.data.items);
           setEvents(
-            response.data.data.items.map((item: any) => ({
-              id: item.id,
-              date: new Date(item.eventTime).toLocaleDateString(),
-              location: "387 Đ. Lê Văn Việt, Tăng Nhơn Phú A, Thủ Đức, Hồ Chí Minh", // Hardcoded address
-              registeredDonors: item.bloodRegisCount,
-              expectedDonors: item.maxOfDonor,
-              status: inferStatus(item.eventTime),
-            }))
+            response.data.data.items.map(
+              (item: {
+                id: number;
+                eventTime: string;
+                address: string;
+                bloodRegisCount: number;
+                status: string;
+                successfulBloodRegisCount: number;
+              }) => ({
+                id: item.id,
+                eventTime: item.eventTime,
+                address: item.address,
+                bloodRegisCount: item.bloodRegisCount,
+                status: item.status,
+                successfulBloodRegisCount: item.successfulBloodRegisCount,
+              })
+            )
           );
+          setTotalEventPages(response.data.data.totalPages > 0 ? response.data.data.totalPages : 1);
         }
-      } catch (error) {
+      } catch {
         setEvents([]);
+        setTotalEventPages(1);
       }
     }
     fetchEvents();
-  }, []);
-
-  // Helper to infer status from eventTime
-  function inferStatus(eventTime: string): EventStatus {
-    const now = new Date();
-    const eventDate = new Date(eventTime);
-    if (eventDate > now) return "upcoming";
-    // You can add more logic for ongoing/completed/cancelled if available
-    return "completed";
-  }
+  }, [currentPage, rowsPerPage]);
 
   // Chart data and options
   const bloodStockChartData = {
-    labels: bloodStock.map(item => item.type),
+    labels: bloodStock.map((item) => item.type),
     datasets: [
       {
-        data: bloodStock.map(item => item.quantity),
-        backgroundColor: bloodStock.map(item => item.color),
+        data: bloodStock.map((item) => item.quantity),
+        backgroundColor: bloodStock.map((item) => item.color),
         borderWidth: 1,
       },
     ],
   };
 
   const donationActivityChartData = {
-    labels: donationActivity.map(item => item.month),
+    labels: donationActivity.map((item) => item.month),
     datasets: [
       {
-        label: 'Số lượng hiến máu',
-        data: donationActivity.map(item => item.donations),
-        backgroundColor: '#3B82F6',
+        label: "Số lượng hiến máu",
+        data: donationActivity.map((item) => item.donations),
+        backgroundColor: "#3B82F6",
         borderRadius: 4,
       },
     ],
@@ -186,7 +239,7 @@ const AnalyticsDashboard = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom' as const,
+        position: "bottom" as const,
       },
     },
   };
@@ -203,17 +256,14 @@ const AnalyticsDashboard = () => {
 
     // Apply search filter
     if (searchTerm) {
-      result = result.filter(
-        (event) =>
-          event.location.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      result = result.filter((event) => event.address.toLowerCase().includes(searchTerm.toLowerCase()));
     }
 
     // Apply time span filter
-    if (filters.timeSpan === 'weekly') {
+    if (filters.timeSpan === "weekly") {
       // In a real app, you would filter by date range
       result = result.slice(0, 3); // Just for demo
-    } else if (filters.timeSpan === 'monthly') {
+    } else if (filters.timeSpan === "monthly") {
       result = result.slice(0, 6); // Just for demo
     }
 
@@ -247,11 +297,10 @@ const AnalyticsDashboard = () => {
     setSortConfig({ key, direction });
   };
 
-  // Pagination
-  const totalPages = Math.ceil(filteredEvents.length / rowsPerPage);
+  // Pagination (use API values)
+  const totalPages = totalEventPages;
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const currentEvents = filteredEvents.slice(startIndex, endIndex);
+  const currentEvents = events;
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -284,16 +333,16 @@ const AnalyticsDashboard = () => {
   // Helper function to get status color
   const getStatusColor = (status: EventStatus): string => {
     switch (status) {
-      case 'upcoming':
-        return 'bg-blue-100 text-blue-800';
-      case 'ongoing':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800'; // Light green for completed
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
+      case "upcoming":
+        return "bg-blue-100 text-blue-800";
+      case "ongoing":
+        return "bg-green-100 text-green-800";
+      case "completed":
+        return "bg-green-100 text-green-800"; // Light green for completed
+      case "cancelled":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -310,182 +359,171 @@ const AnalyticsDashboard = () => {
   const csvExportData = useMemo(() => {
     return filteredEvents.map((event) => ({
       id: event.id,
-      date: event.date,
-      location: event.location,
-      registeredDonors: event.registeredDonors,
-      expectedDonors: event.expectedDonors,
-      status:
-        event.status === "upcoming"
-          ? "Sắp diễn ra"
-          : event.status === "ongoing"
-          ? "Đang diễn ra"
-          : event.status === "completed"
-          ? "Đã hoàn thành"
-          : event.status === "cancelled"
-          ? "Đã hủy"
-          : event.status,
+      date: event.eventTime ? new Date(event.eventTime).toISOString().slice(0, 10) : "",
+      location: event.address || "",
+      registeredDonors: typeof event.bloodRegisCount === "number" ? event.bloodRegisCount : 0,
+      expectedDonors: 0, // No expected donors in this table
+      status: event.status,
     }));
   }, [filteredEvents]);
 
   return (
-    <div className="flex min-h-screen h-full w-screen bg-[#EFEFEF]">
+    <div className="flex min-h-screen h-full w-screen bg-[#EFEFEF] overflow-x-hidden ">
       <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
 
-
-      {/* Main content */}
-      
-      <main className="flex-1 bg-[#EFEFEF]">
-        {/* Top bar */}
-        <header className="bg-[#EFEFEF] border-b border-gray-200 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 max-w-lg relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      <main className="flex-1 bg-blue-50 p-6 pt-27">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <header className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Bảng thống kê số liệu</h1>
+            <div className="text-sm text-gray-500 mb-4">
+              <span>Dashboard</span>
+              <span className="mx-2">/</span>
+              <span className="text-l text-gray-900 mb-2">Thống kê</span>
+            </div>
+            <div className="w-full max-w-lg mb-4 relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search className="w-5 h-5" />
+              </span>
               <input
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow"
                 placeholder="Tìm kiếm theo địa điểm"
                 type="search"
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
             </div>
-            <div className="flex items-center gap-6">
-              <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
-                <Bell className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-700">Nguyen Van A</div>
-                  <div className="text-xs text-gray-500">jane234@example.com</div>
-                </div>
-                <ChevronDown className="text-gray-400 w-4 h-4 hover:text-blue-600 transition-colors duration-200 cursor-pointer" />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Content */}
-        <div className="p-8">
-          {/* Title and breadcrumb */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Bảng thống kê số liệu</h1>
-            <div className="text-sm text-gray-500">
-              <span>Dashboard</span>
-              <span className="mx-2">/</span>
-              <span className="text-l text-gray-900 mb-2">Thống kê</span>
-            </div>
-          </div>
+          </header>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            {/* User Growth Trends */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Người dùng mới tháng này</p>
-                  <p className="text-2xl font-bold text-gray-900">{userGrowth.newUsersThisMonth}</p>
-                </div>
-                <div className="bg-yellow-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-yellow-600" />
-                </div>
+            {statsLoading ? (
+              <div className="col-span-5 flex justify-center items-center h-32">
+                <span className="text-gray-500">Đang tải dữ liệu...</span>
               </div>
-              <div className="mt-2 flex items-center">
-                {userGrowth.trend === 'up' ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p className={`text-sm ${userGrowth.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>{userGrowth.growthRate}%</p>
+            ) : statsError ? (
+              <div className="col-span-5 flex justify-center items-center h-32">
+                <span className="text-red-500">{statsError}</span>
               </div>
-            </div>
-            {/* Current Viewers */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Tổng số người dùng</p>
-                  <p className="text-2xl font-bold text-gray-900">{dashboardStats.currentViewers.toLocaleString()}</p>
+            ) : dashboardStats ? (
+              <>
+                {/* Tổng số người dùng */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Tổng số người dùng</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalUsers}</p>
+                    </div>
+                    <div className="bg-yellow-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-yellow-600" />
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-blue-600" />
+                {/* Người dùng đang xem */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Người dùng đang xem</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.currentViewers}</p>
+                    </div>
+                    <div className="bg-blue-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-blue-600" />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    {dashboardStats.weeklyChanges.viewers.trend === "up" ? (
+                      <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <p
+                      className={`text-sm ${
+                        dashboardStats.weeklyChanges.viewers.trend === "up" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {dashboardStats.weeklyChanges.viewers.value}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.viewers.trend === 'up' ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p className={`text-sm ${dashboardStats.weeklyChanges.viewers.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>{dashboardStats.weeklyChanges.viewers.value}</p>
-              </div>
-            </div>
-
-            {/* Blood Units */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Đơn vị máu trong kho</p>
-                  <p className="text-2xl font-bold text-gray-900">{dashboardStats.bloodUnitsInStock.toLocaleString()}</p>
+                {/* Đơn vị máu trong kho */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Đơn vị máu trong kho</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.bloodUnitsInStock}</p>
+                    </div>
+                    <div className="bg-red-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-red-600" />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    {dashboardStats.weeklyChanges.bloodUnits.trend === "up" ? (
+                      <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <p
+                      className={`text-sm ${
+                        dashboardStats.weeklyChanges.bloodUnits.trend === "up" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {dashboardStats.weeklyChanges.bloodUnits.value}
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-red-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-red-600" />
+                {/* Tổng sự kiện tháng này */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Tổng sự kiện tháng này</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.monthlyEvents}</p>
+                    </div>
+                    <div className="bg-purple-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-purple-600" />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    {dashboardStats.weeklyChanges.events.trend === "up" ? (
+                      <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <p
+                      className={`text-sm ${
+                        dashboardStats.weeklyChanges.events.trend === "up" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {dashboardStats.weeklyChanges.events.value}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.bloodUnits.trend === 'up' ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p className={`text-sm ${dashboardStats.weeklyChanges.bloodUnits.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  {dashboardStats.weeklyChanges.bloodUnits.value}
-                </p>
-              </div>
-            </div>
-
-            {/* Monthly Events */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Tổng sự kiện tháng này</p>
-                  <p className="text-2xl font-bold text-gray-900">{dashboardStats.monthlyEvents}</p>
+                {/* Tổng người hiến năm nay */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-1">Tổng người hiến năm nay</p>
+                      <p className="text-2xl font-bold text-gray-900">{dashboardStats.yearlyDonors}</p>
+                    </div>
+                    <div className="bg-green-100 p-2 rounded-full">
+                      <Users className="w-5 h-5 text-green-600" />
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    {dashboardStats.weeklyChanges.donors.trend === "up" ? (
+                      <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <p
+                      className={`text-sm ${
+                        dashboardStats.weeklyChanges.donors.trend === "up" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {dashboardStats.weeklyChanges.donors.value}
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-purple-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-purple-600" />
-                </div>
-              </div>
-              <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.events.trend === 'up' ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p className={`text-sm ${dashboardStats.weeklyChanges.events.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  {dashboardStats.weeklyChanges.events.value}
-                </p>
-              </div>
-            </div>
-
-            {/* Yearly Donors */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Tổng người hiến năm nay</p>
-                  <p className="text-2xl font-bold text-gray-900">{dashboardStats.yearlyDonors.toLocaleString()}</p>
-                </div>
-                <div className="bg-green-100 p-2 rounded-full">
-                  <Users className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-              <div className="mt-2 flex items-center">
-                {dashboardStats.weeklyChanges.donors.trend === 'up' ? (
-                  <ArrowUp className="w-4 h-4 text-green-600 mr-1" />
-                ) : (
-                  <ArrowDown className="w-4 h-4 text-red-600 mr-1" />
-                )}
-                <p className={`text-sm ${dashboardStats.weeklyChanges.donors.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  {dashboardStats.weeklyChanges.donors.value}
-                </p>
-              </div>
-            </div>
+              </>
+            ) : null}
           </div>
 
           {/* Blood Stock and Activity */}
@@ -493,16 +531,32 @@ const AnalyticsDashboard = () => {
             {/* Blood Stock Doughnut Chart */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 lg:col-span-1">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Kho máu</h2>
-              <div className="h-64">
-                <Doughnut data={bloodStockChartData} options={chartOptions} />
+              <div className="h-64 flex items-center justify-center">
+                {bloodStockLoading ? (
+                  <span className="text-gray-500">Đang tải dữ liệu...</span>
+                ) : bloodStockError ? (
+                  <span className="text-red-500">{bloodStockError}</span>
+                ) : bloodStock.length > 0 ? (
+                  <Doughnut data={bloodStockChartData} options={chartOptions} />
+                ) : (
+                  <span className="text-gray-500">Không có dữ liệu</span>
+                )}
               </div>
             </div>
 
             {/* Donation Activity Bar Chart */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 lg:col-span-2">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Hoạt động hiến máu</h2>
-              <div className="h-64">
-                <Bar data={donationActivityChartData} options={chartOptions} />
+              <div className="h-64 flex items-center justify-center">
+                {donationActivityLoading ? (
+                  <span className="text-gray-500">Đang tải dữ liệu...</span>
+                ) : donationActivityError ? (
+                  <span className="text-red-500">{donationActivityError}</span>
+                ) : donationActivity.length > 0 ? (
+                  <Bar data={donationActivityChartData} options={chartOptions} />
+                ) : (
+                  <span className="text-gray-500">Không có dữ liệu</span>
+                )}
               </div>
             </div>
           </div>
@@ -514,7 +568,7 @@ const AnalyticsDashboard = () => {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                 >
                   <Filter className="w-3 h-3" />
                   Lọc
@@ -523,7 +577,7 @@ const AnalyticsDashboard = () => {
                   data={csvExportData}
                   headers={csvHeaders}
                   filename={`events_export_${new Date().toISOString().slice(0, 10)}.csv`}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                 >
                   <Download className="w-3 h-3" />
                   Xuất
@@ -567,7 +621,7 @@ const AnalyticsDashboard = () => {
                   <div className="flex items-end">
                     <button
                       onClick={resetFilters}
-                      className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-200"
                     >
                       Xóa bộ lọc
                     </button>
@@ -604,10 +658,10 @@ const AnalyticsDashboard = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                       <div
                         className="flex items-center justify-between cursor-pointer"
-                        onClick={() => requestSort("date")}
+                        onClick={() => requestSort("eventTime")}
                       >
                         Ngày
-                        {sortConfig?.key === "date" ? (
+                        {sortConfig?.key === "eventTime" ? (
                           sortConfig.direction === "ascending" ? (
                             <ArrowUp className="w-3 h-3 text-gray-400" />
                           ) : (
@@ -622,7 +676,10 @@ const AnalyticsDashboard = () => {
                       Địa điểm
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                      Số người hiến
+                      Số người đăng ký hiến
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                      Số người hiến thành công
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Trạng thái
@@ -636,26 +693,26 @@ const AnalyticsDashboard = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
                           {startIndex + index + 1}
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">#{event.id}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                          #{event.id}
+                          {event.eventTime ? new Date(event.eventTime).toLocaleDateString() : ""}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                          {event.date}
+                          {event.address || ""}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                          {event.location}
+                          {typeof event.bloodRegisCount === "number" ? event.bloodRegisCount : 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                          {event.registeredDonors}/{event.expectedDonors}
+                          {typeof event.successfulBloodRegisCount === "number" ? event.successfulBloodRegisCount : 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm border-r">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(event.status)}`}
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              event.status as EventStatus
+                            )}`}
                           >
-                            {event.status === 'upcoming' && 'Sắp diễn ra'}
-                            {event.status === 'ongoing' && 'Đang diễn ra'}
-                            {event.status === 'completed' && 'Đã hoàn thành'}
-                            {event.status === 'cancelled' && 'Đã hủy'}
+                            {event.status}
                           </span>
                         </td>
                       </tr>
@@ -677,7 +734,7 @@ const AnalyticsDashboard = () => {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => handlePageChange(currentPage - 1)}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -691,7 +748,7 @@ const AnalyticsDashboard = () => {
                         currentPage === page
                           ? "border-blue-600 bg-blue-50 text-blue-600"
                           : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                      }`}
+                      } transition-colors duration-200`}
                       onClick={() => handlePageChange(page)}
                     >
                       {page}
@@ -702,7 +759,7 @@ const AnalyticsDashboard = () => {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

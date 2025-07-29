@@ -1,72 +1,56 @@
 import { motion } from "framer-motion";
-import { FaHeartbeat, FaMapMarkerAlt, FaClock, FaTint } from "react-icons/fa";
+import {
+  FaHeartbeat,
+  FaClock,
+  FaTint,
+  FaUserInjured,
+  FaHospital,
+  FaCalendarAlt,
+  FaRulerHorizontal,
+} from "react-icons/fa";
+import { authenApi } from "@/lib/instance";
+import { useEffect, useState } from "react";
+import { DonationRegisterForm } from "./DonationRegisterForm";
 
-interface UrgentRequest {
-  id: number;
-  bloodType: string;
-  hospital: string;
-  location: string;
-  requiredUnits: number;
-  postedTime: string;
-  distance: string;
-  priority: "critical" | "urgent" | "normal";
+interface UrgentEventApiResponse {
+  eventId: number;
+  title: string;
+  estimatedVolume: number;
+  bloodTypeName: string;
+  eventTime: string;
+  createAt: string;
+  distance: number;
 }
 
 const UrgentEvents = () => {
-  // Sample data - in a real app, this would come from an API
-  const urgentRequests: UrgentRequest[] = [
-    {
-      id: 1,
-      bloodType: "O-",
-      hospital: "Bệnh viện Trung ương",
-      location: "ICU, Tầng 3",
-      requiredUnits: 3,
-      postedTime: "2 giờ trước",
-      distance: "1.2 km",
-      priority: "critical",
-    },
-    {
-      id: 2,
-      bloodType: "B+",
-      hospital: "Bệnh viện Đa khoa Huyện",
-      location: "Khoa Cấp cứu",
-      requiredUnits: 2,
-      postedTime: "5 giờ trước",
-      distance: "3.5 km",
-      priority: "urgent",
-    },
-    {
-      id: 3,
-      bloodType: "AB+",
-      hospital: "Trung tâm Y tế Cộng đồng",
-      location: "Khoa Phẫu thuật",
-      requiredUnits: 1,
-      postedTime: "1 ngày trước",
-      distance: "5.8 km",
-      priority: "normal",
-    },
-  ];
+  const [urgentRequests, setUrgentRequests] = useState<UrgentEventApiResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isRegisterFormOpen, setRegisterFormOpen] = useState(false);
+  const [selectedUrgentEvent, setSelectedUrgentEvent] = useState<UrgentEventApiResponse | null>(null);
 
-  const getPriorityColor = (priority: UrgentRequest["priority"]): string => {
-    switch (priority) {
-      case "critical":
-        return "bg-[#C14B53]";
-      case "urgent":
-        return "bg-[#E67E22]";
-      default:
-        return "bg-[#3498DB]";
-    }
-  };
+  useEffect(() => {
+    const fetchUrgentEvents = async () => {
+      try {
+        setLoading(true);
+        const response = await authenApi.get("/api/events/urgent");
+        if (Array.isArray(response.data.data)) {
+          setUrgentRequests(response.data.data);
+        } else {
+          setUrgentRequests([]);
+        }
+      } catch {
+        setUrgentRequests([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUrgentEvents();
+  }, []);
 
-  const getPriorityText = (priority: UrgentRequest["priority"]): string => {
-    switch (priority) {
-      case "critical":
-        return "Khẩn cấp";
-      case "urgent":
-        return "Cấp bách";
-      default:
-        return "Bình thường";
-    }
+  // Function to handle user response to an urgent event
+  const handleRespond = (request: UrgentEventApiResponse) => {
+    setSelectedUrgentEvent(request);
+    setRegisterFormOpen(true);
   };
 
   return (
@@ -76,9 +60,7 @@ const UrgentEvents = () => {
       transition={{ duration: 0.5 }}
       className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
     >
-      {/* Main shadow box container */}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-        {/* Header section with subtle gradient */}
         <div className="bg-gradient-to-r from-[#F9F1F1] to-[#F5E8E8] px-6 py-5 border-b border-gray-200">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -88,100 +70,106 @@ const UrgentEvents = () => {
           >
             <div>
               <h1 className="text-2xl font-bold text-gray-800 mb-1">Yêu cầu khẩn cấp</h1>
-              <p className="text-gray-600">
-                Những bệnh nhân này đang cần hiến máu gấp. Bạn có thể giúp đỡ?
-              </p>
+              <p className="text-gray-600">Những bệnh nhân này đang cần hiến máu gấp. Bạn có thể giúp đỡ?</p>
             </div>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="mt-3 sm:mt-0"
-            >
+            <motion.div whileHover={{ scale: 1.02 }} className="mt-3 sm:mt-0">
               <div className="bg-[#C14B53] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
                 Tổng số yêu cầu: {urgentRequests.length}
               </div>
             </motion.div>
           </motion.div>
         </div>
-
-        {/* Content area */}
         <div className="p-6">
-          <div className="space-y-5">
-            {urgentRequests.map((request) => (
-              <motion.div
-                key={request.id}
-                className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow duration-300"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                whileHover={{ y: -3 }}
-              >
-                <div className="p-5">
-                  <div className="flex flex-col md:flex-row gap-5 items-start">
+          {loading ? (
+            <div className="flex justify-center items-center py-10">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C14B53]"></div>
+            </div>
+          ) : urgentRequests.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+              <FaUserInjured className="text-5xl mb-3 text-red-500" />
+              <div>Không có ca nguy cấp nào gần bạn</div>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {urgentRequests.map((request) => (
+                <motion.div
+                  key={request.eventId}
+                  className="bg-white rounded-lg shadow-md overflow-hidden border border-[#C14B53]/30 hover:shadow-lg transition-shadow duration-300 ring-1 ring-[#C14B53]/10"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  whileHover={{ y: -3, scale: 1.01 }}
+                >
+                  <div className="p-5 flex flex-col md:flex-row gap-5 items-start">
                     {/* Blood type badge */}
                     <div className="flex-shrink-0">
                       <motion.div
-                        className={`rounded-full ${getPriorityColor(
-                          request.priority
-                        )} text-white p-3 flex flex-col items-center justify-center shadow-md w-16 h-16`}
-                        whileHover={{ scale: 1.05 }}
+                        className={`rounded-full bg-[#C14B53] text-white p-3 flex flex-col items-center justify-center shadow-md w-16 h-16 border-4 border-white`}
+                        whileHover={{ scale: 1.08 }}
                       >
                         <FaTint className="text-2xl mb-1" />
-                        <span className="font-bold text-lg">{request.bloodType}</span>
+                        <span className="font-bold text-lg">{request.bloodTypeName}</span>
                       </motion.div>
                     </div>
 
                     {/* Request details */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <h3 className="text-xl font-semibold text-gray-800 truncate">
-                          {request.hospital}
+                        <h3 className="text-xl font-semibold text-[#C14B53] truncate flex items-center gap-2">
+                          <FaHospital className="inline-block mr-1 text-[#C14B53]" />
+                          {request.title}
                         </h3>
                         <span
-                          className={`${getPriorityColor(
-                            request.priority
-                          )} text-white text-xs px-2.5 py-1 rounded-full whitespace-nowrap`}
+                          className={`bg-[#C14B53] text-white text-xs px-2.5 py-1 rounded-full whitespace-nowrap ml-2`}
                         >
-                          {getPriorityText(request.priority)}
+                          Khẩn cấp
                         </span>
                       </div>
 
-                      <div className="space-y-2 text-gray-600">
-                        <div className="flex items-center">
-                          <FaMapMarkerAlt className="mr-2 text-[#C14B53] flex-shrink-0" />
-                          <span className="truncate">{request.location}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <FaHeartbeat className="mr-2 text-[#C14B53] flex-shrink-0" />
-                          <span>Số đơn vị máu cần: <strong>{request.requiredUnits}</strong></span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                          <div className="flex items-center">
-                            <FaClock className="mr-2 text-[#C14B53] flex-shrink-0" />
-                            <span>Đăng: {request.postedTime}</span>
+                      {/* Two rows of details: top and bottom */}
+                      <div className="flex flex-col gap-2 text-gray-600">
+                        <div className="flex flex-wrap gap-6">
+                          <div className="flex items-center gap-2">
+                            <FaHeartbeat className="text-[#C14B53]" />
+                            <span>
+                              Số đơn vị máu: <strong>{request.estimatedVolume}</strong>
+                            </span>
                           </div>
-                          <div className="flex items-center">
-                            <span>Khoảng cách: {request.distance}</span>
+                          <div className="flex items-center gap-2">
+                            <FaCalendarAlt className="text-[#C14B53]" />
+                            <span>Ngày hiến máu: {request.eventTime}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-6">
+                          <div className="flex items-center gap-2">
+                            <FaClock className="text-[#C14B53]" />
+                            <span>Đăng: {new Date(request.createAt).toLocaleString("vi-VN")}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FaRulerHorizontal className="text-[#C14B53]" />
+                            <span>Khoảng cách: {request.distance} km</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Action button */}
-                    <div className="flex-shrink-0 w-full md:w-auto mt-4 md:mt-0">
+                    <div className="flex-shrink-0 w-full md:w-auto mt-4 md:mt-0 flex items-center justify-center">
                       <motion.button
-                        className="w-full md:w-auto bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm flex items-center justify-center"
-                        whileHover={{ scale: 1.03 }}
+                        className="w-full md:w-auto bg-[#C14B53] text-white px-6 py-2 rounded-md hover:bg-[#a83a42] transition cursor-pointer shadow-sm flex items-center justify-center font-semibold text-base gap-2 disabled:opacity-60"
+                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.98 }}
+                        onClick={() => handleRespond(request)}
                       >
+                        <FaUserInjured className="mr-2 text-lg" />
                         <span>Phản hồi ngay</span>
                       </motion.button>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
+                </motion.div>
+              ))}
+            </div>
+          )}
           {/* Critical notice */}
           <motion.div
             className="mt-8 p-4 bg-red-50 border-l-4 border-[#C14B53] text-gray-700 rounded-r-lg"
@@ -191,13 +179,43 @@ const UrgentEvents = () => {
           >
             <p className="font-medium text-[#C14B53]">Lưu ý quan trọng:</p>
             <p>
-              Các yêu cầu máu nhóm O- luôn được ưu tiên hàng đầu vì đây là nhóm máu
-              có thể truyền được cho tất cả các nhóm máu khác trong trường hợp khẩn
-              cấp.
+              Các yêu cầu máu nhóm O- luôn được ưu tiên hàng đầu vì đây là nhóm máu có thể truyền được cho tất cả các
+              nhóm máu khác trong trường hợp khẩn cấp.
             </p>
           </motion.div>
         </div>
       </div>
+      {/* Registration Form Modal/Inline */}
+      {isRegisterFormOpen && selectedUrgentEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
+            <DonationRegisterForm
+              eventId={selectedUrgentEvent.eventId}
+              eventTime={selectedUrgentEvent.eventTime}
+              event={{
+                id: selectedUrgentEvent.eventId,
+                title: selectedUrgentEvent.title,
+                address: "", // Not available in urgent event, pass empty or fetch if needed
+                eventTime: selectedUrgentEvent.eventTime,
+                bloodType: selectedUrgentEvent.bloodTypeName,
+                bloodComponent: "", // Not available, pass empty or fetch if needed
+                bloodRegisCount: 0, // Not available, pass 0 or fetch if needed
+                maxOfDonor: 0, // Not available, pass 0 or fetch if needed
+                isUrgent: true,
+                estimateVolume: selectedUrgentEvent.estimatedVolume,
+              }}
+              setRegistraionFormOpen={setRegisterFormOpen}
+            />
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setRegisterFormOpen(false)}
+              aria-label="Close form"
+            >
+              &times;
+            </button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };

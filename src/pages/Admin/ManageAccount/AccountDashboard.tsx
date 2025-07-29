@@ -5,11 +5,7 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
-  Mail,
-  Bell,
   User,
-  Search,
-  ChevronDown,
   Check,
   X,
   Plus,
@@ -17,6 +13,7 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  Search,
 } from "lucide-react";
 import { CSVLink } from "react-csv";
 import AdminSidebar from "../AdminSidebar";
@@ -153,9 +150,7 @@ const AccountDashboard = () => {
         setLoading(true);
         setError(null);
         // Fetch all accounts by requesting a very large pageSize
-        const response = await authenApi.get<ApiResponse<PaginatedUserData>>(
-          `/api/users?pageNumber=1&pageSize=10000`
-        );
+        const response = await authenApi.get<ApiResponse<PaginatedUserData>>(`/api/users?pageNumber=1&pageSize=10000`);
         if (response.data.isSuccess) {
           setAccounts(response.data.data.items); // all accounts
           setTotalItems(response.data.data.items.length);
@@ -219,56 +214,56 @@ const AccountDashboard = () => {
     { label: "Phone", key: "phone" },
   ];
   // Add this phone number formatter utility
-const formatVietnamesePhoneNumber = (phone?: string): string => {
-  if (!phone) return "N/A";
-  
-  // Remove all non-digit characters
-  const digits = phone.replace(/\D/g, '');
-  
-  // If it's already properly formatted, return as-is
-  if (digits.startsWith('0') && digits.length === 10) {
-    return digits;
-  }
-  if (digits.startsWith('84') && digits.length === 11) {
-    return `+${digits}`;
-  }
-  
-  // For numbers without prefix but correct length (9 digits)
-  if (digits.length === 9) {
-    return `0${digits}`;
-  }
-  
-  // For numbers that might have 84 prefix but missing +
-  if (digits.length === 10 && digits.startsWith('84')) {
-    return `+${digits}`;
-  }
-  
-  // For numbers that might have international prefix already
-  if (digits.length >= 10 && digits.startsWith('84')) {
-    return `+${digits}`;
-  }
-  
-  // Default case - prepend 0 if it's a reasonable length
-  if (digits.length >= 9 && digits.length <= 11) {
-    return `0${digits.slice(-9)}`; // Take last 9 digits and prepend 0
-  }
-  
-  // Fallback - return the original if we can't format it
-  return phone;
-};
+  const formatVietnamesePhoneNumber = (phone?: string): string => {
+    if (!phone) return "N/A";
 
-// Update the CSV data preparation
-const csvExportData = useMemo(() => {
-  return filteredAccounts.map((account) => ({
-    userId: account.userId,
-    name: account.name,
-    email: account.email,
-    status: account.status,
-    role: account.role,
-    dob: account.dob,
-    phone: formatVietnamesePhoneNumber(account.phone),
-  }));
-}, [filteredAccounts]);
+    // Remove all non-digit characters
+    const digits = phone.replace(/\D/g, "");
+
+    // If it's already properly formatted, return as-is
+    if (digits.startsWith("0") && digits.length === 10) {
+      return digits;
+    }
+    if (digits.startsWith("84") && digits.length === 11) {
+      return `+${digits}`;
+    }
+
+    // For numbers without prefix but correct length (9 digits)
+    if (digits.length === 9) {
+      return `0${digits}`;
+    }
+
+    // For numbers that might have 84 prefix but missing +
+    if (digits.length === 10 && digits.startsWith("84")) {
+      return `+${digits}`;
+    }
+
+    // For numbers that might have international prefix already
+    if (digits.length >= 10 && digits.startsWith("84")) {
+      return `+${digits}`;
+    }
+
+    // Default case - prepend 0 if it's a reasonable length
+    if (digits.length >= 9 && digits.length <= 11) {
+      return `0${digits.slice(-9)}`; // Take last 9 digits and prepend 0
+    }
+
+    // Fallback - return the original if we can't format it
+    return phone;
+  };
+
+  // Update the CSV data preparation
+  const csvExportData = useMemo(() => {
+    return filteredAccounts.map((account) => ({
+      userId: account.userId,
+      name: account.name,
+      email: account.email,
+      status: account.status,
+      role: account.role,
+      dob: account.dob,
+      phone: formatVietnamesePhoneNumber(account.phone),
+    }));
+  }, [filteredAccounts]);
   const requestSort = (key: SortableField) => {
     let direction: SortDirection = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -329,16 +324,12 @@ const csvExportData = useMemo(() => {
         lastName,
       };
 
-      const response = await authenApi.put<ApiResponse<null>>(
-        `/api/users?id=${account.userId}`,
-        body,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await authenApi.put<ApiResponse<null>>(`/api/users?id=${account.userId}`, body, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
       if (response.data.isSuccess) {
         setAccounts(accounts.map((a) => (a.userId === account.userId ? { ...a, ...editFormData } : a)));
@@ -446,52 +437,31 @@ const csvExportData = useMemo(() => {
   };
 
   return (
-    <div className="flex min-h-screen h-full w-screen bg-[#EFEFEF]">
+    <div className="flex min-h-screen h-full w-screen bg-[#EFEFEF] overflow-x-hidden ">
       <AdminSidebar activeItem={activeSidebarItem} setActiveItem={setActiveSidebarItem} />
 
-      <main className="flex-1 bg-[#EFEFEF]">
-        <header className="bg-[#EFEFEF] border-b border-gray-200 px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 max-w-lg relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      <main className="flex-1 bg-blue-50 p-6 pt-27">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <header className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Danh sách tài khoản</h1>
+            <div className="text-sm text-gray-500 mb-4">
+              <span>Dashboard</span>
+              <span className="mx-2">/</span>
+              <span className="text-l text-gray-900 mb-2">Tài khoản</span>
+            </div>
+            <div className="w-full max-w-lg mb-4 relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search className="w-5 h-5" />
+              </span>
               <input
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow"
                 placeholder="Tìm kiếm theo tên hoặc email"
                 type="search"
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
             </div>
-            <div className="flex items-center gap-6">
-              <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
-                <Mail className="w-5 h-5" />
-              </button>
-              <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
-                <Bell className="w-5 h-5" />
-              </button>
-              <button className="text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
-                <User className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-700">Admin User</div>
-                  <div className="text-xs text-gray-500">admin@example.com</div>
-                </div>
-                <ChevronDown className="text-gray-400 w-4 h-4 hover:text-blue-600 transition-colors duration-200 cursor-pointer" />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Danh sách tài khoản</h1>
-            <div className="text-sm text-gray-500">
-              <span>Dashboard</span>
-              <span className="mx-2">/</span>
-              <span className="text-l text-gray-900 mb-2">Tài khoản</span>
-            </div>
-          </div>
+          </header>
 
           {loading && (
             <div className="flex justify-center items-center py-10">
@@ -500,7 +470,7 @@ const csvExportData = useMemo(() => {
           )}
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 shadow-md">
               {error}
               <button onClick={() => setError(null)} className="absolute top-0 bottom-0 right-0 px-4 py-3">
                 <X className="w-4 h-4" />
@@ -518,7 +488,7 @@ const csvExportData = useMemo(() => {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer shadow-sm transition-shadow duration-200"
                   >
                     <Filter className="w-3 h-3" />
                     Lọc
@@ -527,7 +497,7 @@ const csvExportData = useMemo(() => {
                     data={csvExportData}
                     headers={csvHeaders}
                     filename={`accounts_export_${new Date().toISOString().slice(0, 10)}.csv`}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 cursor-pointer shadow-sm transition-shadow duration-200"
                   >
                     <Download className="w-3 h-3" />
                     Xuất
@@ -535,7 +505,7 @@ const csvExportData = useMemo(() => {
 
                   <button
                     onClick={() => setShowAddAccountModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 cursor-pointer shadow-sm transition-shadow duration-200"
                   >
                     <Plus className="w-4 h-4" />
                     THÊM TÀI KHOẢN NHÂN SỰ
@@ -547,7 +517,7 @@ const csvExportData = useMemo(() => {
                 <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Vai trò</label>
                       <select
                         name="role"
                         value={filters.role}
@@ -630,9 +600,7 @@ const csvExportData = useMemo(() => {
                           key={account.userId}
                           className={`hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
                         >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">
-                            {index + 1}
-                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r">{index + 1}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r">
                             {editingId === account.userId ? (
                               <input
@@ -738,7 +706,7 @@ const csvExportData = useMemo(() => {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => handlePageChange(currentPage - 1)}
-                    className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -763,7 +731,7 @@ const csvExportData = useMemo(() => {
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => handlePageChange(currentPage + 1)}
-                    className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -786,13 +754,13 @@ const csvExportData = useMemo(() => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setAccountToDelete(null)}
-                className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
               >
                 Hủy
               </button>
               <button
                 onClick={() => handleDeleteAccount(accountToDelete)}
-                className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 cursor-pointer"
+                className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 transition-colors duration-200 cursor-pointer"
               >
                 Xác nhận cấm
               </button>
